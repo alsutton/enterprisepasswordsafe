@@ -1,0 +1,124 @@
+apply plugin: 'war'
+apply plugin: 'com.bmuschko.tomcat'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    def tomcatVersion = '8.0.46'
+
+    compile 'com.sun.mail:javax.mail:1.5.2',
+            'com.sun.mail:smtp:1.5.2',
+            'commons-codec:commons-codec:1.9',
+            'commons-fileupload:commons-fileupload:1.3.1',
+            'javax.servlet:javax.servlet-api:3.0.+',
+            'javax.servlet.jsp:jsp-api:2.2',
+            'org.apache.commons:commons-collections4:4.0',
+            'org.apache.commons:commons-csv:1.1',
+            'org.apache.commons:commons-dbcp2:2.0.1',
+            'org.apache.commons:commons-pool2:2.2';
+
+    testCompile	'junit:junit:4.11',
+                'net.sourceforge.htmlunit:htmlunit:2.15',
+                'org.apache.derby:derby:10.11.1.1';
+
+    runtime         'opensymphony:sitemesh:2.4.2',
+                    'javax.servlet:jstl:1.2',
+                    'org.hsqldb:hsqldb:1.8.0.10',
+                    'org.apache.derby:derby:10.11.1.1',
+                    'org.postgresql:postgresql:9.3-1102-jdbc41',
+                    'mysql:mysql-connector-java:5.1.32';
+
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'net.sf.proguard:proguard-gradle:5.3'
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.3'
+    }
+}
+
+task proguard(type: proguard.gradle.ProGuardTask, dependsOn: jar) {
+    configurations.runtime.each {
+        println it
+    }
+
+    injars jar.archivePath
+
+    outjars 'passwordsafe.jar'
+
+    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+    libraryjars "${System.getProperty('java.home')}/lib/jce.jar"
+    libraryjars(configurations.runtime)
+
+    printmapping 'proguard.map'
+
+    dontusemixedcaseclassnames
+    dontshrink
+
+    keepclassmembers 'class * extends java.lang.Enum { \
+        public static **[] values(); \
+        public static ** valueOf(java.lang.String); \
+    }'
+
+    keepclassmembers 'class * implements java.io.Serializable { \
+        static final long serialVersionUID; \
+        static final java.io.ObjectStreamField[] serialPersistentFields; \
+        private void writeObject(java.io.ObjectOutputStream); \
+        private void readObject(java.io.ObjectInputStream); \
+        java.lang.Object writeReplace(); \
+        java.lang.Object readResolve(); \
+    }'
+
+    keep 'public class * implements javax.servlet.Filter'
+    keep 'public class * implements javax.servlet.Servlet'
+
+    keep 'public class com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration'
+    keep 'public class * implements com.enterprisepasswordsafe.engine.dbabstraction.AbstractDAL'
+    keep 'public interface com.enterprisepasswordsafe.engine.integration.PasswordChanger'
+    keep 'public class com.enterprisepasswordsafe.engine.integration.PasswordChangerProperty'
+    keep 'public class * implements com.enterprisepasswordsafe.engine.integration.PasswordChanger { \
+        public void rollbackChange(java.sql.Connection, java.util.Map, java.util.Map, java.lang.String); \
+        public void changePassword(java.sql.Connection, java.util.Map, java.util.Map, java.lang.String); \
+        public java.util.List getProperties(); \
+        public void install(java.sql.Connection); \
+        public void uninstall(java.sql.Connection); \
+    }'
+    keepclassmembers 'public class * implements javax.security.auth.spi.LoginModule { \
+        void initialize(javax.security.auth.Subject, javax.security.auth.callback.CallbackHandler, java.util.Map<java.lang.String,?>, java.util.Map<java.lang.String,?>); \
+        boolean login(); \
+        boolean commit(); \
+        boolean abort(); \
+        boolean logout(); \
+    }'
+
+    keep 'public interface com.enterprisepasswordsafe.proguard.ExternalInterface';
+    keep 'public class * implements com.enterprisepasswordsafe.proguard.ExternalInterface { \
+        public *** *; \
+        public *** *(...); \
+    }'
+
+    keep 'public interface com.enterprisepasswordsafe.proguard.JavaBean';
+    keep 'public class * implements com.enterprisepasswordsafe.proguard.JavaBean { \
+        void set*(***); \
+        void set*(int, ***); \
+        boolean is*(); \
+        boolean is*(int); \
+        *** get*(); \
+        *** get*(int); \
+    }'
+
+    keepclassmembers 'public class com.enterprisepasswordsafe.engine.database.ConfigurationListenersDAO { \
+        void addListener( java.lang.String, com.enterprisepasswordsafe.engine.database.ConfigurationListenersDAO$ConfigurationListener ); \
+    }'
+
+}

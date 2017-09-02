@@ -1,0 +1,1066 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2017 Carbon Security Ltd. <opensource@carbonsecurity.co.uk>
+  ~
+  ~ Permission to use, copy, modify, and distribute this software for any
+  ~ purpose with or without fee is hereby granted, provided that the above
+  ~ copyright notice and this permission notice appear in all copies.
+  ~
+  ~ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+  ~ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+  ~ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+  ~ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+  ~ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+  ~ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+  ~ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  -->
+
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	id="passwordsafe" version="2.5">
+
+	<display-name>Enterprise Password Safe</display-name>
+    <description>The Enterprise Password Safe from Funky Android Ltd.</description>
+
+	<context-param>
+		<param-name>refresh.period</param-name>
+		<param-value>3600</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>jdbc.config.class</param-name>
+		<param-value>com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration</param-value>
+	</context-param>
+
+	<filter>
+		<filter-name>AdminFilter</filter-name>
+		<filter-class>com.enterprisepasswordsafe.ui.web.servletfilter.AdminFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>AuthenticationFilter</filter-name>
+		<filter-class>com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>CharacterEncodingFilter</filter-name>
+		<filter-class>com.enterprisepasswordsafe.ui.web.servletfilter.CharacterEncodingFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>DatabaseCleanupFilter</filter-name>
+		<filter-class>com.enterprisepasswordsafe.ui.web.servletfilter.DatabaseCleanupFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>DenyFilter</filter-name>
+		<filter-class>com.enterprisepasswordsafe.ui.web.servletfilter.DenyFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>ErrorCatcherFilter</filter-name>
+		<filter-class>com.enterprisepasswordsafe.ui.web.servletfilter.ErrorCatcherFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>HeaderParameterFilter</filter-name>
+		<filter-class>com.enterprisepasswordsafe.ui.web.servletfilter.HeaderParameterFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>SubadminFilter</filter-name>
+		<filter-class>com.enterprisepasswordsafe.ui.web.servletfilter.SubadminFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>Sitemesh</filter-name>
+		<filter-class>com.opensymphony.sitemesh.webapp.SiteMeshFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>WelcomeFilter</filter-name>
+		<filter-class>com.enterprisepasswordsafe.ui.web.servletfilter.WelcomeFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>CharacterEncodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>AuthenticationFilter</filter-name>
+		<url-pattern>/admin/*</url-pattern>
+		<url-pattern>/nomenu/*</url-pattern>
+		<url-pattern>/subadmin/*</url-pattern>
+		<url-pattern>/subadminsupport/*</url-pattern>
+		<url-pattern>/system/*</url-pattern>
+		<url-pattern>/support/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>AdminFilter</filter-name>
+		<url-pattern>/admin/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>SubadminFilter</filter-name>
+		<url-pattern>/subadmin/*</url-pattern>
+		<url-pattern>/subadminsupport/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>DenyFilter</filter-name>
+		<url-pattern>/includes/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>HeaderParameterFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>WelcomeFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>ErrorCatcherFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>DatabaseCleanupFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Sitemesh</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<servlet>
+		<servlet-name>RawAPIFindIds</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.rawapi.FindIds</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>RawAPIGetPassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.rawapi.GetPassword</servlet-class>
+	</servlet>
+
+    <servlet>
+       <servlet-name>RawAPICreatePassword</servlet-name>
+       <servlet-class>com.enterprisepasswordsafe.ui.web.rawapi.CreatePassword</servlet-class>
+    </servlet>
+
+	<servlet>
+		<servlet-name>RawAPIUpdatePassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.rawapi.UpdatePassword</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>AddAuthSource</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.AddAuthSource</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>AddAuthSourceStage1</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.AddAuthSourceStage1</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>AddAuthSourceStage2</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.AddAuthSourceStage2</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>AlterAccess</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.AlterAccess</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>ApplyUpgrades</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ApplyUpgrades</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>AuthSources</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.AuthSources</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>ProfileServlet</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ProfileServlet</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>ChangePassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ChangePassword</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>CreateGroup</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.CreateGroup</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>CreateNewGroup</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.CreateNewGroup</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>CreateNewPassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.CreateNewPassword</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>CreateNewUser</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.CreateNewUser</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>CreateNode</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.CreateNode</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>CreatePassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.CreatePassword</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>CustomFields</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.CustomFields</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>DeleteAuthSource</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.DeleteAuthSource</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>DeleteUser</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.DeleteUser</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>DeleteGroup</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.DeleteGroup</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>DeletePasswordSimple</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.DeletePasswordSimple</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>DeletePassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.DeletePassword</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>DisablePassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.DisablePassword</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>EditAuthSource</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.EditAuthSource</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>EditGroup</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.EditGroup</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>EditHierarchy</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.EditHierarchy</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>EditPassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.EditPassword</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UserServlet</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.UserServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>EnablePassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.EnablePassword</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>Explorer</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.Explorer</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ExpiringPasswords</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ExpiringPasswords</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>PasswordGenerator</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.PasswordGeneratorServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ImportGroupFile</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ImportGroupFile</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ImportGroups</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ImportGroups</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ImportPasswordFile</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ImportPasswordFile</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ImportPasswords</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ImportPasswords</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ImportUserFile</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ImportUserFile</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ImportUsers</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ImportUsers</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>Login</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.Login</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>PasswordsCSV</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.exporters.AllPasswordsCSV</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>PasswordRestrictions</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.PasswordRestrictions</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>SearchServlet</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.SearchServlet</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>SearchLocationServlet</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.SearchLocationServlet</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>SetJDBCConfiguration</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.SetJDBCConfiguration</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ConfigureEmail</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ConfigureEmail</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>Configure</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.Configure</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UpdateAccess</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.UpdateAccess</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UpdateAuthSource</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.UpdateAuthSource</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UpdateGroupDetails</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.UpdateGroupDetails</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UpdateHierarchyPermissions</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.UpdateHierarchyPermissions</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UpdateNodePasswordDefaults</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.UpdateNodePasswordDefaults</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UserAccessCSV</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.exporters.UserAccessCSV</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>NodePasswordDefaultsUserQuery</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.NodePasswordDefaultsUserQuery</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>NodePasswordDefaultsGroupQuery</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.NodePasswordDefaultsGroupQuery</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>VerifyJDBCConfiguration</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.VerifyJDBCConfiguration</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>VerifyLogin</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.VerifyLogin</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ViewEvents</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ViewEvents</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ViewGroups</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ViewGroups</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ViewObjectEvents</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ViewObjectEvents</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ViewPassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ViewPassword</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ViewPasswordImage</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ViewPasswordImage</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>ViewPersonalFolder</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ViewPersonalFolder</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>ViewRARequests</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ViewRARequests</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>ViewSystem</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ViewSystem</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ViewUsers</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ViewUsers</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>Welcome</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.Welcome</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>SetupJDBCConfiguration</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.SetupJDBCConfiguration</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>EditIPZones</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.EditIPZones</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>StoreIPZone</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.StoreIPZone</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>EditIPZone</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.EditIPZone</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>DeleteIPZone</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.DeleteIPZone</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>IntegrationModules</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.IntegrationModules</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>InstallIntegrationModuleStage2</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.InstallIntegrationModuleStage2</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UninstallIntegrationModuleStage2</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.UninstallIntegrationModuleStage2</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UninstallIntegrationModule</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.UninstallIntegrationModule</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>IntegrationModuleScripts</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.IntegrationModuleScripts</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>CreateIMScript</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.CreateIMScript</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>EditIMScript</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.EditIMScript</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>StoreIMScript</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.StoreIMScript</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>DeleteIMScript</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.DeleteIMScript</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>DeleteIMScriptStage2</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.DeleteIMScriptStage2</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>AlterIntegrationScript</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.AlterIntegrationScript</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UpdatePasswordScripts</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.UpdatePasswordScripts</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>RandomizePassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.RandomizePassword</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>NodeUserPermissions</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.NodeUserPermissions</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>NodeGroupPermissions</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.NodeGroupPermissions</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>NodePasswordDefaults</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.NodePasswordDefaults</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>UpdateGroupHierarchyPermissions</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.UpdateGroupHierarchyPermissions</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>PasswordRestrictionsDelete</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.PasswordRestrictionsDelete</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>PasswordRestrictionsAddStage2</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.PasswordRestrictionsAddStage2</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>PasswordRestrictionsAddStage1</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.PasswordRestrictionsAddStage1</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>PasswordRestrictionsEditStage2</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.PasswordRestrictionsEditStage2</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>PasswordRestrictionsEditStage1</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.PasswordRestrictionsEditStage1</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>StoreCustomFields</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.StoreCustomFields</servlet-class>
+	</servlet>
+
+    <servlet>
+        <servlet-name>SyncPasswords</servlet-name>
+        <servlet-class>com.enterprisepasswordsafe.ui.web.servlets.SyncPasswords</servlet-class>
+    </servlet>
+
+	<servlet>
+		<servlet-name>Logout</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.Logout</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ViewRAPassword</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ViewRAPassword</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>AnalyseRARequest</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.AnalyseRARequest</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>SubmitRAVote</servlet-name>
+		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.SubmitRAVote</servlet-class>
+	</servlet>
+
+    <servlet-mapping>
+		<servlet-name>RawAPIFindIds</servlet-name>
+		<url-pattern>/api/FindIds</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>RawAPIGetPassword</servlet-name>
+		<url-pattern>/api/GetPassword</url-pattern>
+	</servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>RawAPICreatePassword</servlet-name>
+        <url-pattern>/api/CreatePassword</url-pattern>
+    </servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>RawAPIUpdatePassword</servlet-name>
+		<url-pattern>/api/UpdatePassword</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>PasswordGenerator</servlet-name>
+		<url-pattern>/support/PasswordGenerator</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>Login</servlet-name>
+		<url-pattern>/Login</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>SetJDBCConfiguration</servlet-name>
+		<url-pattern>/SetJDBCConfiguration</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>NodePasswordDefaultsGroupQuery</servlet-name>
+		<url-pattern>/subadminsupport/NodePasswordDefaultsGroupQuery</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>NodePasswordDefaultsUserQuery</servlet-name>
+		<url-pattern>/subadminsupport/NodePasswordDefaultsUserQuery</url-pattern>
+	</servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>SyncPasswords</servlet-name>
+        <url-pattern>/SyncPasswords</url-pattern>
+    </servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>VerifyLogin</servlet-name>
+		<url-pattern>/VerifyLogin</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>VerifyJDBCConfiguration</servlet-name>
+		<url-pattern>/VerifyJDBCConfiguration</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>AddAuthSource</servlet-name>
+		<url-pattern>/admin/AddAuthSource</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>AddAuthSourceStage1</servlet-name>
+		<url-pattern>/admin/AddAuthSourceStage1</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>AddAuthSourceStage2</servlet-name>
+		<url-pattern>/admin/AddAuthSourceStage2</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ApplyUpgrades</servlet-name>
+		<url-pattern>/admin/ApplyUpgrades</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>AuthSources</servlet-name>
+		<url-pattern>/admin/AuthSources</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>CreateGroup</servlet-name>
+		<url-pattern>/admin/CreateGroup</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>CreateNewGroup</servlet-name>
+		<url-pattern>/admin/CreateNewGroup</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>CreateNewUser</servlet-name>
+		<url-pattern>/admin/CreateNewUser</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>CustomFields</servlet-name>
+		<url-pattern>/admin/CustomFields</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>DeleteAuthSource</servlet-name>
+		<url-pattern>/admin/DeleteAuthSource</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>EditAuthSource</servlet-name>
+		<url-pattern>/admin/EditAuthSource</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>PasswordsCSV</servlet-name>
+		<url-pattern>/admin/Passwords.csv</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>StoreCustomFields</servlet-name>
+		<url-pattern>/admin/StoreCustomFields</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>UserAccessCSV</servlet-name>
+		<url-pattern>/admin/UserAccess.csv</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>EditGroup</servlet-name>
+		<url-pattern>/admin/EditGroup</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>UserServlet</servlet-name>
+		<url-pattern>/admin/User</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>PasswordRestrictions</servlet-name>
+		<url-pattern>/admin/PasswordRestrictions</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ConfigureEmail</servlet-name>
+		<url-pattern>/admin/ConfigureEmail</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>Configure</servlet-name>
+		<url-pattern>/admin/Configure</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ImportGroupFile</servlet-name>
+		<url-pattern>/admin/ImportGroupFile</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ImportGroups</servlet-name>
+		<url-pattern>/admin/ImportGroups</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ImportUserFile</servlet-name>
+		<url-pattern>/admin/ImportUserFile</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ImportUsers</servlet-name>
+		<url-pattern>/admin/ImportUsers</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>UpdateAuthSource</servlet-name>
+		<url-pattern>/admin/UpdateAuthSource</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>UpdateGroupDetails</servlet-name>
+		<url-pattern>/admin/UpdateGroupDetails</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ViewEvents</servlet-name>
+		<url-pattern>/admin/ViewEvents</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ViewGroups</servlet-name>
+		<url-pattern>/admin/ViewGroups</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ViewSystem</servlet-name>
+		<url-pattern>/admin/ViewSystem</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ViewUsers</servlet-name>
+		<url-pattern>/admin/ViewUsers</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>AlterAccess</servlet-name>
+		<url-pattern>/subadmin/AlterAccess</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>CreateNode</servlet-name>
+		<url-pattern>/subadmin/CreateNode</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>DisablePassword</servlet-name>
+		<url-pattern>/subadmin/DisablePassword</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>EditHierarchy</servlet-name>
+		<url-pattern>/subadmin/EditHierarchy</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>EnablePassword</servlet-name>
+		<url-pattern>/subadmin/EnablePassword</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ImportPasswordFile</servlet-name>
+		<url-pattern>/subadmin/ImportPasswordFile</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ImportPasswords</servlet-name>
+		<url-pattern>/subadmin/ImportPasswords</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>NodeUserPermissions</servlet-name>
+		<url-pattern>/subadmin/NodeUserPermissions</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>NodeGroupPermissions</servlet-name>
+		<url-pattern>/subadmin/NodeGroupPermissions</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>NodePasswordDefaults</servlet-name>
+		<url-pattern>/subadmin/NodePasswordDefaults</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>UpdateAccess</servlet-name>
+		<url-pattern>/subadmin/UpdateAccess</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>UpdateGroupHierarchyPermissions</servlet-name>
+		<url-pattern>/subadmin/UpdateGroupHierarchyPermissions</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>UpdateHierarchyPermissions</servlet-name>
+		<url-pattern>/subadmin/UpdateHierarchyPermissions</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>UpdateNodePasswordDefaults</servlet-name>
+		<url-pattern>/subadmin/UpdateNodePasswordDefaults</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ProfileServlet</servlet-name>
+		<url-pattern>/nomenu/Profile</url-pattern>
+		<url-pattern>/system/Profile</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ChangePassword</servlet-name>
+		<url-pattern>/system/ChangePassword</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>CreateNewPassword</servlet-name>
+		<url-pattern>/system/CreateNewPassword</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>CreatePassword</servlet-name>
+		<url-pattern>/system/CreatePassword</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>DeletePassword</servlet-name>
+		<url-pattern>/system/DeletePassword</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>DeletePasswordSimple</servlet-name>
+		<url-pattern>/admin/ForceDeletePassword</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>EditPassword</servlet-name>
+		<url-pattern>/system/EditPassword</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ExpiringPasswords</servlet-name>
+		<url-pattern>/system/ExpiringPasswords</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>Explorer</servlet-name>
+		<url-pattern>/system/Explorer</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>SearchLocationServlet</servlet-name>
+		<url-pattern>/system/SearchLocation</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>SearchServlet</servlet-name>
+		<url-pattern>/system/Search</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ViewObjectEvents</servlet-name>
+		<url-pattern>/system/ViewObjectEvents</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ViewPassword</servlet-name>
+		<url-pattern>/system/ViewPassword</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ViewPasswordImage</servlet-name>
+		<url-pattern>/system/ViewPasswordImage</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ViewPersonalFolder</servlet-name>
+		<url-pattern>/system/ViewPersonalFolder</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>ViewRARequests</servlet-name>
+		<url-pattern>/system/ViewRARequests</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>Welcome</servlet-name>
+		<url-pattern>/system/Welcome</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>DeleteUser</servlet-name>
+		<url-pattern>/admin/DeleteUser</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>DeleteGroup</servlet-name>
+		<url-pattern>/admin/DeleteGroup</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>SetupJDBCConfiguration</servlet-name>
+		<url-pattern>/admin/SetupJDBCConfiguration</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>EditIPZones</servlet-name>
+		<url-pattern>/admin/EditIPZones</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>StoreIPZone</servlet-name>
+		<url-pattern>/admin/StoreIPZone</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>EditIPZone</servlet-name>
+		<url-pattern>/admin/EditIPZone</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>DeleteIPZone</servlet-name>
+		<url-pattern>/admin/DeleteIPZone</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>IntegrationModules</servlet-name>
+		<url-pattern>/admin/IntegrationModules</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>InstallIntegrationModuleStage2</servlet-name>
+		<url-pattern>/admin/InstallIntegrationModuleStage2</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>UninstallIntegrationModuleStage2</servlet-name>
+		<url-pattern>/admin/UninstallIntegrationModuleStage2</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>UninstallIntegrationModule</servlet-name>
+		<url-pattern>/admin/UninstallIntegrationModule</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>IntegrationModuleScripts</servlet-name>
+		<url-pattern>/admin/IntegrationModuleScripts</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>CreateIMScript</servlet-name>
+		<url-pattern>/admin/CreateIMScript</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>EditIMScript</servlet-name>
+		<url-pattern>/admin/EditIMScript</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>StoreIMScript</servlet-name>
+		<url-pattern>/admin/StoreIMScript</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>DeleteIMScript</servlet-name>
+		<url-pattern>/admin/DeleteIMScript</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>DeleteIMScriptStage2</servlet-name>
+		<url-pattern>/admin/DeleteIMScriptStage2</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AlterIntegrationScript</servlet-name>
+		<url-pattern>/admin/AlterIntegrationScript</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>UpdatePasswordScripts</servlet-name>
+		<url-pattern>/admin/UpdatePasswordScripts</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>RandomizePassword</servlet-name>
+		<url-pattern>/system/RandomizePassword</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>PasswordRestrictionsDelete</servlet-name>
+		<url-pattern>/admin/PasswordRestrictionsDelete</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>PasswordRestrictionsAddStage2</servlet-name>
+		<url-pattern>/admin/PasswordRestrictionsAddStage2</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>PasswordRestrictionsAddStage1</servlet-name>
+		<url-pattern>/admin/PasswordRestrictionsAddStage1</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>PasswordRestrictionsEditStage2</servlet-name>
+		<url-pattern>/admin/PasswordRestrictionsEditStage2</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>PasswordRestrictionsEditStage1</servlet-name>
+		<url-pattern>/admin/PasswordRestrictionsEditStage1</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Logout</servlet-name>
+		<url-pattern>/Logout</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>ViewRAPassword</servlet-name>
+		<url-pattern>/system/ViewRAPassword</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AnalyseRARequest</servlet-name>
+		<url-pattern>/system/AnalyseRARequest</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>SubmitRAVote</servlet-name>
+		<url-pattern>/system/SubmitRAVote</url-pattern>
+	</servlet-mapping>
+    <session-config>
+		<session-timeout>30</session-timeout>
+	</session-config>
+	<welcome-file-list>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+</web-app>

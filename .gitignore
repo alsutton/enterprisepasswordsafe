@@ -1,0 +1,9 @@
+.idea/*
+.gradle/*
+build/*
+obfuscated/*
+out/*
+*.iml
+.DS_Store
+proguard.map
+derby.log

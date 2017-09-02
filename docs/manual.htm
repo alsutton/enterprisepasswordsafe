@@ -1,0 +1,1889 @@
+<head>
+<meta http-equiv=Content-Type content="text/html">
+<title>Enterprise Password Safe</title>
+<body bgcolor=white lang=EN-GB>
+
+<h1>Enterprise Password Safe Manual</h1>
+
+<h2>Licensing</h2>
+
+<p> The Copyright (c) 2017 Carbon Security Ltd. <opensource@carbonsecurity.co.uk> and contributors</p>
+
+<p>Permission to use, copy, modify, and distribute this software for any
+ purpose with or without fee is hereby granted, provided that the above
+ copyright notice and this permission notice appear in all copies.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</p>
+
+<h2>Introduction</h2>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The Enterprise Password Safe provides a
+centralised password repository and maintains an audit trail of accesses to the
+stored passwords.<span style="mso-spacerun:yes">&nbsp; </span>The EPS has
+numerous security enhancing features such as;</span></p>
+
+<p><![if !supportLists]><span
+lang=EN-US style='font-size:9.0pt;mso-bidi-font-size:12.0pt;font-family:Verdana;
+mso-fareast-font-family:Verdana;mso-bidi-font-family:Verdana'><span
+style='mso-list:Ignore'>&#9679;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Restricted Access Passwords which require
+other users to approve access to passwords</span></p>
+
+<p><![if !supportLists]><span
+lang=EN-US style='font-size:9.0pt;mso-bidi-font-size:12.0pt;font-family:Verdana;
+mso-fareast-font-family:Verdana;mso-bidi-font-family:Verdana'><span
+style='mso-list:Ignore'>&#9679;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The EPS encryption chain which ensures that
+passwords are not accessible without breaking at least one of the currently
+established encryption standards.</span></p>
+
+<p><![if !supportLists]><span
+lang=EN-US style='font-size:9.0pt;mso-bidi-font-size:12.0pt;font-family:Verdana;
+mso-fareast-font-family:Verdana;mso-bidi-font-family:Verdana'><span
+style='mso-list:Ignore'>&#9679;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>All password data encryption is performed in
+application memory to avoid data being transmitted or stored in an unencrypted
+form.</span></p>
+
+<p><![if !supportLists]><span
+lang=EN-US style='font-size:9.0pt;mso-bidi-font-size:12.0pt;font-family:Verdana;
+mso-fareast-font-family:Verdana;mso-bidi-font-family:Verdana'><span
+style='mso-list:Ignore'>&#9679;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>SMTP Email alerts sent to administrators when
+passwords are accessed.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>We value feedback from all users and make use
+of the feedback to develop the product to ensure you are able to use our
+software to meet your needs. If you have an idea or suggestion for improving
+the Enterprise Password Safe please send a message to us via the contact form
+at </span><span lang=EN-US><a
+href="http://www.enterprise-password-safe.com/contact.html"><span
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial;color:black;
+text-decoration:none;text-underline:none'>http://www.enterprise-password-safe.com/contact.html</span></a></span></p>
+
+<h1><a name="_Toc224793217"><span lang=EN-US>Configuration matrices</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>To assist with the creation of users and the
+correct assignment of accessing and viewing rights we recommend using a
+spreadsheet which has the following three parts;</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:14.15pt;text-indent:-14.1pt;mso-list:l3 level1 lfo7'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>1<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>A
+User List &#8211; This list contains all of the people who will be using the
+EPS.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:14.15pt;text-indent:-14.1pt;mso-list:l3 level1 lfo7'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>2<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>A
+Group List &#8211; This list contains all of the groups that will be created in
+the EPS and the users from section 1 who belong to the group.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:14.15pt;text-indent:-14.1pt;mso-list:l3 level1 lfo7'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>3<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>A
+Password list &#8211; This list contains all of the passwords which will be
+managed by the EPS, a list of which groups have read only access, which groups
+have modification access, which users have read only access outside of the
+groups they belong to, and<span style="mso-spacerun:yes">&nbsp; </span>which
+users have modification access outside of the groups they belong to.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The lists would look similar to the ones
+below;</span></p>
+
+<p><b style='mso-bidi-font-weight:
+normal'><span lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:
+Arial'>Users</span></b></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=102
+ style='margin-left:2.25pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+ border:none;mso-border-alt:solid black 1.0pt;mso-yfti-tbllook:1184;mso-padding-alt:
+ 0cm .5pt 0cm .5pt;mso-border-insideh:1.0pt solid black;mso-border-insidev:
+ 1.0pt solid black'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td width=102 valign=top style='width:102.0pt;border:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>User name</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=102 style='width:102.0pt;border:solid black 1.0pt;border-top:none;
+  mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>alice</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=102 style='width:102.0pt;border:solid black 1.0pt;border-top:none;
+  mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>bob</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3;mso-yfti-lastrow:yes'>
+  <td width=102 style='width:102.0pt;border:solid black 1.0pt;border-top:none;
+  mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>charlie</span></p>
+  </td>
+ </tr>
+</table>
+
+<p><span lang=EN-US></span></p>
+
+<p><b style='mso-bidi-font-weight:
+normal'><span lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:
+Arial'>Groups</span></b></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=271
+ style='margin-left:2.25pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+ border:none;mso-border-alt:solid black 1.0pt;mso-yfti-tbllook:1184;mso-padding-alt:
+ 0cm .5pt 0cm .5pt;mso-border-insideh:1.0pt solid black;mso-border-insidev:
+ 1.0pt solid black'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td width=146 valign=top style='width:145.55pt;border:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Group name</span></p>
+  </td>
+  <td width=125 valign=top style='width:125.15pt;border:solid black 1.0pt;
+  border-left:none;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Members</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=146 valign=top style='width:145.55pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Unix Admins</span></p>
+  </td>
+  <td width=125 valign=top style='width:125.15pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>alice, bob</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2;mso-yfti-lastrow:yes'>
+  <td width=146 valign=top style='width:145.55pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Tech.
+  Services</span></p>
+  </td>
+  <td width=125 valign=top style='width:125.15pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>charlie</span></p>
+  </td>
+ </tr>
+</table>
+
+<p><span lang=EN-US></span></p>
+
+<p><b style='mso-bidi-font-weight:
+normal'><span lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:
+Arial'>Passwords</span></b></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=416
+ style='margin-left:2.25pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+ border:none;mso-border-alt:solid black 1.0pt;mso-yfti-tbllook:1184;mso-padding-alt:
+ 0cm .5pt 0cm .5pt;mso-border-insideh:1.0pt solid black;mso-border-insidev:
+ 1.0pt solid black'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td width=108 valign=top style='width:107.95pt;border:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Password</span></p>
+  </td>
+  <td width=86 valign=top style='width:85.5pt;border:solid black 1.0pt;
+  border-left:none;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Groups<br>
+  (read only)</span></p>
+  </td>
+  <td width=78 valign=top style='width:78.0pt;border:solid black 1.0pt;
+  border-left:none;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Groups<br>
+  (modify)</span></p>
+  </td>
+  <td width=61 valign=top style='width:60.75pt;border:solid black 1.0pt;
+  border-left:none;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Users<br>
+  (read only)</span></p>
+  </td>
+  <td width=84 valign=top style='width:83.75pt;border:solid black 1.0pt;
+  border-left:none;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Users<br>
+  (modify)</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=108 valign=top style='width:107.95pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>�root� on
+  unix01</span></p>
+  </td>
+  <td width=86 valign=top style='width:85.5pt;border-top:none;border-left:none;
+  border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+  solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+
+  </td>
+  <td width=78 valign=top style='width:78.0pt;border-top:none;border-left:none;
+  border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+  solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Unix Admins</span></p>
+  </td>
+  <td width=61 valign=top style='width:60.75pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+
+  </td>
+  <td width=84 valign=top style='width:83.75pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=108 valign=top style='width:107.95pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>�nagios� on
+  unix01</span></p>
+  </td>
+  <td width=86 valign=top style='width:85.5pt;border-top:none;border-left:none;
+  border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+  solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Tech
+  Services</span></p>
+  </td>
+  <td width=78 valign=top style='width:78.0pt;border-top:none;border-left:none;
+  border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+  solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'><span
+  style="mso-spacerun:yes">&nbsp;</span>Unix Admins</span></p>
+  </td>
+  <td width=61 valign=top style='width:60.75pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+
+  </td>
+  <td width=84 valign=top style='width:83.75pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3;mso-yfti-lastrow:yes'>
+  <td width=108 valign=top style='width:107.95pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>�root� on
+  nfs01</span></p>
+  </td>
+  <td width=86 valign=top style='width:85.5pt;border-top:none;border-left:none;
+  border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+  solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Unix Admins</span></p>
+  </td>
+  <td width=78 valign=top style='width:78.0pt;border-top:none;border-left:none;
+  border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+  solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+
+  </td>
+  <td width=61 valign=top style='width:60.75pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+
+  </td>
+  <td width=84 valign=top style='width:83.75pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>bob</span></p>
+  </td>
+ </tr>
+</table>
+
+<p><span lang=EN-US></span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This would give alice and bob the ability to
+modify the password entry for the users �root� and �nagios� on unix01. Alice
+would be able to read the root password for �root� on nfs01, and bob would be
+able to modify it, and charlie would be able to read the password for �nagios�
+on unix01, but not modify it.</span></p>
+
+<span lang=EN-US style='font-size:10.0pt;mso-bidi-font-size:12.0pt;font-family:
+Arial;mso-fareast-font-family:"Times New Roman";mso-bidi-font-family:"Times New Roman";
+color:black;mso-ansi-language:EN-US;mso-fareast-language:JA;mso-bidi-language:
+AR-SA'><br clear=all style='mso-special-character:line-break;page-break-before:
+always'>
+</span>
+
+
+
+<h1><a name="_Toc224793218"><span lang=EN-US>Installation</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>There are three methods of installing the
+EPS;</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l5 level1 lfo3'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>1<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><b
+style='mso-bidi-font-weight:normal'><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Executable Installer</span></b></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt'><span lang=EN-US style='mso-fareast-font-family:Arial;
+mso-bidi-font-family:Arial'>These are available for Windows and Linux on
+Intel/AMD x86 and Solaris on Sparc, these will take you through the steps
+necessary to install and configure the EPS.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l5 level1 lfo3'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>2<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><b
+style='mso-bidi-font-weight:normal'><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Compressed Installations</span></b></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt'><span lang=EN-US style='mso-fareast-font-family:Arial;
+mso-bidi-font-family:Arial'>These are archive files in ZIP and Tar with GNU Zip
+formats which contain all the files necessary to run the EPS. To use these you
+must install a Java Virtual Machine compatible with Java 5 or above.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l5 level1 lfo3'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>3<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><b
+style='mso-bidi-font-weight:normal'><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>WAR file for application servers</span></b></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt'><span lang=EN-US style='mso-fareast-font-family:Arial;
+mso-bidi-font-family:Arial'>If you are running your own Java Application Server
+you can deploy the EPS to it and run the EPS from within it. To use the EPS war
+file your application server must support Java 5 or above, the Java Servlet
+specification version 2.4 and above, and Java Server Pages (JSPs) version 1.2
+and above.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If you are using either the executable
+installer or the files extracted from a compressed installation and you want to
+use a supported external database you should do the following;</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l2 level1 lfo2'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>1<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Download
+the appropriate Type 4 JDBC driver from your database vendor.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l2 level1 lfo2'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>2<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Ensure
+the EPS is not running.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l2 level1 lfo2'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>3<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Copy
+the driver files into the lib directory within the jetty directory inside your
+EPS installation directory.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l2 level1 lfo2'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>4<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Start
+the EPS.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>You should then configure the connection to
+the database from the Database option available on the left hand menu when you
+log in as an administrator.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If you choose to use an alternative
+application server you should consult your application server vendor for
+instructions on how to install JDBC drivers.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>You can find further information about
+installing, configuring, and operating the EPS in the online FAQ at </span><span
+lang=EN-US><a href="http://www.enterprise-password-safe.com/support-faq.html"><span
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial;color:black;
+text-decoration:none;text-underline:none'>http://www.enterprise-password-safe.com/support-faq.html</span></a></span></p>
+
+<h1><a name="_Toc224793219"><span lang=EN-US>Default user details</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>After installation the only user available
+has the user name<i style='mso-bidi-font-style:normal'> admin</i> and the
+password<i style='mso-bidi-font-style:normal'> admin</i>.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>We recommend that you change the password for
+this user as soon as you log into the system.</span></p>
+
+<span lang=EN-US style='font-size:10.0pt;mso-bidi-font-size:12.0pt;font-family:
+Arial;mso-fareast-font-family:"Times New Roman";mso-bidi-font-family:"Times New Roman";
+color:black;mso-ansi-language:EN-US;mso-fareast-language:JA;mso-bidi-language:
+AR-SA'><br clear=all style='mso-special-character:line-break;page-break-before:
+always'>
+</span>
+
+<h2>Page Layout</h2>
+
+<p>All EPS pages have the same design, an example of which is shown below;</p>
+
+<p><img width=417 height=247 src="image002.gif"></p>
+
+<p>There are four main areas to any EPS page;</p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l6 level1 lfo1'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>1<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>The
+account bar at the top of the page which contains information and options
+relating to the user currently logged in.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l6 level1 lfo1'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>2<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>The
+page title shown in the area with the dark blue background below the account
+bar.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l6 level1 lfo1'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>3<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>The
+action menu of the left of the page showing the actions available to the user</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:36.0pt;text-indent:-17.95pt;mso-list:l6 level1 lfo1'><![if !supportLists]><span
+lang=EN-US style='font-family:"Times New Roman"'><span style='mso-list:Ignore'>4<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>The
+main area where the information is shown.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The options on the action menu will change
+depending on type of user logged in. The example above shows all of the options
+available to a full administrator.</span></p>
+
+<span lang=EN-US style='font-size:10.0pt;mso-bidi-font-size:12.0pt;font-family:
+Arial;mso-fareast-font-family:"Times New Roman";mso-bidi-font-family:"Times New Roman";
+color:black;mso-ansi-language:EN-US;mso-fareast-language:JA;mso-bidi-language:
+AR-SA'><br clear=all style='mso-special-character:line-break;page-break-before:
+always'>
+</span>
+
+
+
+<h1><a name="_Toc224793221"><span lang=EN-US>The password hierarchy</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The password hierarchy allows passwords to be
+categorised into folders, and each folder may contain passwords and sub-folders
+that contain further folders and passwords without limit. The hierarchy can be
+viewed by clicking on the<i style='mso-bidi-font-style:normal'> View/Edit</i>
+option under the<i style='mso-bidi-font-style:normal'> Passwords</i> heading
+from the menu.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The password hierarchy has a separate set of permissions
+that allow administrators to control access to passwords based on their location
+in the hierarchy. The hierarchy permissions take precedence over individual
+permissions when denying access to passwords, therefore if a password <i
+style='mso-bidi-font-style:normal'>User @ System</i> is stored in a folder X,
+and a user has access read rights to the password, but does not have access
+rights to the folder, the user will not be able to see the password, and any
+searches will not include the password. It should be noted that permissions can
+not be set for the top level folder because it is the starting place for all
+users when the log in.</span></p>
+
+<h1><a name="_Toc224793222"><span lang=EN-US>Editing the password hierarchy</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>EPS administrators can modify the password
+hierarchy by clicking on the Edit Hierarchy link when viewing the password
+hierarchy. Clicking on this link allows administrators to edit the location of
+passwords and set hierarchy permissions for users and/or groups.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Whilst editing the hierarchy you can add new
+folders to the current level, copy, deep copy, cut, or delete sub-folders and
+passwords, or navigate through the hierarchy in order to make modifications
+elsewhere.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Copy will only create copies of things you
+have selected; �Deep� copy will create copies of the things you have selected
+as well as anything contained in the folders you have selected. For example if
+you have a folder called X and within it there is a password Y, if you �copy� X
+to another location you will get an empty copy of X. If you �deep copy� X to
+another location you will get a copy of X containing a copy of Y.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Administrators can also set the user and
+group permissions whilst editing the hierarchy by clicking on the User
+Permissions tab or Group Permissions tab, and setting the appropriate rights
+for the users alter the user and group permissions. Please note that user
+permissions will take precedence over group permissions, therefore if you deny
+access to a group.</span></p>
+
+<h1><a name="_Toc224793223"><span lang=EN-US>Importing data from files</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Users, groups, passwords, and the permissions
+linking them can be imported from text files using the Import options available
+from the menu. All import files must start with a single line containing the
+letters EPS.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The users file consists of a series of lines,
+each containing a user name, full name, email address, and optionally the user
+type and a password separated by commas. For example, importing a file
+containing the following three entries;</span></p>
+
+<p><span lang=EN-US style='font-family:
+"Courier New";mso-fareast-font-family:"Courier New";mso-bidi-font-family:"Courier New"'>alice,
+Alice Smith,</span><span lang=EN-US style='mso-fareast-font-family:Arial;
+mso-bidi-font-family:Arial'> </span><span lang=EN-US><a
+href="mailto:alice@secureme.info"><span style='font-family:"Courier New";
+mso-fareast-font-family:"Courier New";mso-bidi-font-family:"Courier New";
+color:black;text-decoration:none;text-underline:none'>alice@secureme.info</span></a></span><span
+lang=EN-US style='font-family:"Courier New";mso-fareast-font-family:"Courier New";
+mso-bidi-font-family:"Courier New"'><br>
+bob, Bob Bloggs,</span><span lang=EN-US style='mso-fareast-font-family:Arial;
+mso-bidi-font-family:Arial'> </span><span lang=EN-US><a
+href="mailto:bob@secureme.info"><span style='font-family:"Courier New";
+mso-fareast-font-family:"Courier New";mso-bidi-font-family:"Courier New";
+color:black;text-decoration:none;text-underline:none'>bob@</span></a><a
+href="mailto:bob@secureme.info"><i style='mso-bidi-font-style:normal'><span
+style='font-family:"Courier New";mso-fareast-font-family:"Courier New";
+mso-bidi-font-family:"Courier New";color:black;text-decoration:none;text-underline:
+none'>secureme.info</span></i></a></span><span lang=EN-US style='font-family:
+"Courier New";mso-fareast-font-family:"Courier New";mso-bidi-font-family:"Courier New"'>,
+N, block<br>
+charlie, Charlie Jones,</span><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'> </span><span lang=EN-US><a
+href="mailto:charlie@secureme.info"><span style='font-family:"Courier New";
+mso-fareast-font-family:"Courier New";mso-bidi-font-family:"Courier New";
+color:black;text-decoration:none;text-underline:none'>charlie@secureme.info</span></a></span><span
+lang=EN-US style='font-family:"Courier New";mso-fareast-font-family:"Courier New";
+mso-bidi-font-family:"Courier New"'>, P</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Creates a user called<i style='mso-bidi-font-style:
+normal'> alice</i> who is a normal user and whose password will be generated by
+the EPS, a user called<i style='mso-bidi-font-style:normal'> bob</i> who is
+also a normal user and whose password is<i style='mso-bidi-font-style:normal'>
+block</i>, and a user called<i style='mso-bidi-font-style:normal'> charlie</i>
+who is a password administrator and whose password is created by the EPS.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If an SMTP Server has been set in the
+configuration screen and the email address for an imported user isn't blank the
+user will be sent an email informing them that an account has been created for
+them.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Group files consist of the name of the group,
+a comma, and then a list of users separated by commas. For example, a file
+containing the following two entries;</span></p>
+
+<p><span lang=EN-US style='font-family:
+"Courier New";mso-fareast-font-family:"Courier New";mso-bidi-font-family:"Courier New"'>group1,alice,bob<br>
+group2,alice,charlie</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>creates two groups called<i style='mso-bidi-font-style:
+normal'> group1</i> and<i style='mso-bidi-font-style:normal'> group2</i>, and
+puts<i style='mso-bidi-font-style:normal'> alice</i> in both<i
+style='mso-bidi-font-style:normal'> group1</i> and<i style='mso-bidi-font-style:
+normal'> group2</i>, puts<i style='mso-bidi-font-style:normal'> bob</i> in<i
+style='mso-bidi-font-style:normal'> group1</i> only, and<i style='mso-bidi-font-style:
+normal'> charlie</i> in<i style='mso-bidi-font-style:normal'> group2</i> only.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Passwords and permissions can be imported
+using the following format for each line;</span></p>
+
+<p><span lang=EN-US style='font-family:
+"Courier New";mso-fareast-font-family:"Courier New";mso-bidi-font-family:"Courier New"'>System
+Name, User name, Password, Notes, Audit Policy, Record History</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This can optionally be followed by a comma-separated
+list of custom fields. The custom fields must be of the format</span><span
+lang=EN-US style='font-family:"Courier New";mso-fareast-font-family:"Courier New";
+mso-bidi-font-family:"Courier New"'> CF:name=value</span><span lang=EN-US
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Followed by a comma-separated list of
+permissions. Each permission consists of a U or G to represent if the
+permission is for a User or Group, then a V or M to represent if that user or
+group should be allowed to view or modify the password, a colon, and then the
+name of the user or group.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The<i style='mso-bidi-font-style:normal'>
+Audit Policy</i> can be set to</span><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='font-family:"Courier New";mso-fareast-font-family:"Courier New";
+mso-bidi-font-family:"Courier New"'> full</span></i><span lang=EN-US
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'> for to log
+and send alerts for accesses,</span><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='font-family:"Courier New";mso-fareast-font-family:"Courier New";
+mso-bidi-font-family:"Courier New"'> log</span></i><span lang=EN-US
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'> to only log
+the access, or</span><i style='mso-bidi-font-style:normal'><span lang=EN-US
+style='font-family:"Courier New";mso-fareast-font-family:"Courier New";
+mso-bidi-font-family:"Courier New"'> none</span></i><span lang=EN-US
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'> to do
+nothing. If the Record History section can be either set to true to record all
+historical versions of the password, or false to only retain the current
+version.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>For example a file containing the following
+two entries;</span></p>
+
+<p><span lang=EN-US style='font-family:
+"Courier New";mso-fareast-font-family:"Courier New";mso-bidi-font-family:"Courier New"'>system1,
+username1, pwd1, some notes, full, true, UV:alice, UM:bob<br>
+system1, username2, pwd2, notes, none, false, GM:group1, UV:charlie</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Will create two passwords both of which will
+be for system<i style='mso-bidi-font-style:normal'>1</i> with the following
+characteristics;</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The first line creates an entry with the user
+name<i style='mso-bidi-font-style:normal'> username1</i> and the password<i
+style='mso-bidi-font-style:normal'> pwd1</i>, the user<i style='mso-bidi-font-style:
+normal'> alice</i> will be able to view the password, and the user<i
+style='mso-bidi-font-style:normal'> bob</i> will be able to modify the
+password. When users access the password the access will be fully audited
+(resulting in the access being logged and an alert sent), and all historical
+versions of the password will be recorded.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The second line will create an entry with the
+user name<i style='mso-bidi-font-style:normal'> username2</i>, and the password<i
+style='mso-bidi-font-style:normal'> pwd2</i>. The group called<i
+style='mso-bidi-font-style:normal'> group1</i> will be able to modify the
+password and the user<i style='mso-bidi-font-style:normal'> charlie</i> will be
+able to view the password. Accesses to this password will not cause a log
+message or alert to be generated, and the EPS will not store historical
+versions of the password.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>When you import passwords they will be placed
+into the password hierarchy at the location you had most recently viewed.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>All of the import features will display a
+page which allows you to select the file you wish to import, and will present
+you with a report once the information has been imported.</span></p>
+
+<h1><a name="_Toc224793224"><span lang=EN-US>Password creation</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>To create passwords select the<i
+style='mso-bidi-font-style:normal'> Create</i> option from the<i
+style='mso-bidi-font-style:normal'> Passwords</i> menu. A page will be
+displayed which allows you to enter all of the information relevant to a
+password. Once you have entered all of the information requested click the
+Create button. You will then be taken to a page that will allow you to set
+which users and groups have access to the newly created password.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Passwords can have the<i style='mso-bidi-font-style:
+normal'> Restricted Access</i> feature enabled which will stop any user
+accessing the password without approval from one or more other users. When
+enabling restricted access on a password you<b style='mso-bidi-font-weight:
+normal'> must</b> ensure that you create enough restricted access approvers. If
+you create a password that requires 2 RA approvers to approve access, and you
+only have 1 user defined as a restricted access approver, no-one will be able
+to access the password.<span style="mso-spacerun:yes">&nbsp; </span>Restricted
+Access applies to<b style='mso-bidi-font-weight:normal'> all users</b>, this
+means that even administrators will not be able to view a password without
+approval if restricted access is enabled for it.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The Restricted Access also allows approvers
+to block a request to view a password using the<i style='mso-bidi-font-style:
+normal'> Blockers required</i> field. If 3 approvers have been defined, and the
+password has the<i style='mso-bidi-font-style:normal'> Blockers required</i>
+field set to 1, if any of the approvers denies the users request to view the
+password the users request will be denied.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>It is possible to specify a set of custom
+fields to be included in new passwords by selecting the �Custom Fields� option
+under the System title from the menu on the left of the page.</span></p>
+
+<h1><a name="_Toc224793225"><span lang=EN-US>Password deletion</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Passwords should be deleted through the
+hierarchy editor. You can select the box to the left of the password or
+passwords you wish to delete, then choose<i style='mso-bidi-font-style:normal'>
+Delete Selected</i> from the<i style='mso-bidi-font-style:normal'> Action</i> drop
+down menu and click<i style='mso-bidi-font-style:normal'> Go</i>. Passwords are
+not recoverable after deletion; so do not delete passwords which you may need
+at a later point in time.</span></p>
+
+<h1><a name="_Toc224793226"><span lang=EN-US>Password modification</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>You can modify a password by selecting it
+from either the password hierarchy, the results of a search, or any other
+location where you can view a password. Selecting the<i style='mso-bidi-font-style:
+normal'> Edit Details</i> option from the screen on which the password
+displayed will take you to a screen that will allow you to edit all of the
+details of the password.</span></p>
+
+<h1><a name="_Toc224793227"><span lang=EN-US>Password restrictions</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This option allows administrators to create
+various policies controlling the characters that must be present in passwords.
+An administrator can create any number of policies, and each policy can be
+associated with one or more passwords. The restriction policy is set by
+administrators when the create or edit a password.</span></p>
+
+<h1><a name="_Toc224793228"><span lang=EN-US>Edit password access controls</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Altering access to a password can be
+performed after selecting the Alter Access option when viewing a password has
+created the password.<span style="mso-spacerun:yes">&nbsp; </span>A page will
+be displayed with allows you to update the type of access that groups and users
+are allowed. For each user and group you wish to change you will need to select
+the appropriate access rights and then click the<i style='mso-bidi-font-style:
+normal'> Update group access</i> or<i style='mso-bidi-font-style:normal'>
+Update user access</i> button accordingly.</span></p>
+
+<h1><a name="_Toc224793229"><span lang=EN-US>Personal Password Folder</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Each user has a personal password storage area
+that contains password that only they can view. Clicking on the �Personal�
+option under the Passwords title in the menu on the left of the page will
+access this area.</span></p>
+
+<h1><a name="_Toc224793230"><span lang=EN-US>Outstanding Restricted Access
+Requests</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The �RA Requests� option in the menu on the
+left shows the user any restricted access requests they have not approved or
+denied.</span></p>
+
+<h1><a name="_Toc224793231"><span lang=EN-US>User creation</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>To create users manually you should select
+the<i style='mso-bidi-font-style:normal'> Create</i> option from the<i
+style='mso-bidi-font-style:normal'> Users</i> menu.<span
+style="mso-spacerun:yes">&nbsp; </span>You should enter the details requested
+in the spaces provided and click the Create button. Upon clicking the button
+you will either be shown any problems with the details supplied, or, if the
+creation of the user is successful, you will be taken to a screen allowing you
+to alter the users status, type, and group memberships.</span></p>
+
+<h1><a name="_Toc224793232"><span lang=EN-US>User deletion</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Users can be deleted from the system by
+selecting the<i style='mso-bidi-font-style:normal'> Delete</i> option under the<i
+style='mso-bidi-font-style:normal'> Users</i> heading. To delete a user (or
+group of users) you should check the box to the left of the user name and then
+click the �<i style='mso-bidi-font-style:normal'>Delete Users</i>� button, and
+then confirm the deletion.</span></p>
+
+<h1><a name="_Toc224793233"><span lang=EN-US>User modification</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>To edit a user select the<i style='mso-bidi-font-style:
+normal'> View/Edit</i> option from the<i style='mso-bidi-font-style:normal'>
+Users</i> menu, a page will be displayed offering you a list of all the users
+available in your installation of the EPS. Click on the user you wish to alter
+and you will be taken to the user-editing screen.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The user type affects how a user can interact
+with the EPS. An<i style='mso-bidi-font-style:normal'> EPS Administrator</i>
+has full access to all of the administration functions of the EPS. A<i
+style='mso-bidi-font-style:normal'> Password Administrator</i> only has the
+ability to create passwords and alter the access other users have to any
+passwords to which the password administrator has modification rights. A<i
+style='mso-bidi-font-style:normal'> Normal User</i> can only perform the
+actions available to them via the password access control system.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Altering the groups a user belongs to is
+performed by clicking on the group name. If the group is listed under the
+heading<i style='mso-bidi-font-style:normal'> Current Membership</i> the user
+is already a member of that group and clicking on the group name will remove
+them from the group. If a group is listed under the heading<i style='mso-bidi-font-style:
+normal'> Available Groups</i> then the user is not a member and clicking on the
+group name will make them a member of that group.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Login restrictions are based around Network
+Zones (which are defined by clicking on the �Network Zones� option in the
+�System� menu). The defined network zones are displayed and the administrator
+can select either �Treat as unknown�, �Allow�, or �Deny�. If �Treat zone as
+unknown� is selected the setting for �Allow users to log in from unknown
+network zones� in the Configuration page will determine if the user can log in
+from that zone or not.</span></p>
+
+<h1><a name="_Toc224793234"><span lang=EN-US>User authentication</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Users login passwords can be checked against
+external systems, but the EPS must maintain a copy of their password in order
+to allow the password access controls to function properly.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If you wish to user an external system to
+authenticate a user you should select<i style='mso-bidi-font-style:normal'>
+Authentication</i> from the<i style='mso-bidi-font-style:normal'> Users</i>
+menu, which will take you to a page showing any authentication sources that
+have already been defined. You may edit any of these, or you may create a new
+authentication source by clicking on the<i style='mso-bidi-font-style:normal'>
+Create New Source</i> link.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The available types of authentication source
+will be shown to you if you decide to create a new authentication source, you
+should select the most appropriate and enter the information requested. Please
+note that some authentication sources may require modifications to your
+external authentication systems, any modifications necessary will be shown on
+the page relating to that authentication source.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Once you have created your authentication
+source you can edit the user you wish to associated with the source and select
+the name of the source from the drop down list beside the words<i
+style='mso-bidi-font-style:normal'> Authenticated by</i>, you should then click
+on<i style='mso-bidi-font-style:normal'> Update Details</i> to store the change
+in authentication source.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If a user changes their password in the
+external authentication source and log into the EPS without changing their EPS
+password they will be asked to synchronize the two. Once the synchronization
+has taken place they will be allowed to continue as normal.</span></p>
+
+<h1><a name="_Toc224793235"><span lang=EN-US>Group creation</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Groups can be created manually using the<i
+style='mso-bidi-font-style:normal'> Create</i> option on the<i
+style='mso-bidi-font-style:normal'> Groups</i> menu.<span
+style="mso-spacerun:yes">&nbsp; </span>Once you have entered the name of the
+group you wish to create in the box provided you should click the Create
+button, which will take you to the screen that allows you to select which users
+should be part of the group.</span></p>
+
+<h1><a name="_Toc224793236"><span lang=EN-US>Group deletion</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Groups can be deleted using the<i
+style='mso-bidi-font-style:normal'> Delete</i> option under the<i
+style='mso-bidi-font-style:normal'> Groups</i> heading of the action menu.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Deleting a group will erase all of the access
+permissions any member of the group had to any of the passwords, you should
+therefore ensure that you are not removing a group whose access rules are
+relied upon for your daily operations.</span></p>
+
+<h1><a name="_Toc224793237"><span lang=EN-US>Group modification</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>You may alter which users belong to a group
+after the group has been created by selecting the<i style='mso-bidi-font-style:
+normal'> View/Edit</i> option on the<i style='mso-bidi-font-style:normal'>
+Groups</i> menu.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If users are listed under the<i
+style='mso-bidi-font-style:normal'> Non-Members</i> heading they may be added
+to the group by clicking on their user name, similarly if a user needs to be
+removed from a group their user name will appear under the<i style='mso-bidi-font-style:
+normal'> Current Members</i> heading and the user name can be clicked on to
+remove them from the group.</span></p>
+
+<h1><a name="_Toc224793238"><span lang=EN-US>Audit logs</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The EPS maintains a log of accesses to
+passwords (where the password is set to be audited), user manipulation, and group
+modification. The recorded actions can be viewed using the<i style='mso-bidi-font-style:
+normal'> View</i> option from the<i style='mso-bidi-font-style:normal'> Events</i>
+menu. When you select this option a page will be displayed showing the time and
+date of each audit event along with the user involved, a summary of the
+password involved (if there was one), the action which was performed, and, if
+available, a tamper stamp status.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Some events cannot have tamper stamps
+associated with them due to the action not involving a logged in user (such as
+failed login attempts). Where a tamper stamp is available it will show as<i
+style='mso-bidi-font-style:normal'> Untampered</i> if an audit log entry has
+been verified as not being altered outside of the EPS. If an entry appears as<i
+style='mso-bidi-font-style:normal'> Tampered</i> then a third party has
+attempted to modify the entry, and it should be treated with suspicion.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The event log can be filtered by date ranges
+or to a specific user. These filters are shown at the top of the log, and once
+changed you must click the<i style='mso-bidi-font-style:normal'> Update view</i>
+button to show the newly filtered entries.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The audit events can be exported by selecting<i
+style='mso-bidi-font-style:normal'> CSV File</i> in the drop down box beside<i
+style='mso-bidi-font-style:normal'> Output To :</i>.</span></p>
+
+<h1><a name="_Toc224793239"><span lang=EN-US>Audit alerts</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The EPS has the ability to send an Email
+containing details of any audited event via an SMTP Email Server. To set-up
+audit alerts select the<i style='mso-bidi-font-style:normal'> Settings</i>
+option from the<i style='mso-bidi-font-style:normal'> Events</i> menu.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>There are several types of alert which can be
+sent via email, you should select which types of events you wish to be sent
+alerts about, enter the email address you wish alerts to go to, and whether or
+not you want to send an Email to the user involved in any actions when they are
+recorded in the event log.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Once you have set these options you should
+click �Update settings� to store these values.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If the EPS is unable to send an alert for any
+reason it will store the error message in the audit logs.</span></p>
+
+<h1><a name="_Toc224793240"><span lang=EN-US>Configuration options</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Selecting<i style='mso-bidi-font-style:normal'>
+Configuration</i> from the<i style='mso-bidi-font-style:normal'> System</i>
+menu will allow you to alter various options related to the EPS's operation. We
+recommend administrators visit this page in order to verify the settings comply
+with their existing security policies and procedures. The available settings
+are as follows;</span></p>
+
+<p><b style='mso-bidi-font-weight:
+normal'><span lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:
+Arial'>Appearance</span></b></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>URL
+for your logo (optional)</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This option allows you to specify the URL of
+an image that will be displayed in the top right hand corner of all of the EPS
+web pages.</span></p>
+
+<p><b style='mso-bidi-font-weight:
+normal'><span lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:
+Arial'>Email Settings</span></b></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>SMTP
+Host</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This should be set to the host name of a
+server through which all email notifications should be routed. This includes
+notifications of restricted access requests, so it is vital that you set this
+if you wish to use restricted access passwords effectively.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The server must be able to accept emails
+using the SMTP protocol, and should be able to deliver email to all of the
+email addresses you have associated with your users.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Emails
+will appear to be from</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This option should be set to the address that
+you wish any restricted access notifications or audit alerts to come from. You
+should remember that users may reply to these emails and thus you may want to
+make this the address of a monitored list.</span></p>
+
+<p><b style='mso-bidi-font-weight:
+normal'><span lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:
+Arial'>User Logins and Sessions</span></b></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Maximum
+failed login attempts before an account is locked</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This is the number of times a user may
+incorrectly enter their password before the system will deactivate their
+account.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Allow
+users to log in from unknown network zones</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This can be used to stop users logging in
+from a network zone which not been defined using the Network Zones. Please
+Note; Setting this to No will stop the<i style='mso-bidi-font-style:normal'>
+admin</i> user from logging in. Only set this to No if you have already created
+another EPS administrator user.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Maximum
+time a user can be inactive before being automatically logged out</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This sets the maximum time in minutes a user
+can be inactive before the system will require them to re-login.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Default
+Authentication Source</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This sets the default authentication source
+for new users created either via a browser or imported.</span></p>
+
+<p><b style='mso-bidi-font-weight:
+normal'><span lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:
+Arial'>Password Hierarchy</span></b></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Hide
+folders containing no user accessible passwords</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This setting allows you to show or hide empty
+folders in the password hierarchy.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Default
+Hierarchy Access Rule</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This option allows you to allow or deny
+access to folders within the password hierarchy for users who do not have
+explicit rights to the folder.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Allow
+password administrators to edit the hierarchy</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Setting this to Yes will allow users
+designated as password administrators to edit and create the folders in the
+password hierarchy</span></p>
+
+<p class=normal><b style='mso-bidi-font-weight:normal'><span lang=EN-US
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Password
+Display</span></b></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'><br>
+Restricted access request lifetime</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This specifies the maximum amount of time (in
+minutes) between when the user entering a reason for wishing to view a
+restricted access password, and when they can view it. All requests must be
+approved, and the user must view the password within this time.<span
+style="mso-spacerun:yes">&nbsp; </span>Once the access has been approved the
+user will have access to the password for the specified period of time.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>RA
+approvers can vote on their own requests.</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This option allows restricted access request
+users to vote when they try to access passwords they are restricted access
+request approver for.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Require
+a reason for a viewing password</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This specifies if users viewing
+non-restricted access passwords should be forced to enter a reason for viewing
+the password.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Hide
+system list when editing or creating passwords</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>When set to<i style='mso-bidi-font-style:
+normal'> Yes</i> all users not be shown a list of already existing systems in
+the password creation and editing pages.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Passwords
+are initially</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This determines if a password is initially
+shown or hidden when the user views the password. Showing and hiding passwords
+requires JavaScript to be enabled on the users browser.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Passwords
+shown as</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This specified if passwords should be
+displayed as images or text.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Maximum
+time password is on screen</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If JavaScript is enabled on the users browser
+this option will remove the password from the users view after the specified
+period of time.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Allow
+the use of the browser back button to review a password</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This specifies if the user should be allowed
+to click their browsers back button to return to viewing a password after they
+have moved to another page.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Allow
+password administrators to view password audit events</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If set to Yes this option allows password
+administrators to view a passwords event history.</span></p>
+
+<p><b style='mso-bidi-font-weight:
+normal'><span lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:
+Arial'>Password Editing</span></b></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Maximum
+number of days in the future an expiry date can be</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This sets a hard limit for the number of days
+in the future an expiry date can be.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Hide
+password during creation and editing</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If set to yes all passwords will replaced
+with asterisks when entering them in the password creation or editing screen,
+if set to no the passwords will be shown in clear text.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Reject
+use of historical expiry dates</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>If set to Yes users will not be able to enter
+dates in the past for the expiry date of a password.</span></p>
+
+<p><b style='mso-bidi-font-weight:
+normal'><span lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:
+Arial'>Password Retention and Auditing</span></b></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Password
+History Retention</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This specified whether or not a user creating
+or editing a password is allowed to set the history retention policy for a
+password. If this option is set to<i style='mso-bidi-font-style:normal'> Choose
+when password is created</i> the user will be allowed to set the retention
+policy.</span></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Password
+Auditing Level</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This option specified if a user creating or
+editing a password can set the auditing policy for passwords. If set to<i
+style='mso-bidi-font-style:normal'> Configurable</i> the user will be allowed
+to set the auditing policy.</span></p>
+
+<p><b style='mso-bidi-font-weight:
+normal'><span lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:
+Arial'>Miscellaneous Options</span></b></p>
+
+<p><i style='mso-bidi-font-style:normal'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Separator
+for reports</span></i></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>This option sets the separator for the fields
+of any report generated by the EPS.</span></p>
+
+<h1><a name="_Toc224793241"><span lang=EN-US>Database configuration</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Selecting the<i style='mso-bidi-font-style:
+normal'> Database</i> option from the<i style='mso-bidi-font-style:normal'>
+System</i> menu will allow you to alter the access details for the database
+storing the passwords in the password safe. Please note that if you change the
+JDBC URL the information in the current database will<b style='mso-bidi-font-weight:
+normal'> NOT</b> be transferred automatically to the new database and you will
+need to log in again using details valid for the new database.</span></p>
+
+<h1><a name="_Toc224793242"><span lang=EN-US>Systems details</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>Selecting the<i style='mso-bidi-font-style:
+normal'> Details</i> option from the<i style='mso-bidi-font-style:normal'>
+System</i> menu will take you to a screen that lists several pieces of
+information which relate to the environment in which the EPS is running. If you
+wish to report a problem with your installation of the EPS you should include
+this information to help us reproduce the issue.</span></p>
+
+<h1><a name="_Toc224793243"><span lang=EN-US>Integration modules</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The<i style='mso-bidi-font-style:normal'>
+Integration</i> option under the<i style='mso-bidi-font-style:normal'> System</i>
+menu allows administrators to install integration modules and develop scripts
+that in turn allow the EPS to alter the passwords of remote systems. Each
+module may have one or many scripts associated with it which can be assigned to
+passwords.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>For details about the scripting language used
+by a particular module please consult the relevant manual or information sheet
+for the module. For details on developing integration modules please see
+Appendix A.</span></p>
+
+<h1><a name="_Toc224793244"><span lang=EN-US>Network zones</span></a></h1>
+
+<p class=normal><span lang=EN-US style='mso-fareast-font-family:Arial'>The<i
+style='mso-bidi-font-style:normal'> Network Zones</i> option under the<i
+style='mso-bidi-font-style:normal'> System</i> menu allows an administrator to
+define, edit, and delete IP address ranges which can be applied to users to
+control which networks a user can log in from. Network zones can be specified
+in IPv4 or IPv6 depending on your network infrastructure.<o:p></o:p></span></p>
+
+
+
+<p class=normal><span lang=EN-US style='mso-fareast-font-family:Arial'>Selecting
+the<i style='mso-bidi-font-style:normal'> All Passwords</i> option from the<i
+style='mso-bidi-font-style:normal'> Reports</i> menu will allow you to download
+the details of all passwords stored in the system. Please note the passwords
+will<b style='mso-bidi-font-weight:normal'> NOT</b> be encrypted and this
+feature should only be used when you wish to create a human readable copy of
+your passwords that will be stored in a safe location.<o:p></o:p></span></p>
+
+
+
+<p class=normal><span lang=EN-US>Selecting the<i style='mso-bidi-font-style:
+normal'> User Access</i> option from the<i style='mso-bidi-font-style:normal'>
+Reports</i> menu will allow you to download a comma-separated value (csv) file that
+contains details of the passwords users and groups have access to. The CSV file
+can be imported into many popular applications (such as Microsoft Excel or
+OpenOffice Calc).</span></p>
+
+<h1><a name="_Toc224793245"><span lang=EN-US>Tips</span></a></h1>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The following are some pieces of information
+you may find useful whilst using the EPS</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:14.15pt;text-indent:-14.1pt;mso-list:l0 level1 lfo6'><![if !supportLists]><span
+lang=EN-US style='font-size:9.0pt;mso-bidi-font-size:12.0pt;font-family:Verdana;
+mso-fareast-font-family:Verdana;mso-bidi-font-family:Verdana'><span
+style='mso-list:Ignore'>&#9679;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The default inactivity before a user is
+automatically logged out is 30 minutes. After 25 minutes if the user has
+JavaScript enabled on their browser the background of the current page will
+change colour.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:14.15pt;text-indent:-14.1pt;mso-list:l0 level1 lfo6'><![if !supportLists]><span
+lang=EN-US style='font-size:9.0pt;mso-bidi-font-size:12.0pt;font-family:Verdana;
+mso-fareast-font-family:Verdana;mso-bidi-font-family:Verdana'><span
+style='mso-list:Ignore'>&#9679;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The EPS places no special requirements on the
+database it uses. Any backup tool capable of correctly backing up and restoring
+a database from you database software can be used to backup and restore the
+information stored in the EPS.</span></p>
+
+<p class=normal style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:14.15pt;text-indent:-14.1pt;mso-list:l0 level1 lfo6'><![if !supportLists]><span
+lang=EN-US style='font-size:9.0pt;mso-bidi-font-size:12.0pt;font-family:Verdana;
+mso-fareast-font-family:Verdana;mso-bidi-font-family:Verdana'><span
+style='mso-list:Ignore'>&#9679;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The password, group, and user data is only stored
+in the database, therefore moving the EPS between servers can be performed by
+transferring the database to an appropriate location and/or installing the EPS
+from scratch on the new machine.</span></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US></span></p>
+
+<h1><a name="_Toc224793246"><span lang=EN-US>Appendix A - Developing
+integration modules</span></a></h1>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>It
+is possible to implement custom integration modules which allow the EPS to
+change the password on remote systems. The modules must implement the Java
+interface</span><span lang=EN-US>
+uk.co.argosytelcrest.passwordsafe.integration.PasswordChanger</span><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>,
+and must be available to the EPS via the class path set by the application
+server.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The</span><span lang=EN-US> PasswordChanger</span><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>
+interface requires the following methods to be implemented;<span
+style='mso-tab-count:1'> </span></span></p>
+
+<p><span lang=EN-US>public void
+install(java.sql.Connection conn) throws Exception;</span></p>
+
+<p><span lang=EN-US>public void
+uninstall(java.sql.Connection conn) throws Exception;</span></p>
+
+<p><span lang=EN-US>public List
+getProperties();</span></p>
+
+<p><span lang=EN-US>public void
+changePassword( java.sql.Connection conn, java.util.Map pluginProperties,
+java.util.Map passwordProperties, String script )throws RemoteException,
+IOException;</span></p>
+
+<p><span lang=EN-US>public void
+rollbackChange( java.sql.Connection conn, java.util.Map pluginProperties,
+java.util.Map passwordProperties, String script ) throws RemoteException,
+IOException;</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The</span><span lang=EN-US>
+java.sql.Connection</span><span lang=EN-US style='mso-fareast-font-family:Arial;
+mso-bidi-font-family:Arial'> object passed to the relevant methods provides a
+connection to the EPS database. We recommend that any tables you create begin
+with a prefix that clearly identifies them (e.g.<i style='mso-bidi-font-style:
+normal'> myldap_table</i>).</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The</span><span lang=EN-US> pluginProperties</span><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>
+Map passed to the</span><span lang=EN-US> changePassword</span><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>
+and</span><span lang=EN-US> rollbackChange</span><span lang=EN-US
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'><span
+style="mso-spacerun:yes">&nbsp; </span>methods contains the settings the user
+has specified for any module specific parameters. The map key is the internal
+name for your module property, and the value is a String containing the value
+the user has set for this password.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The</span><span lang=EN-US>
+passwordProperties</span><span lang=EN-US style='mso-fareast-font-family:Arial;
+mso-bidi-font-family:Arial'> Map passed to the</span><span lang=EN-US>
+changePassword</span><span lang=EN-US style='mso-fareast-font-family:Arial;
+mso-bidi-font-family:Arial'> and</span><span lang=EN-US> rollbackChange</span><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'><span
+style="mso-spacerun:yes">&nbsp; </span>methods contains values specific to the
+password being changed. These are;</span></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=319
+ style='margin-left:2.25pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+ border:none;mso-border-alt:solid black 1.0pt;mso-yfti-tbllook:1184;mso-padding-alt:
+ 0cm .5pt 0cm .5pt;mso-border-insideh:1.0pt solid black;mso-border-insidev:
+ 1.0pt solid black'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td width=79 valign=top style='width:79.15pt;border:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><b
+  style='mso-bidi-font-weight:normal'><i style='mso-bidi-font-style:normal'><span
+  lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Key</span></i></b></p>
+  </td>
+  <td width=240 valign=top style='width:240.05pt;border:solid black 1.0pt;
+  border-left:none;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><b
+  style='mso-bidi-font-weight:normal'><i style='mso-bidi-font-style:normal'><span
+  lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Value</span></i></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=79 valign=top style='width:79.15pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><span
+  lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>username</span></p>
+  </td>
+  <td width=240 valign=top style='width:240.05pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><span
+  lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>The
+  user name associated with this password.</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=79 valign=top style='width:79.15pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><span
+  lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>old_password</span></p>
+  </td>
+  <td width=240 valign=top style='width:240.05pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><span
+  lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>The
+  original value for the password.</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td width=79 valign=top style='width:79.15pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><span
+  lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>new_password</span></p>
+  </td>
+  <td width=240 valign=top style='width:240.05pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><span
+  lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>The
+  value the password should be changed to.</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4;mso-yfti-lastrow:yes'>
+  <td width=79 valign=top style='width:79.15pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><span
+  lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>system</span></p>
+  </td>
+  <td width=240 valign=top style='width:240.05pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><span
+  lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>The
+  system on which the change should take place.</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><span
+lang=EN-US></span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The script String passed to the</span><span
+lang=EN-US> changePassword</span><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'> and</span><span lang=EN-US> rollbackChange</span><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>
+methods contains the script to be executed for this password.</span></p>
+
+<p><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The</span><span lang=EN-US> getProperties</span><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>
+method returns a List of</span><span lang=EN-US>
+uk.co.argosytelcrest.passwordsafe.integration.PasswordChangerProperty</span><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>
+objects which contain the details of the properties specific to the integration
+module.<span style="mso-spacerun:yes">&nbsp; </span></span><span lang=EN-US>PasswordChangerProperty</span><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>
+object should be constructed using the following constructor;</span></p>
+
+<p><span lang=EN-US>public
+PasswordChangerProperty( String internalName, String displayName, String
+description, String defaultValue )</span></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:73.65pt'><span lang=EN-US
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Where</span><span
+lang=EN-US> internalName</span><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'> is the name that will be used for the
+parameter when the</span><span lang=EN-US> pluginProperties</span><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>
+Map is constructed,</span><span lang=EN-US> displayName</span><span lang=EN-US
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'> is the name
+shown to the user when they are asked to set the values which will be held in
+the</span><span lang=EN-US> pluginProperties</span><span lang=EN-US
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'> Map,
+description is an optional description which is currently not used, and</span><span
+lang=EN-US> defaultValue</span><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'> should contain a sensible default for the
+property</span></p>
+
+<p><span lang=EN-US></span></p>
+
+<h1><a name="_Toc224793247"><span lang=EN-US>Appendix B &#8211; External API</span></a></h1>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>The
+EPS allows users to search for, fetch, and update passwords via an HTTP API.
+All parameters must be passed using HTTP POST, and all results will be returned
+in the body of the response.</span></p>
+
+<h3><a name="_Toc224793248"><span lang=EN-US>Common Parameters</span></a></h3>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>The
+parameters used by all of the calls are as follows;</span></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=364
+ style='margin-left:2.25pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+ border:none;mso-border-alt:solid black 1.0pt;mso-yfti-tbllook:1184;mso-padding-alt:
+ 0cm .5pt 0cm .5pt;mso-border-insideh:1.0pt solid black;mso-border-insidev:
+ 1.0pt solid black'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td width=46 valign=top style='width:45.85pt;border:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><b
+  style='mso-bidi-font-weight:normal'><span lang=EN-US style='font-size:8.0pt;
+  mso-bidi-font-size:12.0pt;mso-fareast-font-family:Arial;mso-bidi-font-family:
+  Arial'>Name</span></b></p>
+  </td>
+  <td width=318 valign=top style='width:318.0pt;border:solid black 1.0pt;
+  border-left:none;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><b
+  style='mso-bidi-font-weight:normal'><span lang=EN-US style='font-size:8.0pt;
+  mso-bidi-font-size:12.0pt;mso-fareast-font-family:Arial;mso-bidi-font-family:
+  Arial'>Contents</span></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=46 valign=top style='width:45.85pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>username</span></p>
+  </td>
+  <td width=318 valign=top style='width:318.0pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>The name of the user the request should be
+  audited under.</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2;mso-yfti-lastrow:yes'>
+  <td width=46 valign=top style='width:45.85pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>password</span></p>
+  </td>
+  <td width=318 valign=top style='width:318.0pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>The users password.</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><b
+style='mso-bidi-font-weight:normal'><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'><br>
+<br>
+Searching</span></b></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>URL
+: http://[servername]/passwordsafe/api/FindIds</span></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Additional
+Parameters;</span></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=364
+ style='margin-left:2.25pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+ border:none;mso-border-alt:solid black 1.0pt;mso-yfti-tbllook:1184;mso-padding-alt:
+ 0cm .5pt 0cm .5pt;mso-border-insideh:1.0pt solid black;mso-border-insidev:
+ 1.0pt solid black'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td width=70 valign=top style='width:69.8pt;border:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><b
+  style='mso-bidi-font-weight:normal'><span lang=EN-US style='font-size:8.0pt;
+  mso-bidi-font-size:12.0pt;mso-fareast-font-family:Arial;mso-bidi-font-family:
+  Arial'>Name</span></b></p>
+  </td>
+  <td width=294 valign=top style='width:294.05pt;border:solid black 1.0pt;
+  border-left:none;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><b
+  style='mso-bidi-font-weight:normal'><span lang=EN-US style='font-size:8.0pt;
+  mso-bidi-font-size:12.0pt;mso-fareast-font-family:Arial;mso-bidi-font-family:
+  Arial'>Contents</span></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=70 valign=top style='width:69.8pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>searchUsername</span></p>
+  </td>
+  <td width=294 valign=top style='width:294.05pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>The username of the password required.</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2;mso-yfti-lastrow:yes'>
+  <td width=70 valign=top style='width:69.8pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>searchSystem</span></p>
+  </td>
+  <td width=294 valign=top style='width:294.05pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>The system the password is on.</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'><br>
+Response</span><span lang=EN-US> : </span><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The response will contain the id or ids of
+the passwords with the given username in the given system.</span></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US><br>
+</span><b style='mso-bidi-font-weight:normal'><span lang=EN-US
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Fetching the
+password</span></b></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>URL
+: http://[servername]/passwordsafe/api/GetPassword</span></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Additional
+Parameters</span></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=364
+ style='margin-left:2.25pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+ border:none;mso-border-alt:solid black 1.0pt;mso-yfti-tbllook:1184;mso-padding-alt:
+ 0cm .5pt 0cm .5pt;mso-border-insideh:1.0pt solid black;mso-border-insidev:
+ 1.0pt solid black'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td width=70 valign=top style='width:69.8pt;border:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><b
+  style='mso-bidi-font-weight:normal'><span lang=EN-US style='font-size:8.0pt;
+  mso-bidi-font-size:12.0pt;mso-fareast-font-family:Arial;mso-bidi-font-family:
+  Arial'>Name</span></b></p>
+  </td>
+  <td width=294 valign=top style='width:294.05pt;border:solid black 1.0pt;
+  border-left:none;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><b
+  style='mso-bidi-font-weight:normal'><span lang=EN-US style='font-size:8.0pt;
+  mso-bidi-font-size:12.0pt;mso-fareast-font-family:Arial;mso-bidi-font-family:
+  Arial'>Contents</span></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1;mso-yfti-lastrow:yes'>
+  <td width=70 valign=top style='width:69.8pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>id</span></p>
+  </td>
+  <td width=294 valign=top style='width:294.05pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>The id of the password to fetch.</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'><br>
+Response</span><span lang=EN-US>: </span><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The password. The response will<b
+style='mso-bidi-font-weight:normal'> only</b> contain the text from the
+password field.</span></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><b
+style='mso-bidi-font-weight:normal'><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'><br>
+Updating</span></b></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>URL
+: http://[servername]/passwordsafe/api/UpdatePassword</span></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'>Additional
+Parameters</span></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=364
+ style='margin-left:2.25pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+ border:none;mso-border-alt:solid black 1.0pt;mso-yfti-tbllook:1184;mso-padding-alt:
+ 0cm .5pt 0cm .5pt;mso-border-insideh:1.0pt solid black;mso-border-insidev:
+ 1.0pt solid black'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td width=70 valign=top style='width:69.8pt;border:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><b
+  style='mso-bidi-font-weight:normal'><span lang=EN-US style='font-size:8.0pt;
+  mso-bidi-font-size:12.0pt;mso-fareast-font-family:Arial;mso-bidi-font-family:
+  Arial'>Name</span></b></p>
+  </td>
+  <td width=294 valign=top style='width:294.05pt;border:solid black 1.0pt;
+  border-left:none;mso-border-left-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p class=normal align=center style='margin-bottom:6.0pt;text-align:center'><b
+  style='mso-bidi-font-weight:normal'><span lang=EN-US style='font-size:8.0pt;
+  mso-bidi-font-size:12.0pt;mso-fareast-font-family:Arial;mso-bidi-font-family:
+  Arial'>Contents</span></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=70 valign=top style='width:69.8pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>id</span></p>
+  </td>
+  <td width=294 valign=top style='width:294.05pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>The ID of the password to update.</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2;mso-yfti-lastrow:yes'>
+  <td width=70 valign=top style='width:69.8pt;border:solid black 1.0pt;
+  border-top:none;mso-border-top-alt:solid black 1.0pt;padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>newPassword</span></p>
+  </td>
+  <td width=294 valign=top style='width:294.05pt;border-top:none;border-left:
+  none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+  mso-border-top-alt:solid black 1.0pt;mso-border-left-alt:solid black 1.0pt;
+  padding:2.75pt 2.75pt 2.75pt 2.75pt'>
+  <p><span lang=EN-US
+  style='font-size:8.0pt;mso-bidi-font-size:12.0pt;mso-fareast-font-family:
+  Arial;mso-bidi-font-family:Arial'>The value to set the password field to.</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'><br>
+Response</span><span lang=EN-US>: </span><span lang=EN-US style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'>The password. This response should always
+match the value set in newPassword.</span></p>
+
+<p class=normal style='margin-bottom:6.0pt;tab-stops:center 0cm left 12.8pt'><span
+lang=EN-US></span></p>
+
+</div>
+
+</body>
+
+</html>
