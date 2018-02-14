@@ -26,9 +26,9 @@ dependencies {
                 'net.sourceforge.htmlunit:htmlunit:2.15',
                 'org.apache.derby:derby:10.14.1.0',
                 'org.mockito:mockito-core:2.8.9',
-                'org.powermock:powermock-api-mockito2:1.7.3',
-                'org.powermock:powermock-api-support:1.7.3',
-                'org.powermock:powermock-module-junit4:1.7.3'
+                'org.powermock:powermock-api-mockito2:2.0.0-beta.5',
+                'org.powermock:powermock-api-support:2.0.0-beta.5',
+                'org.powermock:powermock-module-junit4:2.0.0-beta.5'
 
     runtime         'opensymphony:sitemesh:2.4.2',
                     'javax.servlet:jstl:1.2',
