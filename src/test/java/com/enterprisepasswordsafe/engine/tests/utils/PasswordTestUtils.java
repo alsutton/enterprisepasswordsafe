@@ -42,12 +42,12 @@ public final class PasswordTestUtils {
      *
      * @return The ID of the created password.
      */
-    public static String createPassword(final String runId)
+    public static String createPassword(final String runId, final User adminUser)
             throws GeneralSecurityException, IOException, SQLException {
-        User adminUser = EmbeddedDatabaseUtils.getAdminUser();
         PasswordDAO pDAO = PasswordDAO.getInstance();
 
-        Password newPassword = new Password("u"+runId, "p"+runId, "l"+runId, "n"+runId  );
+        Password newPassword =
+                new Password("u"+runId, "p"+runId, "l"+runId, "n"+runId  );
         UserAccessControl uac = pDAO.storeNewPassword(newPassword, adminUser);
         return uac.getItemId();
     }

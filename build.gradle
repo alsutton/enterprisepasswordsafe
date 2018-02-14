@@ -1,3 +1,5 @@
+import proguard.gradle.ProGuardTask
+
 apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
 
@@ -17,18 +19,23 @@ dependencies {
             'org.apache.commons:commons-collections4:4.0',
             'org.apache.commons:commons-csv:1.1',
             'org.apache.commons:commons-dbcp2:2.0.1',
-            'org.apache.commons:commons-pool2:2.2';
+            'org.apache.commons:commons-pool2:2.2',
+            'org.bouncycastle:bctls-jdk15on:1.59'
 
-    testCompile	'junit:junit:4.11',
+    testCompile    'junit:junit:4.12',
                 'net.sourceforge.htmlunit:htmlunit:2.15',
-                'org.apache.derby:derby:10.11.1.1';
+                'org.apache.derby:derby:10.14.1.0',
+                'org.mockito:mockito-core:2.8.9',
+                'org.powermock:powermock-api-mockito2:1.7.3',
+                'org.powermock:powermock-api-support:1.7.3',
+                'org.powermock:powermock-module-junit4:1.7.3'
 
     runtime         'opensymphony:sitemesh:2.4.2',
                     'javax.servlet:jstl:1.2',
                     'org.hsqldb:hsqldb:1.8.0.10',
-                    'org.apache.derby:derby:10.11.1.1',
+                    'org.apache.derby:derby:10.14.1.0',
                     'org.postgresql:postgresql:9.3-1102-jdbc41',
-                    'mysql:mysql-connector-java:5.1.32';
+                    'mysql:mysql-connector-java:5.1.32'
 
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
             "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
@@ -47,7 +54,7 @@ buildscript {
     }
 }
 
-task proguard(type: proguard.gradle.ProGuardTask, dependsOn: jar) {
+task proguard(type: ProGuardTask, dependsOn: jar) {
     configurations.runtime.each {
         println it
     }
@@ -101,13 +108,13 @@ task proguard(type: proguard.gradle.ProGuardTask, dependsOn: jar) {
         boolean logout(); \
     }'
 
-    keep 'public interface com.enterprisepasswordsafe.proguard.ExternalInterface';
+    keep 'public interface com.enterprisepasswordsafe.proguard.ExternalInterface'
     keep 'public class * implements com.enterprisepasswordsafe.proguard.ExternalInterface { \
         public *** *; \
         public *** *(...); \
     }'
 
-    keep 'public interface com.enterprisepasswordsafe.proguard.JavaBean';
+    keep 'public interface com.enterprisepasswordsafe.proguard.JavaBean'
     keep 'public class * implements com.enterprisepasswordsafe.proguard.JavaBean { \
         void set*(***); \
         void set*(int, ***); \

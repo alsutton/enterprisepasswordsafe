@@ -16,9 +16,12 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.engine.tests.utils.EmbeddedDatabaseUtils;
-import org.junit.BeforeClass;
+import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.sql.SQLException;
 
@@ -28,23 +31,19 @@ import static org.junit.Assert.assertThat;
 /**
  * Tests for the PasswordRestrictionDAO
  */
-public class PasswordRestrictionDAOTests {
-    /**
-     * The DAO to use for testing.
-     */
-    private final PasswordRestrictionDAO mPasswordRestrictionDAO = PasswordRestrictionDAO.getInstance();
-
-    @BeforeClass
-    public static void setupDatabase() throws Exception {
-        EmbeddedDatabaseUtils.initialise();
-    }
-
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(JDBCConfiguration.class)
+@PowerMockIgnore("javax.management.*")
+public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
     @Test
     public void testCreateAndGetById() throws SQLException {
         String runId = Long.toString(System.currentTimeMillis());
 
-        PasswordRestriction createdRestriction = mPasswordRestrictionDAO.create(runId, 0, 0, 0, 0, 0, 0, "", 0);
-        PasswordRestriction fetchedRestriction = mPasswordRestrictionDAO.getById(createdRestriction.getId());
+        PasswordRestrictionDAO passwordRestrictionDAO = PasswordRestrictionDAO.getInstance();
+        PasswordRestriction createdRestriction =
+                passwordRestrictionDAO.create(runId, 0, 0, 0, 0, 0, 0, "", 0);
+        PasswordRestriction fetchedRestriction =
+                passwordRestrictionDAO.getById(createdRestriction.getId());
         assertThat(fetchedRestriction, is(equalTo(createdRestriction)));
         assertThat(fetchedRestriction.getLifetime(), is(0));
         assertThat(fetchedRestriction.getMaxLength(), is(0));
@@ -61,9 +60,10 @@ public class PasswordRestrictionDAOTests {
     public void testStoreAndGetById() throws SQLException {
         String runId = Long.toString(System.currentTimeMillis());
 
+        PasswordRestrictionDAO passwordRestrictionDAO = PasswordRestrictionDAO.getInstance();
         PasswordRestriction createdRestriction = new PasswordRestriction(runId, 0, 0, 0, 0, 0, 0, "", 0);
-        mPasswordRestrictionDAO.store(createdRestriction);
-        PasswordRestriction fetchedRestriction = mPasswordRestrictionDAO.getById(createdRestriction.getId());
+        passwordRestrictionDAO.store(createdRestriction);
+        PasswordRestriction fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
         assertThat(fetchedRestriction, is(equalTo(createdRestriction)));
         assertThat(fetchedRestriction.getLifetime(), is(0));
         assertThat(fetchedRestriction.getMaxLength(), is(0));
@@ -80,9 +80,10 @@ public class PasswordRestrictionDAOTests {
     public void testUpdate() throws SQLException {
         String runId = Long.toString(System.currentTimeMillis());
 
+        PasswordRestrictionDAO passwordRestrictionDAO = PasswordRestrictionDAO.getInstance();
         PasswordRestriction createdRestriction = new PasswordRestriction(runId, 0, 0, 0, 0, 0, 0, "", 0);
-        mPasswordRestrictionDAO.store(createdRestriction);
-        PasswordRestriction fetchedRestriction = mPasswordRestrictionDAO.getById(createdRestriction.getId());
+        passwordRestrictionDAO.store(createdRestriction);
+        PasswordRestriction fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
         fetchedRestriction.setLifetime(10);
         fetchedRestriction.setMaxLength(9);
         fetchedRestriction.setMinLength(8);
@@ -92,8 +93,8 @@ public class PasswordRestrictionDAOTests {
         fetchedRestriction.setMinUpper(4);
         fetchedRestriction.setName("Updated");
         fetchedRestriction.setSpecialCharacters("!");
-        mPasswordRestrictionDAO.update(fetchedRestriction);
-        fetchedRestriction = mPasswordRestrictionDAO.getById(createdRestriction.getId());
+        passwordRestrictionDAO.update(fetchedRestriction);
+        fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
         assertThat(fetchedRestriction.getLifetime(), is(10));
         assertThat(fetchedRestriction.getMaxLength(), is(9));
         assertThat(fetchedRestriction.getMinLength(), is(8));
@@ -109,12 +110,13 @@ public class PasswordRestrictionDAOTests {
     public void testDelete() throws SQLException {
         String runId = Long.toString(System.currentTimeMillis());
 
+        PasswordRestrictionDAO passwordRestrictionDAO = PasswordRestrictionDAO.getInstance();
         PasswordRestriction createdRestriction = new PasswordRestriction(runId, 0, 0, 0, 0, 0, 0, "", 0);
-        mPasswordRestrictionDAO.store(createdRestriction);
-        PasswordRestriction fetchedRestriction = mPasswordRestrictionDAO.getById(createdRestriction.getId());
+        passwordRestrictionDAO.store(createdRestriction);
+        PasswordRestriction fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
         assertThat(fetchedRestriction, is(not(nullValue())));
-        mPasswordRestrictionDAO.delete(createdRestriction.getId());
-        fetchedRestriction = mPasswordRestrictionDAO.getById(createdRestriction.getId());
+        passwordRestrictionDAO.delete(createdRestriction.getId());
+        fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
         assertThat(fetchedRestriction, is(nullValue()));
     }
 
@@ -122,11 +124,12 @@ public class PasswordRestrictionDAOTests {
     public void testGetAll() throws SQLException {
         String runId = Long.toString(System.currentTimeMillis());
 
+        PasswordRestrictionDAO passwordRestrictionDAO = PasswordRestrictionDAO.getInstance();
         PasswordRestriction createdRestriction = new PasswordRestriction(runId, 0, 0, 0, 0, 0, 0, "", 0);
-        mPasswordRestrictionDAO.store(createdRestriction);
+        passwordRestrictionDAO.store(createdRestriction);
 
         boolean found = false;
-        for(PasswordRestriction.Summary summary : mPasswordRestrictionDAO.getAll()) {
+        for(PasswordRestriction.Summary summary : passwordRestrictionDAO.getAll()) {
             if(summary.getId().equals(createdRestriction.getId())
             && summary.getName().equals(runId)) {
                 found = true;

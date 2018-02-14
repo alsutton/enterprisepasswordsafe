@@ -16,12 +16,13 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.engine.tests.utils.EmbeddedDatabaseUtils;
+import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
 import com.enterprisepasswordsafe.engine.tests.utils.PasswordTestUtils;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -35,23 +36,18 @@ import static org.junit.Assert.assertThat;
 /**
  * Test cases for the PasswordDAO
  */
-@RunWith(JUnit4.class)
-public class PasswordDAOTests {
-
-    @BeforeClass
-    public static void setupDatabase()
-            throws IllegalAccessException, GeneralSecurityException, InstantiationException,
-                    IOException, SQLException, ClassNotFoundException {
-        EmbeddedDatabaseUtils.initialise();
-    }
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(JDBCConfiguration.class)
+@PowerMockIgnore("javax.management.*")
+public class PasswordDAOTests extends EmbeddedDatabaseTestBase {
 
     @Test
     public void testStoreNewPassword()
             throws GeneralSecurityException, IOException, SQLException {
         String runId = Long.toString(System.currentTimeMillis());
-        String passwordId = PasswordTestUtils.createPassword(runId);
+        String passwordId = PasswordTestUtils.createPassword(runId, getAdminUser());
 
-        User adminUser = EmbeddedDatabaseUtils.getAdminUser();
+        User adminUser = getAdminUser();
         Password retrieved = PasswordDAO.getInstance().getById(adminUser, passwordId);
         assertThat(retrieved.getUsername(), is("u" + runId));
         assertThat(retrieved.getPassword(), is("p" + runId));
@@ -63,8 +59,8 @@ public class PasswordDAOTests {
     public void testPerformRawAPISearch()
             throws GeneralSecurityException, IOException, SQLException {
         String runId = Long.toString(System.currentTimeMillis());
-        String passwordId = PasswordTestUtils.createPassword(runId);
-        User adminUser = EmbeddedDatabaseUtils.getAdminUser();
+        User adminUser = getAdminUser();
+        String passwordId = PasswordTestUtils.createPassword(runId, adminUser);
         Set<String> ids = PasswordDAO.getInstance().performRawAPISearch(adminUser, "u" + runId, "l" + runId);
         assertThat(ids.isEmpty(), is(false));
         assertThat(ids.contains(passwordId), is(true));
@@ -74,14 +70,14 @@ public class PasswordDAOTests {
     public void testGetPasswordsRestrictionAppliesTo()
             throws SQLException, GeneralSecurityException, IOException {
         String runId = Long.toString(System.currentTimeMillis());
-        String passwordId = PasswordTestUtils.createPassword(runId);
+        String passwordId = PasswordTestUtils.createPassword(runId, getAdminUser());
 
         PasswordRestrictionDAO prDAO = PasswordRestrictionDAO.getInstance();
         PasswordRestriction createdRestriction = new PasswordRestriction("pr_"+runId, 0, 0, 0, 0, 0, 0, "", 0);
         prDAO.store(createdRestriction);
 
         PasswordDAO pDAO = PasswordDAO.getInstance();
-        User adminUser = EmbeddedDatabaseUtils.getAdminUser();
+        User adminUser = getAdminUser();
         Password password = pDAO.getById(adminUser, passwordId);
         password.setRestrictionId(createdRestriction.getId());
         pDAO.update(password, adminUser);
