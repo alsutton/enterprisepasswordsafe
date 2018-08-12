@@ -24,7 +24,7 @@ dependencies {
 
     testCompile    'junit:junit:4.12',
                 'net.sourceforge.htmlunit:htmlunit:2.15',
-                'org.apache.derby:derby:10.14.1.0'
+                'org.apache.derby:derby:10.14.2.0'
 
     runtime         'opensymphony:sitemesh:2.4.2',
                     'javax.servlet:jstl:1.2',
