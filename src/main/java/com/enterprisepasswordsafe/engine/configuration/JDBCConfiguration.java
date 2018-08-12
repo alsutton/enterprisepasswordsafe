@@ -482,6 +482,10 @@ public class JDBCConfiguration implements ExternalInterface {
 
 	public static JDBCConfiguration getConfiguration()
 		throws ConfigurationRetrievalException {
+		if (forcedConfiguration != null) {
+			return forcedConfiguration;
+		}
+
 		try {
 			JDBCConfiguration jdbcConfiguration = new JDBCConfiguration();
 			jdbcConfiguration.loadConfiguration(JDBCConfiguration.class);
@@ -489,6 +493,18 @@ public class JDBCConfiguration implements ExternalInterface {
 		} catch(ClassNotFoundException | SQLException | GeneralSecurityException e) {
 			throw new ConfigurationRetrievalException(e);
 		}
+	}
+
+	/**
+	 * Workaround to avoid the need to use powermockito.
+	 *
+	 * TODO: Refactor so this is unnecessary.
+	 */
+
+	static JDBCConfiguration forcedConfiguration = null;
+
+	static void force(JDBCConfiguration configuration) {
+		forcedConfiguration = configuration;
 	}
 
 	public static class ConfigurationRetrievalException extends RuntimeException {

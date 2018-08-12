@@ -16,12 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.sql.SQLException;
 
@@ -31,9 +26,6 @@ import static org.junit.Assert.assertThat;
 /**
  * Tests for the PasswordRestrictionDAO
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(JDBCConfiguration.class)
-@PowerMockIgnore("javax.management.*")
 public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
     @Test
     public void testCreateAndGetById() throws SQLException {

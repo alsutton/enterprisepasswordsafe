@@ -16,13 +16,8 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
 import com.enterprisepasswordsafe.engine.tests.utils.PasswordTestUtils;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -36,9 +31,6 @@ import static org.junit.Assert.assertThat;
 /**
  * Test cases for the PasswordDAO
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(JDBCConfiguration.class)
-@PowerMockIgnore("javax.management.*")
 public class PasswordDAOTests extends EmbeddedDatabaseTestBase {
 
     @Test

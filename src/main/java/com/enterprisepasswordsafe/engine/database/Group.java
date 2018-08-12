@@ -19,6 +19,7 @@ package com.enterprisepasswordsafe.engine.database;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -127,12 +128,12 @@ public final class Group
      *            The ID for the group.
      * @param name
      *            The name of the group.
-     * @param key
-     *            The access key for the group.
-     * @throws NoSuchAlgorithmException
+     * @param generateKey
+     *            True if the group key should be generated, false if not.
      */
 
-    public Group(final String id, final String name, boolean generateKey) throws NoSuchAlgorithmException {
+    public Group(final String id, final String name, boolean generateKey)
+            throws NoSuchAlgorithmException, NoSuchProviderException {
         groupId = id;
         groupName = name;
         if( generateKey ) {
@@ -147,9 +148,6 @@ public final class Group
      *            The ID for the group.
      * @param name
      *            The name of the group.
-     * @param key
-     *            The access key for the group.
-     * @throws NoSuchAlgorithmException
      */
 
     public Group(final String id, final String name) {
@@ -166,7 +164,8 @@ public final class Group
      * @throws NoSuchAlgorithmException Thrown if an encryption key can not be generated.
      */
 
-    public Group(final String name) throws NoSuchAlgorithmException {
+    public Group(final String name)
+            throws NoSuchAlgorithmException, NoSuchProviderException {
         this(IDGenerator.getID(), name, true);
     }
 
