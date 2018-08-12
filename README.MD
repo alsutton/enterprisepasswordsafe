@@ -16,6 +16,12 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+### Current Built Status
+
+[![CircleCI](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master.svg?style=svg)](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master)
+
+
+
 ### What is it?
 
 The Enterprise Password Safe was sold by several companies from the mid-2000's through to 2014 and was used by customers from small businesses to multi-nationals and parts of government agencies around the globe. It is a multi-user, audited password storage solution with user and group access controls.
