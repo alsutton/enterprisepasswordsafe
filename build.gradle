@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    def tomcatVersion = '8.0.46'
+    def tomcatVersion = '9.0.10'
 
     compile 'com.sun.mail:javax.mail:1.5.2',
             'com.sun.mail:smtp:1.5.2',
