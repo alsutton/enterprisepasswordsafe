@@ -1,7 +1,9 @@
 import proguard.gradle.ProGuardTask
 
+apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
+apply plugin: 'jacoco'
 
 repositories {
     mavenCentral()
@@ -47,6 +49,15 @@ buildscript {
     dependencies {
         classpath 'net.sf.proguard:proguard-gradle:5.3'
         classpath 'com.bmuschko:gradle-tomcat-plugin:2.3'
+    }
+}
+
+jacocoTestReport {
+    group = "Reporting"
+    reports {
+        xml.enabled true
+        csv.enabled false
+        html.destination "${buildDir}/reports/coverage"
     }
 }
 
