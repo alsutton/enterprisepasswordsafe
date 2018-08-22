@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
 import com.enterprisepasswordsafe.ui.web.EPSUIException;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -148,22 +149,7 @@ public final class UserServlet extends HttpServlet {
                 }
             }
 
-
-            int updatedType = Integer.parseInt(request.getParameter("user_type"));
-            switch(updatedType) {
-                case User.USER_TYPE_ADMIN:
-                    uDAO.makeAdmin(remoteUser, adminGroup, user);
-                    break;
-                case User.USER_TYPE_SUBADMIN:
-                    uDAO.makeSubadmin(remoteUser, adminGroup, user);
-                    break;
-                case User.USER_TYPE_NORMAL:
-                    uDAO.makeNormalUser(remoteUser, user);
-                    break;
-            }
-
-            String noView = request.getParameter("noview");
-            uDAO.setNotViewing(user, noView != null && noView.equals("Y"));
+            setUserPriviledgeLevel(request, remoteUser, adminGroup, user);
 
             String enabled = request.getParameter("user_enabled");
             if (enabled.equals("Y")) {
@@ -331,6 +317,29 @@ public final class UserServlet extends HttpServlet {
                 }
             }
         }
+    }
+
+    private void setUserPriviledgeLevel(final HttpServletRequest request,
+                                        final User remoteUser,
+                                        final Group adminGroup,
+                                        final User user)
+            throws GeneralSecurityException, SQLException, IOException {
+        int updatedType = Integer.parseInt(request.getParameter("user_type"));
+        UserPriviledgeTransitioner userPriviledgeTransitioner = new UserPriviledgeTransitioner();
+        switch(updatedType) {
+            case User.USER_TYPE_ADMIN:
+                userPriviledgeTransitioner.makeAdmin(remoteUser, adminGroup, user);
+                break;
+            case User.USER_TYPE_SUBADMIN:
+                userPriviledgeTransitioner.makeSubadmin(remoteUser, adminGroup, user);
+                break;
+            case User.USER_TYPE_NORMAL:
+                userPriviledgeTransitioner.makeNormalUser(remoteUser, user);
+                break;
+        }
+
+        String noView = request.getParameter("noview");
+        userPriviledgeTransitioner.setNotViewing(user, noView != null && noView.equals("Y"));
     }
 
 
