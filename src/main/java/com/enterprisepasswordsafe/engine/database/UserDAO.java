@@ -43,8 +43,6 @@ import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
 import com.enterprisepasswordsafe.engine.jaas.WebLoginCallbackHandler;
 import com.enterprisepasswordsafe.engine.utils.Cache;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
-import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
 import com.enterprisepasswordsafe.engine.utils.PasswordGenerator;
 import com.enterprisepasswordsafe.engine.utils.UserAccessKeyEncrypter;
@@ -237,7 +235,7 @@ public final class UserDAO implements ExternalInterface {
 	 * A cache of user summaries
 	 */
 
-	private final Cache<String, UserSummary> userSummaryCache = new Cache<String, UserSummary>();
+	private final Cache<String, UserSummary> userSummaryCache = new Cache<>();
 
 	/**
 	 * Private constructor to prevent instantiation
@@ -253,30 +251,12 @@ public final class UserDAO implements ExternalInterface {
      * @param id The ID of the user to get.
      *
      * @return The user object, or null if the user does not exist.
-     *
-     * @throws SQLException
-     *             Thrown if there is problem accessing the database.
      */
 
     public User getById(final String id)
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_ID_SQL);
-        try {
-            ps.setString(1, id);
-            ps.setMaxRows(1);
-
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	                return new User(rs, 1);
-	            }
-
-	            return null;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
+        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_ID_SQL)) {
+            return fetchUserIfExists(ps, id);
         }
     }
 
@@ -286,29 +266,21 @@ public final class UserDAO implements ExternalInterface {
      * @param username The name of the user to get.
      *
      * @return The user with the specified username.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database
      */
 
     public User getByName(final String username)
             throws SQLException {
-        PreparedStatement ps =  BOMFactory.getCurrentConntection().prepareStatement(GET_BY_NAME_SQL);
-        try {
-            ps.setString(1, username);
-            ps.setMaxRows(1);
+        try(PreparedStatement ps =  BOMFactory.getCurrentConntection().prepareStatement(GET_BY_NAME_SQL)) {
+            return fetchUserIfExists(ps, username);
+        }
+    }
 
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	                return new User(rs, 1);
-	            }
-
-	            return null;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
+    private User fetchUserIfExists(PreparedStatement ps, String username)
+            throws SQLException {
+        ps.setString(1, username);
+        ps.setMaxRows(1);
+        try(ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? new User(rs, 1) : null;
         }
     }
 
@@ -350,20 +322,15 @@ public final class UserDAO implements ExternalInterface {
      * Mark a user as deleted.
      *
      * @param user The user to mark as deleted.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
     public void delete( final User user )
             throws SQLException {
         String userId = user.getUserId();
         for(String statement : DELETE_SQL_STATEMENTS) {
-            PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(statement);
-            try {
+            try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(statement)) {
                 ps.setString(1, userId);
                 ps.executeUpdate();
-            } finally {
-                DatabaseConnectionUtils.close(ps);
             }
         }
     }
@@ -372,12 +339,9 @@ public final class UserDAO implements ExternalInterface {
      * Increase the number of failed logins.
      *
      * @param theUser The user to increase the failed login count for.
-     *
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
      */
     public void zeroFailedLogins( User theUser )
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        throws SQLException {
     	theUser.setFailedLogins(0);
     }
 
@@ -385,9 +349,6 @@ public final class UserDAO implements ExternalInterface {
      * Increase the number of failed logins.
      *
      * @param theUser The user to increase the failed login count for.
-     *
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
      */
     public void increaseFailedLogins( User theUser )
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -414,10 +375,6 @@ public final class UserDAO implements ExternalInterface {
      *
      * @param theUser The user being updated.
      * @param newPassword The new password.
-     *
-     * @throws GeneralSecurityException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
      */
 
     public void updatePassword(User theUser, String newPassword )
@@ -458,19 +415,14 @@ public final class UserDAO implements ExternalInterface {
 
     /**
      * Update the admin key for a user.
-     * @throws GeneralSecurityException
-     * @throws SQLException
      */
 
     private void updateAdminKey(final User user, final Group adminGroup) throws SQLException, GeneralSecurityException {
-        final PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_ADMIN_ACCESS_KEY);
-        try {
+        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_ADMIN_ACCESS_KEY)) {
         	final byte[] encryptedKey = KeyUtils.encryptKey(user.getAccessKey(), adminGroup.getKeyEncrypter());
         	ps.setBytes(1, encryptedKey);
         	ps.setString(2, user.getUserId());
         	ps.execute();
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -484,11 +436,6 @@ public final class UserDAO implements ExternalInterface {
      * @param email The email of the new user.
      *
      * @return The new user as an object.
-     *
-     * @throws SQLException Thrown if there is a problem accessing thda database.
-     * @throws GeneralSecurityException Thrown if there is a problem encrypting the user data.
-     * @throws UnsupportedEncodingException
-     * @throws InvalidLicenceException Thrown if the licence is not valid.
      */
 
     public User createUser(final User creatingUser,
@@ -508,10 +455,6 @@ public final class UserDAO implements ExternalInterface {
      * @param email The email of the new user.
      *
      * @return The new user as an object.
-     *
-     * @throws SQLException Thrown if there is a problem accessing thda database.
-     * @throws GeneralSecurityException Thrown if there is a problem encrypting the user data.
-     * @throws UnsupportedEncodingException
      */
 
     private User createUserWork(final User creatingUser,
@@ -568,10 +511,6 @@ public final class UserDAO implements ExternalInterface {
      * @param record The CSV record to import.
      *
      * @return The password used for the user
-     *
-     * @throws SQLException Thrown if there is a problem accessing thda database.
-     * @throws GeneralSecurityException Thrown if there is a problem encrypting the user data.
-     * @throws MessagingException
      */
 
     public String importData(final User theImporter, final Group adminGroup,
@@ -697,12 +636,6 @@ public final class UserDAO implements ExternalInterface {
      *            The user making the changes
      * @param theUser
      *            The user to change.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws InvalidLicenceException Thrown if the EPS licence is not valid.
-     * @throws IOException Thrown if there is an IO problem.
-     * @throws GeneralSecurityException Thrown if there is a problem joining the
-     *  user to the admin group.
      */
 
     public void makeAdmin(final User adminUser, final User theUser)
@@ -717,12 +650,6 @@ public final class UserDAO implements ExternalInterface {
      * @param adminUser The user making the changes.
      * @param adminGroup The administrator group.
      * @param theUser The user to change.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws InvalidLicenceException Thrown if the EPS licence is not valid.
-     * @throws IOException Thrown if there is an IO problem.
-     * @throws GeneralSecurityException Thrown if there is a problem joining the
-     *  user to the admin group.
      */
 
     public void makeAdmin(final User adminUser, final Group adminGroup, final User theUser)
@@ -764,12 +691,6 @@ public final class UserDAO implements ExternalInterface {
      *            The user making the changes
      * @param theUser
      *            The user being modified
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws InvalidLicenceException Thrown if the EPS licence is not valid.
-     * @throws IOException Thrown if there is an IO problem.
-     * @throws GeneralSecurityException Thrown if there is a problem joining the
-     *  user to the password admin group.
      */
 
     public void makeSubadmin(final User adminUser, final User theUser)
@@ -783,12 +704,6 @@ public final class UserDAO implements ExternalInterface {
      *
      * @param adminUser The user making the changes
      * @param theUser The user being modified
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws InvalidLicenceException Thrown if the EPS licence is not valid.
-     * @throws IOException Thrown if there is an IO problem.
-     * @throws GeneralSecurityException Thrown if there is a problem joining the
-     *  user to the password admin group.
      */
 
     public void makeSubadmin(final User adminUser, final Group adminGroup, final User theUser)
@@ -850,11 +765,6 @@ public final class UserDAO implements ExternalInterface {
      *
      * @param adminUser The user making the changes
      * @param theUser The user being modified
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem joining the
-     *  user to the admin group.
-     * @throws UnsupportedEncodingException
      */
 
     public void makeNormalUser(final User adminUser, final User theUser)
@@ -872,11 +782,6 @@ public final class UserDAO implements ExternalInterface {
      * @param adminGroup The admin group.
      * @param subadminGroup The sub administrator group.
      * @param theUser The user being modified
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem joining the
-     *  user to the admin group.
-     * @throws UnsupportedEncodingException
      */
 
     public void makeNormalUser(final User adminUser, final Group adminGroup,
@@ -906,14 +811,11 @@ public final class UserDAO implements ExternalInterface {
      * @param theUser The user to write.
      * @param adminGroup The admin group, used to encrypt the access key for admin access.
      * @param initialPassword The initial password, used to encrypt the access key for the users access.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
     public void write(final User theUser, final Group adminGroup, final String initialPassword)
         throws SQLException, GeneralSecurityException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( WRITE_SQL);
-        try {
+        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( WRITE_SQL)) {
             ps.setString(1, theUser.getUserId());
             ps.setString(2, theUser.getUserName());
             ps.setBytes (3, theUser.getPassword());
@@ -926,8 +828,6 @@ public final class UserDAO implements ExternalInterface {
             ps.setBytes (8, theUser.encryptWithPassword(initialPassword, keyData));
             ps.setBytes (9, adminGroup.encrypt(keyData));
             ps.executeUpdate();
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -935,14 +835,11 @@ public final class UserDAO implements ExternalInterface {
      * Update a user in the database.
      *
      * @param theUser The user to update.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
     public void update(User theUser)
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( UPDATE_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( UPDATE_SQL)) {
             ps.setString(1, theUser.getUserName());
             ps.setBytes (2, theUser.getPassword());
             ps.setString(3, theUser.getFullName());
@@ -957,8 +854,6 @@ public final class UserDAO implements ExternalInterface {
             ps.setString(8, theUser.getAuthSource());
             ps.setString(9, theUser.getUserId());
             ps.executeUpdate();
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -966,8 +861,6 @@ public final class UserDAO implements ExternalInterface {
      * Gets a list of all users.
      *
      * @return A List of all users in the system.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
     public List<User> getAll()
@@ -979,8 +872,6 @@ public final class UserDAO implements ExternalInterface {
      * Gets a list of all enabled users.
      *
      * @return A List of all enabled users in the system.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
     public List<User> getEnabledUsers()
@@ -995,18 +886,13 @@ public final class UserDAO implements ExternalInterface {
      * @param sql The SQL to use to fetch the user list.
      *
      * @return A List of all users in the system.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
     private List<User> getUsersWork(final String sql)
         throws SQLException {
-        List<User> users = new ArrayList<User>();
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( sql);
-        try {
-            ResultSet rs = ps.executeQuery();
-            try {
+        List<User> users = new ArrayList<>();
+        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
 	            while (rs.next()) {
 	            	try {
 	            		users.add(new User(rs, 1));
@@ -1014,11 +900,7 @@ public final class UserDAO implements ExternalInterface {
 	            		Logger.getAnonymousLogger().log(Level.SEVERE, "Error whilst getting users.", e);
 	            	}
 	            }
-            } finally {
-                DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
 
         return users;
@@ -1029,9 +911,6 @@ public final class UserDAO implements ExternalInterface {
      * Gets a set of summaries for all the users.
      *
      * @return The summary.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem accessing the database.
      */
 
     public List<UserSummary> getSummaryList()
@@ -1043,9 +922,6 @@ public final class UserDAO implements ExternalInterface {
      * Gets a List of UserSummary objects for all the users excluding the admin user.
      *
      * @return The List of UserSummary objects.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem accessing the database.
      */
 
     public List<UserSummary> getSummaryListExcludingAdmin()
@@ -1059,29 +935,20 @@ public final class UserDAO implements ExternalInterface {
      * @param sql The SQL to execute to get the summery.
      *
      * @return The summary.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
     private List<UserSummary> getSummaryListWork(String sql)
         throws SQLException {
-        List<UserSummary> summary = new ArrayList<UserSummary>();
-
-        Statement stmt = BOMFactory.getCurrentConntection().createStatement();
-        try {
-            ResultSet rs = stmt.executeQuery(sql);
-            try {
+        List<UserSummary> summary = new ArrayList<>();
+        try (Statement stmt = BOMFactory.getCurrentConntection().createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(sql)) {
 	            while (rs.next()) {
 	                final String id = rs.getString(1);
 	                final String name = rs.getString(2);
 	                final String fullName = rs.getString(3);
 	                summary.add(new UserSummary(id, name, fullName));
 	            }
-            } finally {
-                DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-            DatabaseConnectionUtils.close(stmt);
         }
 
         return summary;
@@ -1092,9 +959,6 @@ public final class UserDAO implements ExternalInterface {
      *
      * @param id The ID of the user to get the summary for
      * @return The summary.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem accessing the database.
      */
 
     public UserSummary getSummaryById(String id)
@@ -1105,11 +969,9 @@ public final class UserDAO implements ExternalInterface {
     			return summary;
     		}
 
-    		final PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( GET_SUMMARY_BY_ID);
-	        try {
+	        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( GET_SUMMARY_BY_ID)) {
 	            ps.setString(1, id);
-	            final ResultSet rs = ps.executeQuery();
-	            try {
+	            try(ResultSet rs = ps.executeQuery()) {
 		            if(!rs.next()) {
 		            	return null;
 		            }
@@ -1119,11 +981,7 @@ public final class UserDAO implements ExternalInterface {
 		            summary = new UserSummary(id, name, fullName);
 		            userSummaryCache.put(id, summary);
 		            return summary;
-		        } finally {
-		            DatabaseConnectionUtils.close(rs);
 		        }
-	        } finally {
-	            DatabaseConnectionUtils.close(ps);
 	        }
     	}
     }
@@ -1134,15 +992,12 @@ public final class UserDAO implements ExternalInterface {
      * @param searchQuery The query used to fetch the users.
      *
      * @return The summary.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem accessing the database.
      */
 
     public List<UserSummary> getSummaryBySearch(String searchQuery)
         throws SQLException {
     	synchronized( this ) {
-    		List<UserSummary> results= new ArrayList<UserSummary>();
+    		List<UserSummary> results= new ArrayList<>();
 
     		if(searchQuery == null) {
     			searchQuery = "%";
@@ -1150,22 +1005,15 @@ public final class UserDAO implements ExternalInterface {
     			searchQuery += "%";
     		}
 
-	        final PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_SUMMARY_BY_SEARCH);
-	        try {
+	        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_SUMMARY_BY_SEARCH)) {
 	            ps.setString(1, searchQuery);
-
-	            final ResultSet rs = ps.executeQuery();
-	            try {
+	            try(ResultSet rs = ps.executeQuery()) {
 		            while(rs.next()) {
 			            results.add( new UserSummary(rs.getString(1), rs.getString(2), rs.getString(3)) );
 		            }
-		        } finally {
-		            DatabaseConnectionUtils.close(rs);
 	            }
 
 	            return results;
-	        } finally {
-	            DatabaseConnectionUtils.close(ps);
 	        }
     	}
     }
@@ -1181,20 +1029,14 @@ public final class UserDAO implements ExternalInterface {
     public int countActiveUsers( )
         throws SQLException, GeneralSecurityException
     {
-        Statement statement = BOMFactory.getCurrentConntection().createStatement();
-        try {
-            ResultSet rs = statement.executeQuery(GET_COUNT_SQL);
-            try {
+        try (Statement statement = BOMFactory.getCurrentConntection().createStatement()) {
+            try(ResultSet rs = statement.executeQuery(GET_COUNT_SQL)) {
 	            if (!rs.next()) {
 	                throw new GeneralSecurityException("The number of users you have in your database could not be counted.");
 	            }
 
 	            return rs.getInt(1);
-            } finally {
-                DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-            DatabaseConnectionUtils.close(statement);
         }
     }
 
@@ -1205,10 +1047,6 @@ public final class UserDAO implements ExternalInterface {
      * @param adminGroup The admin group to decrypt the users access key with.
      *
      * @return The decrypted user.
-     *
-     * @throws SQLException
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
      */
 
 	public User getByIdDecrypted(String userId, Group adminGroup)
@@ -1226,11 +1064,6 @@ public final class UserDAO implements ExternalInterface {
      *
      * @param theUser The user to authenticate
      * @param loginPassword The password the user has logged in with.
-     *
-     * @throws SQLException Thrown if there is a problem getting details about the
-     *             authentication source.
-     * @throws GeneralSecurityException Thrown if there is a problem logging the user in.
-     * @throws UnsupportedEncodingException
      */
 
     public final void authenticateUser(final User theUser, final String loginPassword)
