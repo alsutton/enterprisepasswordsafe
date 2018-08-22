@@ -52,7 +52,7 @@ import org.apache.commons.csv.CSVRecord;
 /**
  * Data access object for the user objects.
  */
-public final class UserDAO implements ExternalInterface {
+public final class UserDAO extends ObjectFetcher<User> implements ExternalInterface {
 
     /**
      * The SQL to get the user summary including the admin user.
@@ -242,46 +242,12 @@ public final class UserDAO implements ExternalInterface {
 	 */
 
 	private UserDAO() {
-		super();
+		super(GET_BY_ID_SQL, GET_BY_NAME_SQL);
 	}
 
-    /**
-     * Gets the data about an individual user.
-     *
-     * @param id The ID of the user to get.
-     *
-     * @return The user object, or null if the user does not exist.
-     */
-
-    public User getById(final String id)
-        throws SQLException {
-        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_ID_SQL)) {
-            return fetchUserIfExists(ps, id);
-        }
-    }
-
-    /**
-     * Gets the data about an individual user.
-     *
-     * @param username The name of the user to get.
-     *
-     * @return The user with the specified username.
-     */
-
-    public User getByName(final String username)
+	User newInstance(ResultSet rs, int startIndex)
             throws SQLException {
-        try(PreparedStatement ps =  BOMFactory.getCurrentConntection().prepareStatement(GET_BY_NAME_SQL)) {
-            return fetchUserIfExists(ps, username);
-        }
-    }
-
-    private User fetchUserIfExists(PreparedStatement ps, String username)
-            throws SQLException {
-        ps.setString(1, username);
-        ps.setMaxRows(1);
-        try(ResultSet rs = ps.executeQuery()) {
-            return rs.next() ? new User(rs, 1) : null;
-        }
+	    return new User(rs, startIndex);
     }
 
     /**
