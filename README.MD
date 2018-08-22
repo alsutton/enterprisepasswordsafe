@@ -20,7 +20,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 [![CircleCI](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master.svg?style=svg)](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master)
 
+## Quality Indicators
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/6b1eb77eaef47517d783/maintainability)](https://codeclimate.com/github/alsutton/enterprisepasswordsafe/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/6b1eb77eaef47517d783/test_coverage)](https://codeclimate.com/github/alsutton/enterprisepasswordsafe/test_coverage)
 
 ### What is it?
 
