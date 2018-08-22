@@ -23,6 +23,8 @@ import com.enterprisepasswordsafe.engine.database.Group;
 import com.enterprisepasswordsafe.engine.database.GroupDAO;
 import com.enterprisepasswordsafe.engine.database.User;
 import com.enterprisepasswordsafe.engine.database.UserDAO;
+import com.enterprisepasswordsafe.engine.users.UserImporter;
+import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.PasswordGenerator;
 import org.apache.commons.csv.CSVRecord;
@@ -40,7 +42,8 @@ public final class ImportUsers extends ImporterServlet {
     	throws ServletException {
     	Group adminGroup = (Group)request.getAttribute("adminGroup");
     	try {
-    		UserDAO.getInstance().importData(theUser, adminGroup, PasswordGenerator.getInstance(), record);
+    		new UserImporter(UserDAO.getInstance(), new UserPriviledgeTransitioner())
+    			.importData(theUser, adminGroup, PasswordGenerator.getInstance(), record);
     	} catch(Exception ex) {
     		throw new ServletException("There was a problem importing the users", ex);
     	}

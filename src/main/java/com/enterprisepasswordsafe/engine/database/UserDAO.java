@@ -30,12 +30,6 @@ import java.util.logging.Logger;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
@@ -45,10 +39,8 @@ import com.enterprisepasswordsafe.engine.jaas.WebLoginCallbackHandler;
 import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
 import com.enterprisepasswordsafe.engine.utils.Cache;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.engine.utils.PasswordGenerator;
 import com.enterprisepasswordsafe.engine.utils.UserAccessKeyEncrypter;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
-import org.apache.commons.csv.CSVRecord;
 
 /**
  * Data access object for the user objects.
@@ -409,25 +401,6 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
      */
 
     public User createUser(final User creatingUser,
-    		final String username, final String password,
-    		final String fullName, final String email)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        return createUserWork(creatingUser, username, password, fullName, email);
-    }
-
-    /**
-     * Creates a user in the database.
-     *
-     * @param creatingUser The user who is creating the new user.
-     * @param username The username of the new user.
-     * @param password The password of the new user.
-     * @param fullName The full name of the new user.
-     * @param email The email of the new user.
-     *
-     * @return The new user as an object.
-     */
-
-    private User createUserWork(final User creatingUser,
             final String username, final String password, final String fullName,
             final String email)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -470,133 +443,6 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
         return newUser;
     }
 
-    /**
-     * Import a user line into the database. The format should be;<br/>
-     * username[,password[.full_name[,email]]]<br/> If no password is
-     * specified, one will be generated.
-     *
-     * @param theImporter The user performing the import.
-     * @param adminGroup The adminGroup used to set the users type.
-     * @param passwordGenerator The password generator to use if needed.
-     * @param record The CSV record to import.
-     *
-     * @return The password used for the user
-     */
-
-    public String importData(final User theImporter, final Group adminGroup,
-                             final PasswordGenerator passwordGenerator, CSVRecord record)
-        throws SQLException, GeneralSecurityException, IOException, MessagingException {
-        Iterator<String> values = record.iterator();
-        if (!values.hasNext()) {
-            return null;
-        }
-
-        String username = values.next().trim();
-        String fullname =
-                getNextValueFromCSVRecordIterator(
-                        values,
-                        "The user " + username + " does not have a full name specified.");
-        String email =
-                getNextValueFromCSVRecordIterator(
-                        values,
-                        "The user " + username + " does not have an email address specified.");
-        int userType = getUserTypeFromCSVRecord(values);
-        boolean usePasswordGeneratorForLoginPassword = !values.hasNext();
-        String password = usePasswordGeneratorForLoginPassword ? passwordGenerator.getRandomPassword() : values.next().trim();
-
-        User createdUser = createUserWork(theImporter, username, password, fullname, email);
-
-        performPostCreationActions(theImporter, adminGroup, createdUser, userType, usePasswordGeneratorForLoginPassword);
-
-        sendUserCreationEmailToUserIfNeccessary(createdUser, password);
-
-        return password;
-    }
-
-    private String getNextValueFromCSVRecordIterator(final Iterator<String> iterator, final String error )
-            throws GeneralSecurityException {
-        if (!iterator.hasNext()) {
-            throw new GeneralSecurityException(error);
-        }
-        return iterator.next().trim();
-    }
-
-    private int getUserTypeFromCSVRecord(Iterator<String> values)
-        throws GeneralSecurityException {
-        if(!values.hasNext()) {
-            return User.USER_TYPE_NORMAL;
-        }
-
-        String userTypeString = values.next().trim();
-        if(userTypeString.isEmpty()) {
-            return User.USER_TYPE_NORMAL;
-        }
-
-        switch(userTypeString.charAt(0)) {
-            case 'E':
-                return User.USER_TYPE_ADMIN;
-            case 'P':
-                return User.USER_TYPE_SUBADMIN;
-            case 'N':
-                return User.USER_TYPE_NORMAL;
-            default:
-                throw new GeneralSecurityException("User type unknown - "+userTypeString);
-        }
-    }
-
-    private void performPostCreationActions(final User theImporter, final Group adminGroup,
-                                            final User createdUser, int userType, boolean hasGeneratedPassword)
-        throws SQLException, IOException, GeneralSecurityException {
-        if( hasGeneratedPassword ) {
-            createdUser.forcePasswordChangeAtNextLogin();
-            update(createdUser);
-        }
-
-        switch(userType) {
-            case User.USER_TYPE_ADMIN:
-                userPriviledgeTransitioner.makeAdmin(theImporter, adminGroup, createdUser);
-                break;
-            case User.USER_TYPE_SUBADMIN:
-                userPriviledgeTransitioner.makeSubadmin(theImporter, adminGroup, createdUser);
-                break;
-        }
-    }
-
-    private void sendUserCreationEmailToUserIfNeccessary(User createdUser, String password)
-        throws SQLException, MessagingException {
-        String usersEmailAddress = createdUser.getEmail();
-        if( usersEmailAddress == null || usersEmailAddress.isEmpty()) {
-            return;
-        }
-
-        String smtpHost = ConfigurationDAO.getValue(ConfigurationOption.SMTP_HOST);
-        if(smtpHost == null || smtpHost.isEmpty()) {
-            return;
-        }
-
-        String message =
-                "Dear " + createdUser.getFullName() + "\n\n" +
-                "An account has been created for you in the Enterprise Password Safe\n" +
-                "with the credentials;\n\n" +
-                "Username : " + createdUser.getUserName() + "\n" +
-                "Password : " + password + "\n\n" +
-                "Please do not disclose this information to anyone else.";
-
-        Properties props = new Properties();
-        props.put("mail.smtp.host", smtpHost);
-        Session s = Session.getInstance(props, null);
-
-        String smtpSenderString = ConfigurationDAO.getValue(ConfigurationOption.SMTP_FROM);
-        MimeMessage mimeMessage = new MimeMessage(s);
-        mimeMessage.setFrom(new InternetAddress(smtpSenderString));
-        InternetAddress to = new InternetAddress(usersEmailAddress);
-        mimeMessage.addRecipient(Message.RecipientType.TO, to);
-
-        mimeMessage.setSubject("Enterprise Password Safe Account");
-        mimeMessage.setText(message);
-
-        Transport.send(mimeMessage);
-    }
 
     /**
      * Writes a user to the database.
