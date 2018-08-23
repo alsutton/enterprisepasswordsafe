@@ -542,10 +542,24 @@ public final class User
      * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
-    public void setEnabled(final boolean isEnabled)
-            throws SQLException {
+    public void setEnabled(final boolean isEnabled) {
         disabled = !isEnabled;
     }
+
+    public AuthenticationSource getAuthenticationSource()
+            throws SQLException {
+        String userAuthSource = getAuthSource();
+        if (!isMasterAdmin() && userAuthSource != null) {
+            return AuthenticationSourceDAO.getInstance().getById(userAuthSource);
+        } else {
+            return AuthenticationSource.DEFAULT_SOURCE;
+        }
+    }
+
+    public boolean isMasterAdmin() {
+        return ADMIN_USER_ID.equals(userId);
+    }
+
 
     /**
      * Returns whether or not this user is a administrator.

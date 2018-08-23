@@ -357,6 +357,10 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
             final String username, final String password, final String fullName,
             final String email)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        if(password == null || password.isEmpty()) {
+            throw new GeneralSecurityException("The user must have a password");
+        }
+
         if (getByName(username) != null) {
             throw new GeneralSecurityException("The user already exists");
         }
@@ -364,22 +368,14 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
         // Get the admin group from the creating user
         Group adminGroup = GroupDAO.getInstance().getAdminGroup(creatingUser);
 
-        if(password == null || password.isEmpty()) {
-            throw new GeneralSecurityException("The user must have a password");
-        }
-
         // Create the user object
         User newUser = new User(username, password, fullName, email);
         write(newUser, adminGroup, password);
 
         // Write to the database and log creation
         zeroFailedLogins(newUser);
-        TamperproofEventLogDAO.getInstance().create(
-    			TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                creatingUser,
-                "Created the user {user:"+ newUser.getUserId() + "}",
-                true
-            );
+        TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
+                creatingUser, "Created the user {user:"+ newUser.getUserId() + "}", true);
 
         Group allUsersGroup = GroupDAO.getInstance().getById(Group.ALL_USERS_GROUP_ID);
         if( allUsersGroup != null ) {
@@ -526,20 +522,15 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
         synchronized( theUser.getUserId().intern() )
         {
 	        try {
-	            AuthenticationSource authSource = AuthenticationSource.DEFAULT_SOURCE;
-	            String userAuthSource = theUser.getAuthSource();
-	            if (!theUser.getUserId().equals(User.ADMIN_USER_ID) && userAuthSource != null) {
-	                authSource = AuthenticationSourceDAO.getInstance().getById(userAuthSource);
-	            }
+	            AuthenticationSource authSource = theUser.getAuthenticationSource();
 
 	            EPSJAASConfiguration configuration = new EPSJAASConfiguration(authSource.getProperties());
 	            javax.security.auth.login.Configuration.setConfiguration(configuration);
 	            LoginContext loginContext = new LoginContext(authSource.getJaasType(),
-	                    new WebLoginCallbackHandler(theUser.getUserName(), loginPassword
-	                            .toCharArray()));
+	                    new WebLoginCallbackHandler(theUser.getUserName(), loginPassword.toCharArray()));
 	            loginContext.login();
 	        } catch(LoginException ex) {
-	            if(!theUser.getUserId().equals(User.ADMIN_USER_ID)) {
+	            if(!theUser.isMasterAdmin()) {
 	            	increaseFailedLogins(theUser);
 	            }
 	            throw ex;
