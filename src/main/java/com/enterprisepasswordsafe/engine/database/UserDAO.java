@@ -45,10 +45,7 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
      * The SQL to get a count of the number of enabled users.
      */
 
-    private static final String GET_COUNT_SQL =
-            "SELECT count(*) "
-            + " FROM application_users "
-            + " WHERE disabled is null OR disabled = 'N'";
+    static final String GET_COUNT_SQL = "SELECT count(*) FROM application_users WHERE disabled is null OR disabled = 'N'";
 
     /**
      * The fields relating to the user.
@@ -67,18 +64,14 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
      */
 
     private static final String GET_BY_ID_SQL =
-            "SELECT " + USER_FIELDS
-            + "  FROM application_users appusers "
-            + " WHERE appusers.user_id = ? ";
+            "SELECT " + USER_FIELDS + " FROM application_users appusers WHERE appusers.user_id = ? ";
 
     /**
      * The SQL statement to get a category.
      */
 
     private static final String GET_BY_NAME_SQL =
-            "SELECT " + USER_FIELDS
-            + "  FROM application_users appusers"
-            + " WHERE appusers.user_name = ?"
+            "SELECT " + USER_FIELDS + " FROM application_users appusers WHERE appusers.user_name = ?"
             + "   AND (appusers.disabled is null OR appusers.disabled = 'N')";
 
     /**
@@ -86,9 +79,7 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
      */
 
     private static final String GET_ENABLED_USERS_SQL =
-            "SELECT " + USER_FIELDS
-            + "  FROM application_users appusers "
-            + " WHERE appusers.user_id <> '0' "
+            "SELECT " + USER_FIELDS + " FROM application_users appusers WHERE appusers.user_id <> '0' "
             + "   AND (appusers.disabled is null OR appusers.disabled = 'N')"
             + " ORDER BY appusers.user_name ASC";
 
@@ -97,8 +88,7 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
      */
 
     private static final String GET_ALL_USERS_SQL =
-            "SELECT " + USER_FIELDS
-            + "  FROM application_users appusers "
+            "SELECT " + USER_FIELDS + " FROM application_users appusers "
             + " WHERE appusers.user_id <> '"+User.ADMIN_USER_ID+"' AND appusers.disabled <> 'D'"
             + " ORDER BY appusers.user_name ASC";
 
@@ -107,17 +97,8 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
      */
 
     private static final String WRITE_SQL =
-              "INSERT INTO application_users(" +
-              "	user_id, " +
-              "	user_name, " +
-              " user_pass_b, " +
-              " full_name, " +
-              " email, " +
-              " last_login_l, " +
-              " disabled, " +
-              " akey, "+
-              " aakey " +
-              ") VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+              "INSERT INTO application_users( user_id, user_name, user_pass_b, full_name, " +
+              " email, last_login_l, disabled, akey, aakey ) VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
     /**
      * The SQL write a users details to the database.
@@ -125,43 +106,33 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
 
     private static final String UPDATE_SQL =
               "UPDATE	application_users" +
-              "   SET	user_name = ?, " +
-              "			user_pass_b = ?, " +
-              " 		full_name = ?, " +
-              "			email = ?, " +
-              "			last_login_l = ?, " +
-              "			disabled = ?," +
-              "			pwd_last_changed_l = ?, "+
-              "			auth_source = ? "+
+              "   SET	user_name = ?, user_pass_b = ?, full_name = ?, email = ?, " +
+              "			last_login_l = ?, disabled = ?, pwd_last_changed_l = ?, auth_source = ? "+
               " WHERE	user_id = ?";
 
     /**
      * The SQL to see if a user is member of a particular group.
      */
 
-    private static final String DELETE_USER_SQL =
-        "UPDATE application_users SET DISABLED = 'D' WHERE user_id = ? ";
+    private static final String DELETE_USER_SQL = "UPDATE application_users SET DISABLED = 'D' WHERE user_id = ? ";
 
     /**
      * The SQL to delete a users memberships.
      */
 
-    private static final String DELETE_USER_MEMBERSHIPS =
-            "DELETE FROM membership WHERE user_id = ?";
+    private static final String DELETE_USER_MEMBERSHIPS = "DELETE FROM membership WHERE user_id = ?";
 
     /**
      * The SQL to delete a users memberships.
      */
 
-    private static final String DELETE_UACS =
-            "DELETE FROM user_access_control WHERE user_id = ?";
+    private static final String DELETE_UACS = "DELETE FROM user_access_control WHERE user_id = ?";
 
     /**
      * The SQL to delete a users memberships.
      */
 
-    private static final String DELETE_UARS =
-            "DELETE FROM hierarchy_access_control WHERE user_id = ?";
+    private static final String DELETE_UARS = "DELETE FROM hierarchy_access_control WHERE user_id = ?";
 
     /**
      * Update the admin access key for a user
@@ -182,7 +153,7 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
 	 */
 
 	private UserDAO() {
-	    super(GET_BY_ID_SQL, GET_BY_NAME_SQL);
+	    super(GET_BY_ID_SQL, GET_BY_NAME_SQL, GET_COUNT_SQL);
 	}
 
 	User newInstance(ResultSet rs, int startIndex)
@@ -420,11 +391,7 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
             ps.setString(3, theUser.getFullName());
             ps.setString(4, theUser.getEmail());
             ps.setLong  (5, theUser.getLastLogin());
-            if( theUser.isEnabled() ) {
-            	ps.setString(6, "N");
-            } else {
-            	ps.setString(6, "Y");
-            }
+            ps.setString(6, theUser.isEnabled() ? "N" : "Y");
             ps.setLong  (7, theUser.getPasswordLastChanged());
             ps.setString(8, theUser.getAuthSource());
             ps.setString(9, theUser.getUserId());
@@ -452,26 +419,6 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
     public List<User> getEnabledUsers()
         throws SQLException {
         return getMultiple(GET_ENABLED_USERS_SQL, null);
-    }
-
-    /**
-     * Count the number of active users in the system.
-     *
-     * @return The user count.
-     */
-
-    public int countActiveUsers( )
-        throws SQLException, GeneralSecurityException
-    {
-        try (Statement statement = BOMFactory.getCurrentConntection().createStatement()) {
-            try(ResultSet rs = statement.executeQuery(GET_COUNT_SQL)) {
-	            if (!rs.next()) {
-	                throw new GeneralSecurityException("The number of users you have in your database could not be counted.");
-	            }
-
-	            return rs.getInt(1);
-            }
-        }
     }
 
     /**

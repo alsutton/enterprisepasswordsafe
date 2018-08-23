@@ -1,8 +1,10 @@
 package com.enterprisepasswordsafe.engine.database;
 
+import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -15,27 +17,30 @@ import java.util.logging.Logger;
  */
 abstract class ObjectFetcher<T> {
 
-    private String getByIdPreparedStatement;
+    private String getByIdSql;
 
-    private String getByNamePreparedStatement;
+    private String getByNameSql;
 
-    ObjectFetcher(final String getByIdPreparedStatement, final String getByNamePreparedStatement) {
-        this.getByIdPreparedStatement = getByIdPreparedStatement;
-        this.getByNamePreparedStatement = getByNamePreparedStatement;
+    private String getCountSql;
+
+    ObjectFetcher(final String getByIdSql, final String getByNameSql, final String getCountSql) {
+        this.getByIdSql = getByIdSql;
+        this.getByNameSql = getByNameSql;
+        this.getCountSql = getCountSql;
     }
 
     abstract T newInstance(ResultSet rs, int startIndex) throws SQLException;
 
     public T getById(final String id)
             throws SQLException {
-        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(getByIdPreparedStatement)) {
+        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(getByIdSql)) {
             return fetchObjectIfExists(ps, id);
         }
     }
 
     public T getByName(final String name)
             throws SQLException {
-        try(PreparedStatement ps =  BOMFactory.getCurrentConntection().prepareStatement(getByNamePreparedStatement)) {
+        try(PreparedStatement ps =  BOMFactory.getCurrentConntection().prepareStatement(getByNameSql)) {
             return fetchObjectIfExists(ps, name);
         }
     }
@@ -48,6 +53,8 @@ abstract class ObjectFetcher<T> {
             return rs.next() ? newInstance(rs, 1) : null;
         }
     }
+
+
 
     List<T> getMultiple(final String sql, final String parameter)
             throws SQLException {
@@ -68,4 +75,14 @@ abstract class ObjectFetcher<T> {
         }
         return results;
     }
+
+    public int countActiveUsers( )
+            throws SQLException {
+        try (Statement statement = BOMFactory.getCurrentConntection().createStatement()) {
+            try(ResultSet rs = statement.executeQuery(getCountSql)) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
 }

@@ -45,7 +45,7 @@ public class UserSummaryDAO extends ObjectFetcher<UserSummary> implements Extern
     private final Cache<String, UserSummary> userSummaryCache = new Cache<>();
 
     public UserSummaryDAO() {
-        super(GET_SUMMARY_BY_ID, GET_SUMMARY_BY_NAME);
+        super(GET_SUMMARY_BY_ID, GET_SUMMARY_BY_NAME, UserDAO.GET_COUNT_SQL);
     }
 
     @Override
