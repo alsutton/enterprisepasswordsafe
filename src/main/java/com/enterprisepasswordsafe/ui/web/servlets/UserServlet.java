@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
 import com.enterprisepasswordsafe.ui.web.EPSUIException;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -131,9 +132,10 @@ public final class UserServlet extends HttpServlet {
             boolean newUser = (user==null);
             if(newUser) {
                 user = uDAO.createUser( remoteUser,
-                                        servletUtils.getParameterValue(request, "username"),
+                                        new UserSummary(
+                                            servletUtils.getParameterValue(request, "username"),
+                                            servletUtils.getParameterValue(request, BaseServlet.FULL_NAME_PARAMETER)),
                                         servletUtils.getParameterValue(request, "password1"),
-                                        servletUtils.getParameterValue(request, BaseServlet.FULL_NAME_PARAMETER),
                                         servletUtils.getParameterValue(request, BaseServlet.EMAIL_PARAMETER));
             } else {
                 user.decryptAdminAccessKey(adminGroup);

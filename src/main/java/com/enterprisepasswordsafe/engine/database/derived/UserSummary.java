@@ -50,7 +50,11 @@ public class UserSummary
      * @param newFullName The full name to store.
      */
     public UserSummary(final String newId, final String newName, final String newFullName) {
+        this(newName, newFullName);
         id = newId;
+    }
+
+    public UserSummary(final String newName, final String newFullName) {
         name = newName;
         fullName = newFullName;
     }

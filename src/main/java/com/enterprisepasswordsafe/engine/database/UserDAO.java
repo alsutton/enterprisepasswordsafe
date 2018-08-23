@@ -30,6 +30,7 @@ import javax.crypto.SecretKey;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
+import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
 import com.enterprisepasswordsafe.engine.jaas.WebLoginCallbackHandler;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
@@ -299,27 +300,14 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
         }
     }
 
-    /**
-     * Creates a user in the database.
-     *
-     * @param creatingUser The user who is creating the new user.
-     * @param username The username of the new user.
-     * @param password The password of the new user.
-     * @param fullName The full name of the new user.
-     * @param email The email of the new user.
-     *
-     * @return The new user as an object.
-     */
-
-    public User createUser(final User creatingUser,
-            final String username, final String password, final String fullName,
-            final String email)
+    public User createUser(final User creatingUser, final UserSummary newUser, final String password,
+                           final String email)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         if(password == null || password.isEmpty()) {
             throw new GeneralSecurityException("The user must have a password");
         }
 
-        if (getByName(username) != null) {
+        if (getByName(newUser.getName()) != null) {
             throw new GeneralSecurityException("The user already exists");
         }
 
@@ -327,27 +315,27 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
         Group adminGroup = GroupDAO.getInstance().getAdminGroup(creatingUser);
 
         // Create the user object
-        User newUser = new User(username, password, fullName, email);
-        write(newUser, adminGroup, password);
+        User createdUser = new User(newUser.getName(), password, newUser.getFullName(), email);
+        write(createdUser, adminGroup, password);
 
         // Write to the database and log creation
-        zeroFailedLogins(newUser);
+        zeroFailedLogins(createdUser);
         TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                creatingUser, "Created the user {user:"+ newUser.getUserId() + "}", true);
+                creatingUser, "Created the user {user:"+ createdUser.getUserId() + "}", true);
 
         Group allUsersGroup = GroupDAO.getInstance().getById(Group.ALL_USERS_GROUP_ID);
         if( allUsersGroup != null ) {
         	MembershipDAO mDAO = MembershipDAO.getInstance();
 	        Membership theMembership = mDAO.getMembership(creatingUser, allUsersGroup);
 	        allUsersGroup.updateAccessKey(theMembership);
-	        mDAO.create(newUser, allUsersGroup);
+	        mDAO.create(createdUser, allUsersGroup);
         }
 
         String defaultSource = ConfigurationDAO.getValue(ConfigurationOption.DEFAULT_AUTHENTICATION_SOURCE_ID);
-        newUser.setAuthSource(defaultSource);
-        update(newUser);
+        createdUser.setAuthSource(defaultSource);
+        update(createdUser);
 
-        return newUser;
+        return createdUser;
     }
 
 

@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.User;
 import com.enterprisepasswordsafe.engine.database.UserDAO;
+import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -78,7 +79,7 @@ public final class CreateNewUser extends HttpServlet {
 	        }
 
 	        User thisUser = SecurityUtils.getRemoteUser(request);
-	        User newUser = uDAO.createUser(thisUser, username, password1, fullname, email);
+	        User newUser = uDAO.createUser(thisUser, new UserSummary(username, fullname), password1, email);
 
 	        ServletUtils.getInstance().generateMessage(request, "The user was successfully created.");
 			response.sendRedirect(request.getContextPath()+"/admin/User?userId="+newUser.getUserId());
