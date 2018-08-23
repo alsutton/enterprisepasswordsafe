@@ -16,7 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.Connection;
@@ -25,19 +24,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
-import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
 import com.enterprisepasswordsafe.engine.jaas.WebLoginCallbackHandler;
-import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
-import com.enterprisepasswordsafe.engine.utils.Cache;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
 import com.enterprisepasswordsafe.engine.utils.UserAccessKeyEncrypter;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
@@ -183,15 +177,12 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
             DELETE_UACS, DELETE_UARS, DELETE_USER_MEMBERSHIPS, DELETE_USER_SQL
     };
 
-	private final UserPriviledgeTransitioner userPriviledgeTransitioner;
-
 	/**
 	 * Private constructor to prevent instantiation
 	 */
 
-	private UserDAO(UserPriviledgeTransitioner priviledgeTransitioner) {
+	private UserDAO() {
 	    super(GET_BY_ID_SQL, GET_BY_NAME_SQL);
-        userPriviledgeTransitioner = priviledgeTransitioner;
 	}
 
 	User newInstance(ResultSet rs, int startIndex)
@@ -273,13 +264,9 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
         String maxAttempts = ConfigurationDAO.getValue(ConfigurationOption.LOGIN_ATTEMPTS);
         int maxAttemptsInt = Integer.parseInt(maxAttempts);
         if( loginAttempts >= maxAttemptsInt ) {
-        	TamperproofEventLogDAO.getInstance().create(
-            			TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-	        			theUser,
-	                    "The user "+ theUser.getUserName() +
-	                    " has been disabled to due too many failed login attempts ("+loginAttempts+").",
-	                    false
-                    );
+        	TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
+                    theUser, "The user "+ theUser.getUserName() +
+                    " has been disabled to due too many failed login attempts ("+loginAttempts+").", false );
             theUser.setEnabled(false);
             update(theUser);
         }
@@ -302,7 +289,7 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
     	connection.setAutoCommit(false);
     	try {
 
-	    	if( theUser.getUserId().equals( User.ADMIN_USER_ID ) ) {
+	    	if( theUser.isMasterAdmin() ) {
 	    		Group adminGroup = GroupDAO.getInstance().getAdminGroup(theUser);
 
 	            KeyGenerator kgen = KeyGenerator.getInstance(User.USER_KEY_ALGORITHM);
@@ -541,7 +528,7 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
     //------------------------
 
     private static final class InstanceHolder {
-    	static final UserDAO INSTANCE = new UserDAO(new UserPriviledgeTransitioner());
+    	static final UserDAO INSTANCE = new UserDAO();
     }
 
     public static UserDAO getInstance() {
