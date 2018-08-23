@@ -32,27 +32,16 @@ import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditi
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-
 /**
  * Servlet to direct the user to the hierarchy editing screen.
  */
 
 public final class NodeUserPermissions extends HttpServlet {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -3829184507016986232L;
-	/**
-	 * The access authenticator
-	 */
 
 	private static final AccessApprover accessApprover =
 		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
     		throws ServletException, IOException {
@@ -71,7 +60,7 @@ public final class NodeUserPermissions extends HttpServlet {
 
 	        if(!node.getNodeId().equals(HierarchyNode.ROOT_NODE_ID)) {
 	            Group adminGroup = GroupDAO.getInstance().getAdminGroup(remoteUser);
-	            request.setAttribute("users", UserDAO.getInstance().getSummaryListExcludingAdmin());
+	            request.setAttribute("users", UserSummaryDAO.getInstance().getSummaryListExcludingAdmin());
 	            request.setAttribute("perms", HierarchyNodeAccessRuleDAO.getInstance().getAccessibilityRules(node, adminGroup));
 	        }
     	} catch(GeneralSecurityException gse) {

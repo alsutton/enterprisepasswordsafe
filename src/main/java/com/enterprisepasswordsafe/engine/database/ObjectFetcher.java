@@ -3,6 +3,10 @@ package com.enterprisepasswordsafe.engine.database;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Base class which can be used for fetching otehr object types from the database.
@@ -36,7 +40,7 @@ abstract class ObjectFetcher<T> {
         }
     }
 
-    private T fetchObjectIfExists(PreparedStatement ps, String parameter)
+    T fetchObjectIfExists(PreparedStatement ps, String parameter)
             throws SQLException {
         ps.setString(1, parameter);
         ps.setMaxRows(1);
@@ -45,6 +49,23 @@ abstract class ObjectFetcher<T> {
         }
     }
 
-
-
+    List<T> getMultiple(final String sql, final String parameter)
+            throws SQLException {
+        List<T> results = new ArrayList<>();
+        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
+            if (parameter != null) {
+                ps.setString(1, parameter);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    try {
+                        results.add(newInstance(rs, 1));
+                    } catch(Exception e) {
+                        Logger.getAnonymousLogger().log(Level.SEVERE, "Error fetching object.", e);
+                    }
+                }
+            }
+        }
+        return results;
+    }
 }

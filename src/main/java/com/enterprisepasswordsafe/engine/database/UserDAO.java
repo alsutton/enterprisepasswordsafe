@@ -48,37 +48,6 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
 public final class UserDAO extends ObjectFetcher<User> implements ExternalInterface {
 
     /**
-     * The SQL to get the user summary including the admin user.
-     */
-
-    private static final String GET_SUMMARY_BY_ID =
-    		"SELECT   user_name, full_name "
-    		+ "  FROM application_users "
-            + " WHERE (disabled is null or disabled = 'N')"
-            + "   AND user_id = ? ";
-
-    /**
-     * The SQL to get the user summary including the admin user.
-     */
-
-    private static final String GET_SUMMARY_LIST_INCLUDING_ADMIN =
-    		"SELECT user_id, user_name, full_name "
-    		+ "  FROM application_users "
-            + " WHERE (disabled is null or disabled = 'N')"
-    		+ " ORDER BY user_name ASC";
-
-    /**
-     * The SQL to get the user summary including the admin user.
-     */
-
-    private static final String GET_SUMMARY_LIST_EXCLUDING_ADMIN =
-    		"SELECT user_id, user_name, full_name "
-    		+ "FROM application_users "
-    		+ "WHERE user_id <>  '" + User.ADMIN_USER_ID +"' "
-            + "  AND (disabled is null or disabled = 'N')"
-    		+ "ORDER BY user_name ASC";
-
-    /**
      * The SQL to get a count of the number of enabled users.
      */
 
@@ -201,16 +170,6 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
             "DELETE FROM hierarchy_access_control WHERE user_id = ?";
 
     /**
-     * The SQL to get the user summary for a search
-     */
-
-    private static final String GET_SUMMARY_BY_SEARCH =
-    		"SELECT   user_id, user_name, full_name "
-    		+ "  FROM application_users "
-            + " WHERE (disabled is null or disabled = 'N')"
-            + "   AND user_name like ? ";
-
-    /**
      * Update the admin access key for a user
      */
 
@@ -223,12 +182,6 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
     private static final String[] DELETE_SQL_STATEMENTS = {
             DELETE_UACS, DELETE_UARS, DELETE_USER_MEMBERSHIPS, DELETE_USER_SQL
     };
-
-	/**
-	 * A cache of user summaries
-	 */
-
-	private final Cache<String, UserSummary> userSummaryCache = new Cache<>();
 
 	private final UserPriviledgeTransitioner userPriviledgeTransitioner;
 
@@ -504,7 +457,7 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
 
     public List<User> getAll()
         throws SQLException {
-        return getUsersWork(GET_ALL_USERS_SQL);
+        return getMultiple(GET_ALL_USERS_SQL, null);
     }
 
     /**
@@ -515,149 +468,8 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
 
     public List<User> getEnabledUsers()
         throws SQLException {
-        return getUsersWork(GET_ENABLED_USERS_SQL);
+        return getMultiple(GET_ENABLED_USERS_SQL, null);
     }
-
-
-    /**
-     * Gets a list of users.
-     *
-     * @param sql The SQL to use to fetch the user list.
-     *
-     * @return A List of all users in the system.
-     */
-
-    private List<User> getUsersWork(final String sql)
-        throws SQLException {
-        List<User> users = new ArrayList<>();
-        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( sql)) {
-            try (ResultSet rs = ps.executeQuery()) {
-	            while (rs.next()) {
-	            	try {
-	            		users.add(new User(rs, 1));
-	            	} catch(Exception e) {
-	            		Logger.getAnonymousLogger().log(Level.SEVERE, "Error whilst getting users.", e);
-	            	}
-	            }
-            }
-        }
-
-        return users;
-    }
-
-
-    /**
-     * Gets a set of summaries for all the users.
-     *
-     * @return The summary.
-     */
-
-    public List<UserSummary> getSummaryList()
-        throws SQLException {
-    	return getSummaryListWork(GET_SUMMARY_LIST_INCLUDING_ADMIN);
-    }
-
-    /**
-     * Gets a List of UserSummary objects for all the users excluding the admin user.
-     *
-     * @return The List of UserSummary objects.
-     */
-
-    public List<UserSummary> getSummaryListExcludingAdmin()
-        throws SQLException {
-    	return getSummaryListWork(GET_SUMMARY_LIST_EXCLUDING_ADMIN);
-    }
-
-    /**
-     * Gets a set of summaries for all the users returned by a specific query.
-     *
-     * @param sql The SQL to execute to get the summery.
-     *
-     * @return The summary.
-     */
-
-    private List<UserSummary> getSummaryListWork(String sql)
-        throws SQLException {
-        List<UserSummary> summary = new ArrayList<>();
-        try (Statement stmt = BOMFactory.getCurrentConntection().createStatement()) {
-            try (ResultSet rs = stmt.executeQuery(sql)) {
-	            while (rs.next()) {
-	                final String id = rs.getString(1);
-	                final String name = rs.getString(2);
-	                final String fullName = rs.getString(3);
-	                summary.add(new UserSummary(id, name, fullName));
-	            }
-            }
-        }
-
-        return summary;
-    }
-
-    /**
-     * Get the summary of a specific user
-     *
-     * @param id The ID of the user to get the summary for
-     * @return The summary.
-     */
-
-    public UserSummary getSummaryById(String id)
-        throws SQLException {
-    	synchronized( this ) {
-    		UserSummary summary = userSummaryCache.get(id);
-    		if( summary != null ) {
-    			return summary;
-    		}
-
-	        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( GET_SUMMARY_BY_ID)) {
-	            ps.setString(1, id);
-	            try(ResultSet rs = ps.executeQuery()) {
-		            if(!rs.next()) {
-		            	return null;
-		            }
-
-		            final String name = rs.getString(1);
-		            final String fullName = rs.getString(2);
-		            summary = new UserSummary(id, name, fullName);
-		            userSummaryCache.put(id, summary);
-		            return summary;
-		        }
-	        }
-    	}
-    }
-
-    /**
-     * Get a List of UserSummary objects representing the users returned by a query.
-     *
-     * @param searchQuery The query used to fetch the users.
-     *
-     * @return The summary.
-     */
-
-    public List<UserSummary> getSummaryBySearch(String searchQuery)
-        throws SQLException {
-    	synchronized( this ) {
-    		List<UserSummary> results= new ArrayList<>();
-
-    		if(searchQuery == null) {
-    			searchQuery = "%";
-    		} else if(searchQuery.indexOf('%') == -1) {
-    			searchQuery += "%";
-    		}
-
-	        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_SUMMARY_BY_SEARCH)) {
-	            ps.setString(1, searchQuery);
-	            try(ResultSet rs = ps.executeQuery()) {
-		            while(rs.next()) {
-			            results.add( new UserSummary(rs.getString(1), rs.getString(2), rs.getString(3)) );
-		            }
-	            }
-
-	            return results;
-	        }
-    	}
-    }
-
-
 
     /**
      * Count the number of active users in the system.

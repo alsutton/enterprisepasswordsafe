@@ -17,7 +17,6 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.util.Calendar;
 import java.util.List;
@@ -27,18 +26,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.AccessRole;
-import com.enterprisepasswordsafe.engine.database.AccessRoleDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO.EventsForDay;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserDAO;
 import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -47,7 +36,7 @@ public final class ViewObjectEvents extends HttpServlet {
 
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
-    	throws IOException, ServletException {
+    	throws ServletException {
     	try {
 	        User remoteUser = SecurityUtils.getRemoteUser(request);
 	        String passwordLimit = ServletUtils.getInstance().getParameterValue(request, SharedParameterNames.PASSWORD_ID_PARAMETER);
@@ -129,7 +118,7 @@ public final class ViewObjectEvents extends HttpServlet {
 	        request.setAttribute("end_day",		cal.get(Calendar.DAY_OF_MONTH));
 	        request.setAttribute("end_month",	cal.get(Calendar.MONTH));
 	        request.setAttribute("end_year",	cal.get(Calendar.YEAR));
-	        request.setAttribute(BaseServlet.USER_LIST, UserDAO.getInstance().getSummaryList());
+	        request.setAttribute(BaseServlet.USER_LIST, UserSummaryDAO.getInstance().getSummaryList());
 
 	        request.getRequestDispatcher("/system/view_object_events.jsp").forward(request, response);
     	} catch(Exception ex) {

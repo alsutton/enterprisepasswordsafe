@@ -230,7 +230,7 @@ public class TamperproofEventLogDAO
         String variableId = variable.substring(colonIdx + 1);
 
         if (variableType.equals("user")) {
-            UserSummary theUser = UserDAO.getInstance().getSummaryById(variableId);
+            UserSummary theUser = UserSummaryDAO.getInstance().getById(variableId);
             if (theUser != null) {
                 return theUser.getName();
             }

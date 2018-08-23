@@ -301,8 +301,9 @@ public abstract class HierarchyNodeAccessRuleDAO implements ExternalInterface {
     	try {
 	        ps.setString(1, node.getNodeId());
 
-	        UserDAO uDAO = UserDAO.getInstance();
-	    	for(UserSummary thisUser : uDAO.getSummaryListExcludingAdmin()) {
+			UserDAO uDAO = UserDAO.getInstance();
+	        UserSummaryDAO usDAO = UserSummaryDAO.getInstance();
+	    	for(UserSummary thisUser : usDAO.getSummaryListExcludingAdmin()) {
 	            ResultSet rs = null;
 	            try {
 	            	ps.setString(2, thisUser.getId());
