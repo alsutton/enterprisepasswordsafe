@@ -44,7 +44,7 @@ public final class UpdateAccess extends HttpServlet {
      * The prefix for a user parameter.
      */
 
-    public static final String USER_PARAMETER_PREFIX = "u_";
+    private static final String USER_PARAMETER_PREFIX = "u_";
 
     /**
      * The size of the user parameter prefix
@@ -56,7 +56,7 @@ public final class UpdateAccess extends HttpServlet {
      * The prefix for a user parameter.
      */
 
-    public static final String GROUP_PARAMETER_PREFIX = "g_";
+    private static final String GROUP_PARAMETER_PREFIX = "g_";
 
     /**
      * The size of the user parameter prefix
@@ -77,9 +77,9 @@ public final class UpdateAccess extends HttpServlet {
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException {
     	try {
-	    	User adminUser = SecurityUtils.getRemoteUser(request);
+	    	User currentUser = SecurityUtils.getRemoteUser(request);
 	        ServletUtils servletUtils = ServletUtils.getInstance();
-	        if (!adminUser.isAdministrator() &&  !adminUser.isSubadministrator()) {
+	        if (!currentUser.isAdministrator() &&  !currentUser.isSubadministrator()) {
 	        	servletUtils.generateErrorMessage(request, "You can not modify access to this password");
                 response.sendRedirect(request.getContextPath() + ERROR_PAGE);
 	        	return;
@@ -88,46 +88,46 @@ public final class UpdateAccess extends HttpServlet {
 	        String passwordId = servletUtils.getParameterValue(request, SharedParameterNames.PASSWORD_ID_PARAMETER);
 
 	        // Verify the access control is in place
-	        Group adminGroup = GroupDAO.getInstance().getAdminGroup(adminUser);
+	        Group adminGroup = GroupDAO.getInstance().getAdminGroup(currentUser);
 	        AccessControl ac = GroupAccessControlDAO.getInstance().getGac(adminGroup, passwordId);
-	        if( ac == null
-	        ||	ac.getReadKey() == null
-	        ||  ac.getModifyKey() == null ) {
+	        if( ac == null || ac.getReadKey() == null || ac.getModifyKey() == null ) {
 	        	servletUtils.generateErrorMessage(request, "You can not modify access to the specified password");
                 response.sendRedirect(request.getContextPath() + ERROR_PAGE);
 	        	return;
 	        }
 
 	        Password password = PasswordDAO.getInstance().getByIdEvenIfDisabled(ac, passwordId);
-	        User theAdmin = UserDAO.getInstance().getAdminUser(adminGroup);
+	        User adminUser = UserDAO.getInstance().getAdminUser(adminGroup);
 
-	        boolean sendEmailAlert = ((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-
-			Enumeration<String> params = request.getParameterNames();
-	    	while( params.hasMoreElements() ) {
-	    		String thisParameter = params.nextElement();
-
-	    		String value = request.getParameter(thisParameter);
-
-	    		if			( thisParameter.startsWith(USER_PARAMETER_PREFIX) ) {
-	    			handleUserParameter(adminGroup, adminUser, password, ac, thisParameter, value);
-	    		} else if	( thisParameter.startsWith(GROUP_PARAMETER_PREFIX) ) {
-	    			handleGroupParameter(theAdmin, adminUser, password, ac, thisParameter, value);
-				}
-	    	}
-
-	    	processUserHistoryRoles(adminUser, password, request, sendEmailAlert);
-	    	processUserRARoles(adminUser, password, request, sendEmailAlert);
-	    	processGroupHistoryRoles(adminUser, password, request, sendEmailAlert);
-	    	processGroupRARoles(adminUser, password, request, sendEmailAlert);
+	        processRoleChanges(request, password, adminUser, adminGroup, currentUser, ac);
 
 	    	servletUtils.generateMessage(request, "The password access rights were updated.");
 	    	response.sendRedirect(request.getContextPath()+"/subadmin/AlterAccess?id="+password.getId());
     	} catch(Exception ex) {
     		throw new ServletException("The access rules could not be updated due to an error.", ex);
     	}
+    }
 
+    private void processRoleChanges(HttpServletRequest request, Password password, User adminUser,
+                                    Group adminGroup, User currentUser, AccessControl ac)
+            throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
+        Enumeration<String> params = request.getParameterNames();
+        while( params.hasMoreElements() ) {
+            String thisParameter = params.nextElement();
 
+            String value = request.getParameter(thisParameter);
+
+            if			( thisParameter.startsWith(USER_PARAMETER_PREFIX) ) {
+                handleUserParameter(adminGroup, currentUser, password, ac, thisParameter, value);
+            } else if	( thisParameter.startsWith(GROUP_PARAMETER_PREFIX) ) {
+                handleGroupParameter(adminUser, currentUser, password, ac, thisParameter, value);
+            }
+        }
+
+        processUserHistoryRoles(currentUser, password, request);
+        processUserRARoles(currentUser, password, request);
+        processGroupHistoryRoles(currentUser, password, request);
+        processGroupRARoles(currentUser, password, request);
     }
 
     private void handleUserParameter(final Group adminGroup, final User adminUser,
@@ -180,40 +180,34 @@ public final class UpdateAccess extends HttpServlet {
 		}
     }
 
-    private void processUserRARoles(final User remoteUser, final Password password,
-    		final HttpServletRequest request, final boolean sendEmailAlert)
+    private void processUserRARoles(final User remoteUser, final Password password, final HttpServletRequest request)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	processUserRoles(remoteUser, password, request, sendEmailAlert, "our_", "ur_",
+    	processUserRoles(remoteUser, password, request, "our_", "ur_",
         		"approved restricted access requests", AccessRole.APPROVER_ROLE);
     }
 
-    private void processGroupRARoles(final User remoteUser, final Password password,
-    		final HttpServletRequest request, final boolean sendEmailAlert)
+    private void processGroupRARoles(final User remoteUser, final Password password, final HttpServletRequest request)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	processGroupRoles(remoteUser, password, request, sendEmailAlert, "ogr_", "gr_",
+    	processGroupRoles(remoteUser, password, request, "ogr_", "gr_",
         		"approved restricted access requests", AccessRole.APPROVER_ROLE);
     }
 
 
-    private void processUserHistoryRoles(final User remoteUser, final Password password,
-    		final HttpServletRequest request, final boolean sendEmailAlert)
+    private void processUserHistoryRoles(final User remoteUser, final Password password, final HttpServletRequest request)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	processUserRoles(remoteUser, password, request, sendEmailAlert, "ouh_", "uh_",
+    	processUserRoles(remoteUser, password, request, "ouh_", "uh_",
         		"view the password history", AccessRole.HISTORYVIEWER_ROLE);
     }
 
-    private void processGroupHistoryRoles(final User remoteUser, final Password password,
-    		final HttpServletRequest request,
-    		final boolean sendEmailAlert)
+    private void processGroupHistoryRoles(final User remoteUser, final Password password, final HttpServletRequest request)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	processGroupRoles(remoteUser, password, request, sendEmailAlert, "ogh_", "gh_",
+    	processGroupRoles(remoteUser, password, request, "ogh_", "gh_",
         		"view the password history", AccessRole.HISTORYVIEWER_ROLE);
     }
 
-    private void processUserRoles(final User remoteUser, final Password password,
-    		final HttpServletRequest request, final boolean sendEmailAlert,
-    		final String originalPrefix, final String setPrefix,
-    		final String roleDescription, final String role)
+    private void processUserRoles(final User remoteUser, final Password password, final HttpServletRequest request,
+                                  final String originalPrefix, final String setPrefix, final String roleDescription,
+                                  final String role)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
         List<String> onNow = new ArrayList<>();
         List<String> previouslyOn = new ArrayList<>();
@@ -224,17 +218,16 @@ public final class UpdateAccess extends HttpServlet {
     			previouslyOn.remove(id);
     			continue;
     		}
-    		giveUserRole(remoteUser, password, id, roleDescription, role, sendEmailAlert);
+    		giveUserRole(remoteUser, password, id, roleDescription, role);
     	}
 
     	for(String id: previouslyOn) {
-    		removeUserRole(remoteUser, password, id, roleDescription, role, sendEmailAlert);
+    		removeUserRole(remoteUser, password, id, roleDescription, role);
     	}
     }
 
     private void processGroupRoles(final User remoteUser, final Password password,
-    		final HttpServletRequest request, final boolean sendEmailAlert,
-			final String originalPrefix, final String setPrefix,
+    		final HttpServletRequest request, final String originalPrefix, final String setPrefix,
 			final String roleDescription, final String role)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
         List<String> onNow = new ArrayList<>();
@@ -246,11 +239,11 @@ public final class UpdateAccess extends HttpServlet {
     			previouslyOn.remove(id);
     			continue;
     		}
-    		giveGroupRole(remoteUser, password, id, roleDescription, role, sendEmailAlert);
+    		giveGroupRole(remoteUser, password, id, roleDescription, role);
     	}
 
     	for(String id: previouslyOn) {
-    		removeGroupRole(remoteUser, password, id, roleDescription,role, sendEmailAlert);
+    		removeGroupRole(remoteUser, password, id, roleDescription,role);
     	}
     }
 
@@ -269,39 +262,32 @@ public final class UpdateAccess extends HttpServlet {
 	}
 
     private void giveUserRole(final User remoteUser, final Password password, final String userId,
-    		final String roleName, final String role, final boolean sendEmailAlert)
+    		final String roleName, final String role)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-				remoteUser, password, "Gave the user {user:"+userId+"} the right to "+roleName,
-				sendEmailAlert);
 		UserAccessRoleDAO.getInstance().create( password.getId(), userId, role );
+		logAndEmailIfNeeded(password, remoteUser, "Gave the user {user:"+userId+"} the right to "+roleName);
     }
 
     private void removeUserRole(final User remoteUser, final Password password, final String userId,
-    		final String roleName, final String role, final boolean sendEmailAlert)
+    		final String roleName, final String role)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-		TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-				remoteUser, password, "Removed the right to "+roleName+" from the user {user:"+userId+"}",
-				sendEmailAlert);
+        logAndEmailIfNeeded(password, remoteUser,
+                "Removed the right to "+roleName+" from the user {user:"+userId+"}" );
 		UserAccessRoleDAO.getInstance().delete( password.getId(), userId, role );
     }
 
     private void giveGroupRole(final User remoteUser, final Password password, final String groupId,
-    		final String roleName, final String role, final boolean sendEmailAlert)
+    		final String roleName, final String role )
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-				remoteUser, password, "Gave the group {group:"+groupId+"} the right to "+roleName,
-				sendEmailAlert);
+        logAndEmailIfNeeded(password, remoteUser, "Gave the group {group:"+groupId+"} the right to "+roleName);
 		GroupAccessRoleDAO.getInstance().create( password.getId(), groupId, role );
     }
 
-    private void removeGroupRole(final User remoteUser,
-    		final Password password, final String groupId, final String roleName, final String role,
-    		final boolean sendEmailAlert)
+    private void removeGroupRole(final User remoteUser, final Password password, final String groupId,
+                                 final String roleName, final String role)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-		TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-				remoteUser, password, "Removed the right to "+roleName+" from the group {group:"+groupId+"}",
-				sendEmailAlert);
+        logAndEmailIfNeeded(password, remoteUser,
+                "Removed the right to "+roleName+" from the group {group:"+groupId+"}");
 		GroupAccessRoleDAO.getInstance().delete(password.getId(), groupId, role);
     }
 
@@ -341,9 +327,8 @@ public final class UpdateAccess extends HttpServlet {
 
     private void logAndEmailIfNeeded(Password thePassword, User adminUser, String message)
 			throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-		boolean sendEmail = ((thePassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
 		TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-				adminUser, thePassword, message, sendEmail);
+				adminUser, thePassword, message, ((thePassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0));
 	}
 
     private boolean modifyOrCreateAccessControl(AccessControl adminAc, AccessControl currentAccessControl,
