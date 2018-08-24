@@ -46,7 +46,7 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
  * Object representing a user in the system.
  */
 public final class User
-    implements Comparable<User>, UserAccessControlDecryptor, ExternalInterface {
+    implements Comparable<User>, EntityWithAccessRights, UserAccessControlDecryptor, ExternalInterface {
 
     /**
      * The size of the group access key in bits.
@@ -879,6 +879,12 @@ public final class User
      */
     public String getUserId() {
         return userId;
+    }
+
+    @Override
+    public String getId() {
+        // TODO: Unify ID getters
+        return getUserId();
     }
 
     /**

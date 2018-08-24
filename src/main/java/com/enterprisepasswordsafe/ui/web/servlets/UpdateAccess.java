@@ -16,7 +16,6 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
@@ -29,28 +28,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessRole;
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupAccessControl;
-import com.enterprisepasswordsafe.engine.database.GroupAccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.GroupAccessRoleDAO;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.Membership;
-import com.enterprisepasswordsafe.engine.database.MembershipDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserAccessControl;
-import com.enterprisepasswordsafe.engine.database.UserAccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.UserAccessRoleDAO;
-import com.enterprisepasswordsafe.engine.database.UserDAO;
+import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
-
 
 /**
  * Servlet to alter a users access to a password.
@@ -93,7 +75,7 @@ public final class UpdateAccess extends HttpServlet {
      */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
-            throws IOException, ServletException {
+            throws ServletException {
     	try {
 	    	User adminUser = SecurityUtils.getRemoteUser(request);
 	        ServletUtils servletUtils = ServletUtils.getInstance();
@@ -130,7 +112,7 @@ public final class UpdateAccess extends HttpServlet {
 	    		if			( thisParameter.startsWith(USER_PARAMETER_PREFIX) ) {
 	    			handleUserParameter(adminGroup, adminUser, password, ac, thisParameter, value);
 	    		} else if	( thisParameter.startsWith(GROUP_PARAMETER_PREFIX) ) {
-	    			handleGroupParameter(theAdmin, adminGroup, adminUser, password, ac, thisParameter, value);
+	    			handleGroupParameter(theAdmin, adminUser, password, ac, thisParameter, value);
 				}
 	    	}
 
@@ -147,13 +129,6 @@ public final class UpdateAccess extends HttpServlet {
 
 
     }
-
-    /**
-     * Handle a user parameter.
-     * @throws GeneralSecurityException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
 
     private void handleUserParameter(final Group adminGroup, final User adminUser,
     		final Password password, final AccessControl ac,
@@ -174,18 +149,10 @@ public final class UpdateAccess extends HttpServlet {
 		}
     }
 
-    /**
-     * Handle a group parameter.
-     *
-     * @throws GeneralSecurityException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-
     private void handleGroupParameter(final User theAdmin,
-    		final Group adminGroup, final User adminUser,
-    		final Password password, final AccessControl ac,
-    		final String thisParameter, final String value )
+    		final User adminUser, final Password password,
+		    final AccessControl ac, final String thisParameter,
+		  	final String value )
     	throws UnsupportedEncodingException, SQLException, GeneralSecurityException
     {
 		int endOfId = thisParameter.indexOf('_', GROUP_PARAMETER_PREFIX_LENGTH);
@@ -213,107 +180,44 @@ public final class UpdateAccess extends HttpServlet {
 		}
     }
 
-    /**
-     * Process the user restricted access role settings.
-     *
-     * @param remoteUser The user making the change.
-     * @param password The password the role is for.
-     * @param request The request being serviced.
-     * @param sendEmailAlert whether or not email alerts should be sent.
-     */
-
     private void processUserRARoles(final User remoteUser, final Password password,
     		final HttpServletRequest request, final boolean sendEmailAlert)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	processUserRoles(remoteUser, password,
-        		request, sendEmailAlert, "our_", "ur_",
-        		"approved restricted access requests",
-				AccessRole.APPROVER_ROLE);
+    	processUserRoles(remoteUser, password, request, sendEmailAlert, "our_", "ur_",
+        		"approved restricted access requests", AccessRole.APPROVER_ROLE);
     }
-
-    /**
-     * Process the group restricted access role settings.
-     *
-     * @param remoteUser The user making the change.
-     * @param password The password the role is for.
-     * @param request The request being serviced.
-     * @param sendEmailAlert whether or not email alerts should be sent.
-     */
 
     private void processGroupRARoles(final User remoteUser, final Password password,
     		final HttpServletRequest request, final boolean sendEmailAlert)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	processGroupRoles(remoteUser, password,
-        		request, sendEmailAlert, "ogr_", "gr_",
-        		"approved restricted access requests",
-				AccessRole.APPROVER_ROLE);
+    	processGroupRoles(remoteUser, password, request, sendEmailAlert, "ogr_", "gr_",
+        		"approved restricted access requests", AccessRole.APPROVER_ROLE);
     }
 
-
-    /**
-     * Process the user history role settings.
-     *
-     * @param remoteUser The user making the change.
-     * @param password The password the role is for.
-     * @param request The request being serviced.
-     * @param sendEmailAlert whether or not email alerts should be sent.
-     */
 
     private void processUserHistoryRoles(final User remoteUser, final Password password,
     		final HttpServletRequest request, final boolean sendEmailAlert)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	processUserRoles(remoteUser, password,
-        		request, sendEmailAlert, "ouh_", "uh_",
-        		"view the password history",
-				AccessRole.HISTORYVIEWER_ROLE);
+    	processUserRoles(remoteUser, password, request, sendEmailAlert, "ouh_", "uh_",
+        		"view the password history", AccessRole.HISTORYVIEWER_ROLE);
     }
-
-    /**
-     * Process the group history role settings.
-     *
-     * @param remoteUser The user making the change.
-     * @param password The password the role is for.
-     * @param request The request being serviced.
-     * @param sendEmailAlert whether or not email alerts should be sent.
-     */
 
     private void processGroupHistoryRoles(final User remoteUser, final Password password,
     		final HttpServletRequest request,
     		final boolean sendEmailAlert)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	processGroupRoles(remoteUser, password,
-        		request, sendEmailAlert, "ogh_", "gh_",
-        		"view the password history",
-				AccessRole.HISTORYVIEWER_ROLE);
+    	processGroupRoles(remoteUser, password, request, sendEmailAlert, "ogh_", "gh_",
+        		"view the password history", AccessRole.HISTORYVIEWER_ROLE);
     }
-
-    /**
-     * Process the roles for a user
-     *
-     * @param remoteUser The user making the change.
-     * @param password The password the role is for.
-     * @param request The request being serviced.
-     * @param sendEmailAlert whether or not email alerts should be sent.
-     */
 
     private void processUserRoles(final User remoteUser, final Password password,
     		final HttpServletRequest request, final boolean sendEmailAlert,
     		final String originalPrefix, final String setPrefix,
     		final String roleDescription, final String role)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-        List<String> onNow = new ArrayList<String>();
-        List<String> previouslyOn = new ArrayList<String>();
-
-		Enumeration<String> params = request.getParameterNames();
-        while( params.hasMoreElements() ) {
-    		String thisParameter = params.nextElement();
-
-    		if	( thisParameter.startsWith(originalPrefix)) {
-    			previouslyOn.add(thisParameter.substring(4));
-    		} else if	( thisParameter.startsWith(setPrefix)) {
-    			onNow.add(thisParameter.substring(3));
-    		}
-    	}
+        List<String> onNow = new ArrayList<>();
+        List<String> previouslyOn = new ArrayList<>();
+		determineOldAndNewStates(request, originalPrefix, previouslyOn, setPrefix, onNow);
 
     	for(String id : onNow) {
     		if(previouslyOn.contains(id)) {
@@ -328,33 +232,14 @@ public final class UpdateAccess extends HttpServlet {
     	}
     }
 
-    /**
-     * Process the roles for a group
-     *
-     * @param remoteUser The user making the change.
-     * @param password The password the role is for.
-     * @param request The request being serviced.
-     * @param sendEmailAlert whether or not email alerts should be sent.
-     */
-
     private void processGroupRoles(final User remoteUser, final Password password,
     		final HttpServletRequest request, final boolean sendEmailAlert,
 			final String originalPrefix, final String setPrefix,
 			final String roleDescription, final String role)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-        List<String> onNow = new ArrayList<String>();
-        List<String> previouslyOn = new ArrayList<String>();
-
-		Enumeration<String> params = request.getParameterNames();
-        while( params.hasMoreElements() ) {
-    		String thisParameter = params.nextElement();
-
-    		if	( thisParameter.startsWith(originalPrefix)) {
-    			previouslyOn.add(thisParameter.substring(4));
-    		} else if	( thisParameter.startsWith(setPrefix)) {
-    			onNow.add(thisParameter.substring(3));
-    		}
-    	}
+        List<String> onNow = new ArrayList<>();
+        List<String> previouslyOn = new ArrayList<>();
+		determineOldAndNewStates(request, originalPrefix, previouslyOn, setPrefix, onNow);
 
     	for(String id : onNow) {
     		if(previouslyOn.contains(id)) {
@@ -369,245 +254,131 @@ public final class UpdateAccess extends HttpServlet {
     	}
     }
 
-    /**
-     * Give a role to a user
-     *
-     * @throws GeneralSecurityException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
+    private void determineOldAndNewStates(	HttpServletRequest request, String previousPrefix, List<String> previous,
+									 		String nowPrefix, List<String> now) {
+		Enumeration<String> params = request.getParameterNames();
+		while( params.hasMoreElements() ) {
+			String thisParameter = params.nextElement();
+
+			if	( thisParameter.startsWith(previousPrefix)) {
+				previous.add(thisParameter.substring(4));
+			} else if	( thisParameter.startsWith(nowPrefix)) {
+				now.add(thisParameter.substring(3));
+			}
+		}
+	}
 
     private void giveUserRole(final User remoteUser, final Password password, final String userId,
     		final String roleName, final String role, final boolean sendEmailAlert)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	TamperproofEventLogDAO.getInstance().create(
-				TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-				remoteUser,
-				password,
-                "Gave the user {user:"+userId+"} the right to "+roleName,
+    	TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+				remoteUser, password, "Gave the user {user:"+userId+"} the right to "+roleName,
 				sendEmailAlert);
 		UserAccessRoleDAO.getInstance().create( password.getId(), userId, role );
     }
 
-    /**
-     * Remove a role from a user
-     *
-     * @throws GeneralSecurityException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-
     private void removeUserRole(final User remoteUser, final Password password, final String userId,
     		final String roleName, final String role, final boolean sendEmailAlert)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-		TamperproofEventLogDAO.getInstance().create(
-				TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-				remoteUser,
-				password,
-                "Removed the right to "+roleName+" from the user {user:"+userId+"}",
+		TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+				remoteUser, password, "Removed the right to "+roleName+" from the user {user:"+userId+"}",
 				sendEmailAlert);
 		UserAccessRoleDAO.getInstance().delete( password.getId(), userId, role );
     }
 
-    /**
-     * Give a role to a user
-     *
-     * @throws GeneralSecurityException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-
     private void giveGroupRole(final User remoteUser, final Password password, final String groupId,
     		final String roleName, final String role, final boolean sendEmailAlert)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-    	TamperproofEventLogDAO.getInstance().create(
-				TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-				remoteUser,
-				password,
-                "Gave the group {group:"+groupId+"} the right to "+roleName,
+    	TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+				remoteUser, password, "Gave the group {group:"+groupId+"} the right to "+roleName,
 				sendEmailAlert);
 		GroupAccessRoleDAO.getInstance().create( password.getId(), groupId, role );
     }
-
-    /**
-     * Remove a role from a user
-     *
-     * @throws GeneralSecurityException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
 
     private void removeGroupRole(final User remoteUser,
     		final Password password, final String groupId, final String roleName, final String role,
     		final boolean sendEmailAlert)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-		TamperproofEventLogDAO.getInstance().create(
-				TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-				remoteUser,
-				password,
-                "Removed the right to "+roleName+" from the group {group:"+groupId+"}",
+		TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+				remoteUser, password, "Removed the right to "+roleName+" from the group {group:"+groupId+"}",
 				sendEmailAlert);
 		GroupAccessRoleDAO.getInstance().delete(password.getId(), groupId, role);
     }
 
-
-    /**
-     * Change the access a user has to a password.
-     *
-     * @param adminUser The admin user making the change.
-     * @param adminAc The admin access control to access the password.
-     * @param thePassword The password whose access is being change.
-     * @param theUser The user whose access is being changed.
-     * @param access The new access rights.
-     */
-
     private void changeAccess(final User adminUser, final AccessControl adminAc, final Password thePassword,
     		final User theUser, final String access )
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        // Get the existing UAC (if it exists);
-        UserAccessControl currentUac = UserAccessControlDAO.getInstance().getUac(theUser, thePassword);
-        if (access.equals("N") ) {
-        	if( currentUac != null ) {
-            	boolean sendEmail = ((thePassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-        		TamperproofEventLogDAO.getInstance().create(
-						TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-        				adminUser,
-        				thePassword,
-        				"Removed all permissions for "+theUser.getUserName(),
-        				sendEmail
-    				);
-        		UserAccessControlDAO.getInstance().delete(currentUac);
-        	}
-
-        	return;
-        }
-
-        // Get the admin UAC for the password and decrypt the password
-        // contents
-        // Construct the new permissions for the UAC
-    	boolean allowRead = (access.indexOf('R') != -1);
-    	boolean allowModify = (access.indexOf('M') != -1);
-
-    	if( currentUac != null ) {
-        	boolean changed = false;
-        	if( allowRead && currentUac.getReadKey() == null ) {
-        		currentUac.setReadKey(adminAc.getReadKey());
-        		changed = true;
-        	}
-        	if( allowModify && currentUac.getModifyKey() == null ) {
-        		currentUac.setModifyKey(adminAc.getModifyKey());
-        		changed = true;
-        	}
-        	if( !allowModify && currentUac.getModifyKey() != null ) {
-        		currentUac.setModifyKey(null);
-        		changed = true;
-        	}
-
-        	if(!changed) {
-        		return;
-        	}
-    	}
-
-    	boolean sendEmail = ((thePassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-    	TamperproofEventLogDAO.getInstance().create(
-				TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-    			adminUser,
-    			thePassword,
-                "Changed the access permissions on the user {user:"
-                    + theUser.getUserId()
-                    + "} to be "
-                    + access,
-              	sendEmail);
-
-        if (currentUac != null) {
-            UserAccessControlDAO.getInstance().update(currentUac, theUser);
-        } else {
-        	UserAccessControlDAO.getInstance().create(
-        			theUser,
-        			thePassword,
-        			allowRead,
-        			allowModify
-    			);
-        }
+		// Get the existing UAC (if it exists);
+		UserAccessControlDAO uacDAO = UserAccessControlDAO.getInstance();
+		UserAccessControl currentUac = uacDAO.getUac(theUser, thePassword);
+		if (access.equals("N")) {
+			if (currentUac != null) {
+				uacDAO.delete(currentUac);
+				logAndEmailIfNeeded(thePassword, adminUser, "Removed all permissions for " + theUser.getUserName());
+			}
+		} else if(modifyOrCreateAccessControl(adminAc, currentUac, uacDAO, theUser, thePassword, access)) {
+			logAndEmailIfNeeded(thePassword, adminUser, "Changed the access permissions on the user {user:"
+					+ theUser.getUserId() + "} to be " + access);
+		}
     }
-
-    /**
-     * Change the access a group has to a password.
-     *
-     * @param adminUser The admin user making the change.
-     * @param adminAc The admin access control to access the password.
-     * @param thePassword The password whose access is being change.
-     * @param theGroup The user whose access is being changed.
-     * @param access The new access rights.
-     */
 
     private void changeAccess(final User adminUser, final AccessControl adminAc, final Password thePassword,
     		final Group theGroup, final String access )
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	// Look for an existing group access control to modify
     	GroupAccessControlDAO gacDAO = GroupAccessControlDAO.getInstance();
     	GroupAccessControl currentGac = gacDAO.getGac( adminUser, theGroup, thePassword );
-
 	    if (access.equals("N")) {
 	    	if( currentGac != null ) {
 	    		gacDAO.delete(currentGac);
-            	boolean sendEmail = ((thePassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-	    		TamperproofEventLogDAO.getInstance().create(
-    					TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-		        		adminUser,
-		        		thePassword,
-		                "Removed all permissions for the group {group:"+theGroup.getGroupId()+"}",
-		                sendEmail
-		        	);
+				logAndEmailIfNeeded(thePassword, adminUser, "Removed all permissions for the group {group:" +
+						theGroup.getGroupId()+"}");
 	    	}
-
-	    	return;
-	    }
-
-    	boolean allowRead = (access.indexOf('R') != -1);
-    	boolean allowModify = (access.indexOf('M') != -1);
-
-        if( currentGac == null) {
-            gacDAO.create(theGroup, thePassword, allowRead, allowModify);
-            return;
-        }
-
-
-        boolean changed = false;
-        if( allowRead && currentGac.getReadKey() == null ) {
-            currentGac.setReadKey(adminAc.getReadKey());
-            changed = true;
-        }
-        if( allowModify && currentGac.getModifyKey() == null ) {
-            currentGac.setModifyKey(adminAc.getModifyKey());
-            changed = true;
-        }
-        if( !allowModify && currentGac.getModifyKey() != null ) {
-            currentGac.setModifyKey(null);
-            changed = true;
-        }
-
-        if(!changed) {
-            return;
-        }
-
-    	boolean sendEmail = ((thePassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-    	TamperproofEventLogDAO.getInstance().create(
-				TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-    			adminUser,
-    			thePassword,
-        		"Changed the access permissions on the group {group:"
-	                + theGroup.getGroupId()
-	                + "} to be "
-	                + access,
-	         	sendEmail);
-
-        gacDAO.update(theGroup, currentGac);
+	    } else if (modifyOrCreateAccessControl(adminAc, currentGac, gacDAO, theGroup, thePassword, access)) {
+	    	logAndEmailIfNeeded(thePassword, adminUser, "Changed the access permissions on the group {group:"
+					+ theGroup.getGroupId() + "} to be " + access);
+		}
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
+    private void logAndEmailIfNeeded(Password thePassword, User adminUser, String message)
+			throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
+		boolean sendEmail = ((thePassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
+		TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+				adminUser, thePassword, message, sendEmail);
+	}
+
+    private boolean modifyOrCreateAccessControl(AccessControl adminAc, AccessControl currentAccessControl,
+		AccessControlDAOInterface accessControlDAO, EntityWithAccessRights entity, Password thePassword, String access)
+			throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
+		boolean allowRead = (access.indexOf('R') != -1);
+		boolean allowModify = (access.indexOf('M') != -1);
+		if( currentAccessControl == null ) {
+			accessControlDAO.create(entity, thePassword, allowRead, allowModify);
+			return true;
+		} else if(updateAccessControl(adminAc, currentAccessControl, allowRead, allowModify)) {
+			accessControlDAO.update(entity, currentAccessControl);
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean updateAccessControl(AccessControl adminAc, AccessControl currentAccessControl,
+										boolean allowRead, boolean allowModify) {
+		boolean changed = false;
+		if( allowRead && currentAccessControl.getReadKey() == null ) {
+			currentAccessControl.setReadKey(adminAc.getReadKey());
+			changed = true;
+		}
+		if( allowModify && currentAccessControl.getModifyKey() == null ) {
+			currentAccessControl.setModifyKey(adminAc.getModifyKey());
+			changed = true;
+		}
+		if( !allowModify && currentAccessControl.getModifyKey() != null ) {
+			currentAccessControl.setModifyKey(null);
+			changed = true;
+		}
+		return changed;
+	}
 
     @Override
 	public String getServletInfo() {

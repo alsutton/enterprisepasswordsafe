@@ -37,7 +37,7 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
  * Object representation of a group within the system.
  */
 public final class Group
-    implements Comparable<Group>, GroupAccessControlDecryptor, ExternalInterface {
+    implements Comparable<Group>, EntityWithAccessRights, GroupAccessControlDecryptor, ExternalInterface {
 
 	/**
 	 * The group statuses
@@ -343,6 +343,11 @@ public final class Group
 
     public String getGroupId() {
         return groupId;
+    }
+    @Override
+    public String getId() {
+        // TODO: Unify Id getters
+        return getGroupId();
     }
 
     /**

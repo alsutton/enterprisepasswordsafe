@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
@@ -38,7 +39,7 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
  */
 
 public class GroupAccessControlDAO
-    implements ExternalInterface {
+    implements AccessControlDAOInterface<Group, GroupAccessControl>, ExternalInterface {
 
     /**
      * The fields needed to construct a GroupAccessControl from a ResultSet.

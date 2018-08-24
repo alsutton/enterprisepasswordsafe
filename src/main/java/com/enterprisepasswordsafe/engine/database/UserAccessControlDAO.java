@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 
 import javax.crypto.BadPaddingException;
 
+import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
@@ -41,7 +42,8 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
  * Data access object for the user access control.
  */
 
-public final class UserAccessControlDAO implements ExternalInterface {
+public final class UserAccessControlDAO
+		implements ExternalInterface, AccessControlDAOInterface<User, UserAccessControl> {
 
     /**
      * The fields needed in a ResultSet to construct a user access control.
@@ -470,7 +472,7 @@ public final class UserAccessControlDAO implements ExternalInterface {
      * @throws IOException Thrown if there is an IO problem.
      */
 
-    public void update(final UserAccessControl uac, final User user)
+    public void update(final User user, final UserAccessControl uac)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
     	update(uac, user.getKeyEncrypter());
     }
