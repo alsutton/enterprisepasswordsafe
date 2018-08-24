@@ -395,7 +395,7 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
 
     public List<User> getAll()
         throws SQLException {
-        return getMultiple(GET_ALL_USERS_SQL, null);
+        return getMultiple(GET_ALL_USERS_SQL);
     }
 
     /**
@@ -406,7 +406,7 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
 
     public List<User> getEnabledUsers()
         throws SQLException {
-        return getMultiple(GET_ENABLED_USERS_SQL, null);
+        return getMultiple(GET_ENABLED_USERS_SQL);
     }
 
     /**

@@ -47,6 +47,7 @@ import com.enterprisepasswordsafe.proguard.JavaBean;
  * Data access object for nodes in the hierarchy.
  */
 public final class HierarchyNodeDAO
+    extends ObjectFetcher<HierarchyNode>
     implements ExternalInterface {
 
 	/**
@@ -54,6 +55,8 @@ public final class HierarchyNodeDAO
      */
 
     private static final HierarchyNode ROOT_NODE = new HierarchyNode();
+
+    private static final String NODE_FIELDS = "node_id, name, parent_id, type";
 
     /**
      * SQL to get the parent ID of a node from its ID.
@@ -65,8 +68,16 @@ public final class HierarchyNodeDAO
      * SQL To get a node from its' ID.
      */
 
-    private static final String GET_NODE_SQL =
-            "SELECT node_id, name, parent_id, type FROM hierarchy WHERE node_id = ? ";
+    private static final String GET_NODE_BY_ID_SQL =
+            "SELECT " + NODE_FIELDS + " FROM hierarchy WHERE node_id = ?";
+
+    /**
+     * The SQL statement to get the nodes representing a specific access controlled object.
+     */
+
+    private static final String GET_NODE_BY_NAME_SQL =
+            "SELECT " + NODE_FIELDS + " FROM hierarchy  WHERE name = ?";
+
 
     /**
      * The SQL statement to get the child nodes of a specific node.
@@ -85,12 +96,6 @@ public final class HierarchyNodeDAO
             + " WHERE parent_id = ? "
             + "   AND name = ? "
             + "   AND type = " + HierarchyNode.OBJECT_NODE;
-
-    /**
-     * The SQL statement to get the nodes representing a specific access controlled object.
-     */
-
-    private static final String GET_NODE_ID_FOR_NAME_SQL = "SELECT node_id FROM hierarchy  WHERE name = ? ";
 
     /**
      * The SQL statement to get the nodes representing a specific access controlled object.
@@ -314,10 +319,16 @@ public final class HierarchyNodeDAO
 	 */
 
 	private HierarchyNodeDAO( ) {
-		super();
+		super(GET_NODE_BY_ID_SQL, GET_NODE_BY_NAME_SQL, DELETE_SQL);
 	}
 
-	/**
+    @Override
+    HierarchyNode newInstance(ResultSet rs, int startIndex)
+            throws SQLException {
+        return new HierarchyNode(rs, startIndex);
+    }
+
+    /**
 	 * Create a new hierarchy node
 	 */
 
@@ -371,28 +382,7 @@ public final class HierarchyNodeDAO
 
     public HierarchyNode getById(final String nodeId)
             throws SQLException {
-        if (nodeId == null || nodeId.equals(HierarchyNode.ROOT_NODE_ID)) {
-            return ROOT_NODE;
-        }
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_NODE_SQL);
-        try {
-            ps.setString(1, nodeId);
-            ps.setMaxRows(1);
-
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	                return new HierarchyNode(rs, 1);
-	            }
-
-	            return null;
-            } finally {
-            	DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
-        }
+        return (nodeId == null || nodeId.equals(HierarchyNode.ROOT_NODE_ID)) ? ROOT_NODE : super.getById(nodeId);
     }
 
 
@@ -646,38 +636,6 @@ public final class HierarchyNodeDAO
     }
 
     /**
-     * Gets the Node ID for a named node.
-     *
-     * @param name The name of the node to get.
-     *
-     * @return The ID of the first matching node.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
-    public String getNodeIDForName(final String name)
-    throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_NODE_ID_FOR_NAME_SQL);
-        try {
-            ps.setString(1, name);
-            ps.setMaxRows(1);
-
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	                return rs.getString(1);
-	            }
-
-	            return null;
-            } finally {
-            	DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
-        }
-    }
-
-    /**
      * Checks if this node is the parent of another node.
      *
      * @param parent The parent to be tested for
@@ -893,64 +851,14 @@ public final class HierarchyNodeDAO
         return new HierarchyNodeChildren(containers, objects);
     }
 
-    /**
-     * Tests whether this node has objects accessible by a given user.
-     *
-     * @param nodeId The ID of the node to test
-     * @param theUser The user who should be able to access the data.
-     *
-     * @return true if the node has data accessible by the user, false if not.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
     private boolean hasChildrenObjectNodesViaUac(final String nodeId, final User theUser)
             throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_VALID_CHILD_OBJECT_IDS_VIA_UAC_SQL);
-        try {
-            ps.setString(1, nodeId);
-            ps.setString(2, theUser.getUserId());
-            ps.setMaxRows(1);
-
-            ResultSet rs = ps.executeQuery();
-            try {
-            	return rs.next();
-            } finally {
-            	DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
+        return exists(GET_VALID_CHILD_OBJECT_IDS_VIA_UAC_SQL, nodeId, theUser.getUserId());
     }
-
-    /**
-     * Tests if there are child object nodes which hold data a user can access via a group access control.
-     *
-     * @param theUser
-     *            The user who should be able to access the data.
-     *
-     * @return true if there are objects the user can access, false if not.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
 
     private boolean hasChildrenObjectNodesViaGac(final String nodeId, final User theUser)
             throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_VALID_CHILD_OBJECT_IDS_VIA_GAC_SQL);
-        try {
-            ps.setString(1, theUser.getUserId());
-            ps.setString(2, nodeId);
-            ps.setMaxRows(1);
-
-            ResultSet rs = ps.executeQuery();
-            try {
-            	return rs.next();
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
+        return exists(GET_VALID_CHILD_OBJECT_IDS_VIA_GAC_SQL, nodeId, theUser.getUserId());
     }
 
     /**
@@ -996,37 +904,9 @@ public final class HierarchyNodeDAO
         }
     }
 
-
-    /**
-     * Gets the users personal container node
-     *
-     * @param user The user form whom the check should be performed.
-     *
-     * @return The HierarchyNode which is the users personal node.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     */
-
     public HierarchyNode getPersonalNodeForUser(final User user)
-            throws GeneralSecurityException, SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( GET_USER_CONTAINER_NODE_SQL);
-        try {
-            ps.setString(1, user.getUserId());
-
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	            	return new HierarchyNode(rs, 1);
-	            }
-
-	            return null;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
+            throws  SQLException {
+        return fetchObjectIfExists(GET_USER_CONTAINER_NODE_SQL, user.getUserId());
     }
 
     /**
@@ -1060,23 +940,7 @@ public final class HierarchyNodeDAO
 
     public List<HierarchyNode> getAllChildren(final HierarchyNode node)
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_ALL_CHILDREN_NODES_SQL);
-        try {
-            ps.setString(1, node.getNodeId());
-            ResultSet rs = ps.executeQuery();
-            try {
-	            List<HierarchyNode> results = new ArrayList<HierarchyNode>();
-	            while (rs.next()) {
-	                results.add(new HierarchyNode(rs, 1));
-	            }
-
-	            return results;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
+        return getMultiple(GET_ALL_CHILDREN_NODES_SQL, node.getNodeId());
     }
 
     /**
@@ -1459,7 +1323,7 @@ public final class HierarchyNodeDAO
      */
 
     public boolean isPersonalByName(final String name) throws SQLException {
-    	return isPersonalById( getNodeIDForName(name) );
+    	return isPersonalById( getByName(name).getNodeId() );
     }
 
     /**

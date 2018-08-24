@@ -191,7 +191,7 @@ public final class ViewPassword extends HttpServlet {
 	        if(thisPassword instanceof Password
 	        && ((Password)thisPassword).getPasswordType() == Password.TYPE_PERSONAL ) {
 	        	HierarchyNodeDAO hDAO = HierarchyNodeDAO.getInstance();
-	        	String containerNodeId = hDAO.getNodeIDForName(thisPassword.getId());
+	        	String containerNodeId = hDAO.getByName(thisPassword.getId()).getNodeId();
 	        	HierarchyNode containerNode = hDAO.getById(containerNodeId);
 	        	HierarchyNode personalNode = hDAO.getPersonalNodeForUser(thisUser);
 	        	if(personalNode == null || !personalNode.getNodeId().equals(containerNode.getParentId())) {

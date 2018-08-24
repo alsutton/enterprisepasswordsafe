@@ -58,12 +58,12 @@ public class UserSummaryDAO extends ObjectFetcher<UserSummary> implements Extern
 
     public List<UserSummary> getSummaryList()
             throws SQLException {
-        return getMultiple(GET_SUMMARY_LIST_INCLUDING_ADMIN, null);
+        return getMultiple(GET_SUMMARY_LIST_INCLUDING_ADMIN);
     }
 
     public List<UserSummary> getSummaryListExcludingAdmin()
             throws SQLException {
-        return getMultiple(GET_SUMMARY_LIST_EXCLUDING_ADMIN, null);
+        return getMultiple(GET_SUMMARY_LIST_EXCLUDING_ADMIN);
     }
 
     /**

@@ -64,20 +64,8 @@ public class ExpiringAccessiblePasswordsAction
 
     private String personalNodeId;
 
-    /**
-     * Constructor. Sets up the expiring and expiry dates.
-     *
-     * @param newConn
-     *            The connection to the database.
-     * @param newUser
-     *            The user for whom the search is being performed.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException
-     */
     public ExpiringAccessiblePasswordsAction(final User user)
-            throws SQLException, GeneralSecurityException {
+            throws SQLException {
         super();
 
         this.user = user;
@@ -130,7 +118,7 @@ public class ExpiringAccessiblePasswordsAction
 
         // Check that the password is not a personal password
         HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
-        String ultimateParentId = hnDAO.getNodeIDForName(testPassword.getId());
+        String ultimateParentId = hnDAO.getByName(testPassword.getId()).getNodeId();
         if(personalNodeId == null) {
             while( ultimateParentId != null && !ultimateParentId.equals(HierarchyNode.ROOT_NODE_ID)) {
             	ultimateParentId = hnDAO.getParentIdById(ultimateParentId);

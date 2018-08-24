@@ -33,36 +33,44 @@ abstract class ObjectFetcher<T> {
 
     public T getById(final String id)
             throws SQLException {
-        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(getByIdSql)) {
-            return fetchObjectIfExists(ps, id);
-        }
+        return fetchObjectIfExists(getByIdSql, id);
     }
 
     public T getByName(final String name)
             throws SQLException {
-        try(PreparedStatement ps =  BOMFactory.getCurrentConntection().prepareStatement(getByNameSql)) {
-            return fetchObjectIfExists(ps, name);
-        }
+        return fetchObjectIfExists(getByNameSql, name);
     }
 
-    T fetchObjectIfExists(PreparedStatement ps, String parameter)
+    T fetchObjectIfExists(String sql, final String... parameters)
             throws SQLException {
-        ps.setString(1, parameter);
-        ps.setMaxRows(1);
-        try(ResultSet rs = ps.executeQuery()) {
-            return rs.next() ? newInstance(rs, 1) : null;
+        if (sql == null) {
+            throw new RuntimeException("Unsupported operation");
+        }
+        try(PreparedStatement ps =  BOMFactory.getCurrentConntection().prepareStatement(sql)) {
+            setParameters(ps, parameters);
+            ps.setMaxRows(1);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? newInstance(rs, 1) : null;
+            }
         }
     }
 
+    boolean exists(String sql, final String... parameters)
+        throws SQLException{
+        try(PreparedStatement ps =  BOMFactory.getCurrentConntection().prepareStatement(sql)) {
+            setParameters(ps, parameters);
+            ps.setMaxRows(1);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
 
-
-    List<T> getMultiple(final String sql, final String parameter)
+    List<T> getMultiple(final String sql, final String... parameters)
             throws SQLException {
         List<T> results = new ArrayList<>();
         try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
-            if (parameter != null) {
-                ps.setString(1, parameter);
-            }
+            setParameters(ps, parameters);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     try {
@@ -85,4 +93,12 @@ abstract class ObjectFetcher<T> {
         }
     }
 
+    private void setParameters(PreparedStatement ps, String... parameters)
+            throws SQLException {
+        int parameterId = 1;
+        for (String parameter: parameters) {
+            ps.setString(parameterId, parameter);
+            parameterId++;
+        }
+    }
 }
