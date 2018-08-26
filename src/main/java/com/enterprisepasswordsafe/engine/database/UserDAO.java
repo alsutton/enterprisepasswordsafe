@@ -22,7 +22,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 
 import javax.crypto.KeyGenerator;
@@ -33,7 +32,6 @@ import javax.security.auth.login.LoginException;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
 import com.enterprisepasswordsafe.engine.jaas.WebLoginCallbackHandler;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
 import com.enterprisepasswordsafe.engine.utils.UserAccessKeyEncrypter;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
@@ -41,7 +39,7 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
 /**
  * Data access object for the user objects.
  */
-public final class UserDAO extends ObjectFetcher<User> implements ExternalInterface {
+public final class UserDAO extends StoredObjectManipulator<User> implements ExternalInterface {
 
     /**
      * The SQL to get a count of the number of enabled users.

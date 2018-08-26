@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +46,7 @@ import com.enterprisepasswordsafe.proguard.JavaBean;
  * Data access object for nodes in the hierarchy.
  */
 public final class HierarchyNodeDAO
-    extends ObjectFetcher<HierarchyNode>
+    extends StoredObjectManipulator<HierarchyNode>
     implements ExternalInterface {
 
 	/**

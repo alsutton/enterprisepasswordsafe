@@ -1,7 +1,6 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
-import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -9,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public abstract class GroupStoreManipulator extends ObjectFetcher<Group> {
+public abstract class GroupStoreManipulator extends StoredObjectManipulator<Group> {
 
     static final String GROUP_FIELDS = " grp.group_id, grp.group_name, grp.status ";
 

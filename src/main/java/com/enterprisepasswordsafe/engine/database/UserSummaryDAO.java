@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserSummaryDAO extends ObjectFetcher<UserSummary> implements ExternalInterface {
+public class UserSummaryDAO extends StoredObjectManipulator<UserSummary> implements ExternalInterface {
 
     private static final String GET_SUMMARY_BY_ID =
             "SELECT   user_id, user_name, full_name "

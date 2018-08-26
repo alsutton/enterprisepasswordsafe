@@ -287,69 +287,17 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
 
     public void write(final Group group)
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_GROUP_SQL);
-        try {
-            ps.setString(1, group.getGroupId());
-            ps.setString(2, group.getGroupName());
-            ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
+        runResultlessParameterisedSQL(WRITE_GROUP_SQL, group.getGroupId(), group.getGroupName());
     }
-
-    /**
-     * Gets all groups (including disabled ones).
-     *
-     * @return A List of all Groups.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
 
     public List<Group> getAll()
     	throws SQLException {
-    	return getAllWork(GET_ALL_GROUPS_SQL);
+    	return getMultiple(GET_ALL_GROUPS_SQL);
     }
-
-    /**
-     * Gets all groups (including disabled ones).
-     *
-     * @return A List of all Groups.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
 
     public List<Group> getAllEnabled()
     	throws SQLException {
-    	return getAllWork(GET_ALL_ENABLED_GROUPS_SQL);
-    }
-
-    /**
-     * Perform a SQL query and return a List of Groups representing the results.
-     *
-     * @return A List of all Groups.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
-    private List<Group> getAllWork( String sql)
-    	throws SQLException {
-        List<Group> groups = new ArrayList<Group>();
-
-        PreparedStatement stmt = BOMFactory.getCurrentConntection().prepareStatement(sql);
-        try {
-            ResultSet rs = stmt.executeQuery();
-            try {
-	            while (rs.next()) {
-	                groups.add(new Group(rs, 1));
-	            }
-
-	            return groups;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(stmt);
-        }
+    	return getMultiple(GET_ALL_ENABLED_GROUPS_SQL);
     }
 
     /**

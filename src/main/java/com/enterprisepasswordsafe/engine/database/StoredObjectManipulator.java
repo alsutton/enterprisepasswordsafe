@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  *
  * @param <T> The type of object being fetched
  */
-abstract class ObjectFetcher<T> {
+abstract class StoredObjectManipulator<T> {
 
     private String getByIdSql;
 
@@ -23,7 +23,7 @@ abstract class ObjectFetcher<T> {
 
     private String getCountSql;
 
-    ObjectFetcher(final String getByIdSql, final String getByNameSql, final String getCountSql) {
+    StoredObjectManipulator(final String getByIdSql, final String getByNameSql, final String getCountSql) {
         this.getByIdSql = getByIdSql;
         this.getByNameSql = getByNameSql;
         this.getCountSql = getCountSql;
@@ -99,6 +99,14 @@ abstract class ObjectFetcher<T> {
         for (String parameter: parameters) {
             ps.setString(parameterId, parameter);
             parameterId++;
+        }
+    }
+
+    void runResultlessParameterisedSQL(String sql, String... parameters)
+            throws SQLException {
+        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
+            setParameters(ps, parameters);
+            ps.execute();
         }
     }
 }
