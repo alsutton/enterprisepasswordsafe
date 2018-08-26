@@ -240,10 +240,7 @@ public final class HierarchyNodeDAO
      */
 
     private static final String GET_CHILD_BY_NAME_SQL =
-            "SELECT   node_id"
-            + "  FROM hierarchy"
-            + " WHERE parent_id = ? "
-            + "   AND name = ?";
+            "SELECT node_id FROM hierarchy WHERE parent_id = ? AND name = ?";
 
     /**
      * The SQL statement to write a new node to the database.
@@ -258,19 +255,14 @@ public final class HierarchyNodeDAO
      */
 
     private static final String UPDATE_NODE_SQL =
-            "UPDATE hierarchy "
-            + "   SET name = ?, parent_id = ?, type = ? "
-            + " WHERE node_id = ?";
+            "UPDATE hierarchy SET name = ?, parent_id = ?, type = ? WHERE node_id = ?";
 
     /**
      * SQL to count the number of nodes referring to a object.
      */
 
     private static final String TEST_NODES_REFERRING_TO_OBJECT_NODE_SQL =
-            "SELECT node_id "
-            + "  FROM hierarchy "
-            + " WHERE name = ?"
-            + "   AND type = " + HierarchyNode.OBJECT_NODE;
+            "SELECT " + NODE_FIELDS + " FROM hierarchy WHERE name = ? AND type = " + HierarchyNode.OBJECT_NODE;
 
     /**
      * The SQL to delete a node.
@@ -356,6 +348,7 @@ public final class HierarchyNodeDAO
             statementSQL = UPDATE_NODE_SQL;
         }
 
+
         PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(statementSQL);
         try {
             ps.setString(1, node.getName());
@@ -434,21 +427,7 @@ public final class HierarchyNodeDAO
 
     public boolean childAlreadyExists(final String parentId, final String name)
             throws SQLException {
-    	// TODO Use more efficient SQL which only returns 1 item.
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_CHILD_BY_NAME_SQL);
-        try {
-            ps.setString(1, parentId);
-            ps.setString(2, name);
-
-            ResultSet rs = ps.executeQuery();
-            try {
-            	return rs.next();
-            } finally {
-            	DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
-        }
+        return fetchObjectIfExists(GET_CHILD_BY_NAME_SQL, parentId, name) != null;
     }
 
     /**
@@ -465,60 +444,25 @@ public final class HierarchyNodeDAO
     public void deleteNode(final HierarchyNode node, final User deletingUser)
             throws SQLException, GeneralSecurityException, IOException {
         if (node.getType() == HierarchyNode.CONTAINER_NODE) {
-            // Look for children nodes to recursively delete
-            PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_ALL_CHILDREN_NODES_SQL);
-            ResultSet rs = null;
-            try {
-                ps.setString(1, node.getNodeId());
-                rs = ps.executeQuery();
-                while (rs.next()) {
-                    HierarchyNode thisNode = new HierarchyNode(rs, 1);
-                    deleteNode(thisNode, deletingUser);
-                }
-
-                TamperproofEventLogDAO.getInstance().create(
-                		TamperproofEventLog.LOG_LEVEL_HIERARCHY_MANIPULATION,
-                		deletingUser,
-                		null,
-                		"Deleted Node " +
-                			node.getName() +
-                			" from {node:"
-                			+ node.getNodeId()
-                			+ "}",
-                		true
-            		);
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-                DatabaseConnectionUtils.close(ps);
+            for(HierarchyNode thisNode : getMultiple(GET_ALL_CHILDREN_NODES_SQL, node.getNodeId())) {
+                deleteNode(thisNode, deletingUser);
             }
+
+            TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_HIERARCHY_MANIPULATION,
+                    deletingUser, null, "Deleted Node " + node.getName() +
+                        " from {node:"+ node.getNodeId()+ "}",true);
         }
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL);
-        try {
-            ps.setString(1, node.getNodeId());
-            ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
+        runResultlessParameterisedSQL(DELETE_SQL, node.getNodeId());
 
         if (node.getType()== HierarchyNode.OBJECT_NODE) {
-            ResultSet rs = null;
-            ps = BOMFactory.getCurrentConntection().prepareStatement(TEST_NODES_REFERRING_TO_OBJECT_NODE_SQL);
-            try {
-            	ps.setMaxRows(1);
-                ps.setString(1, node.getName());
-                rs = ps.executeQuery();
-                if (!rs.next()) {
-                	PasswordDAO pDAO = PasswordDAO.getInstance();
-                    Password password = pDAO.getById(deletingUser, node.getName());
-                    if (password != null) {
-                    	pDAO.delete(deletingUser, password);
-                    }
+            HierarchyNode referringNode = fetchObjectIfExists(TEST_NODES_REFERRING_TO_OBJECT_NODE_SQL, node.getName());
+            if (referringNode == null) {
+                PasswordDAO pDAO = PasswordDAO.getInstance();
+                Password password = pDAO.getById(deletingUser, node.getName());
+                if (password != null) {
+                    pDAO.delete(deletingUser, password);
                 }
-
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-                DatabaseConnectionUtils.close(ps);
             }
         }
     }
@@ -873,33 +817,22 @@ public final class HierarchyNodeDAO
 
     private boolean hasChildrenNodes(final String nodeId, final User theUser)
             throws GeneralSecurityException, SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_CHILDREN_NODE_IDS_SQL);
-        try {
-            ps.setString(1, nodeId);
-
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (!rs.next()) {
-	            	return false;
-	            }
-
-                if (theUser.isAdministrator() || theUser.isSubadministrator()) {
-                    return true;
-                }
-
-                do {
-                    if (hasChildrenValidForUser(rs.getString(1), theUser)) {
-                        return true;
-                    }
-                } while (rs.next());
-
-                return false;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
+        List<String> childNodeIds = getFieldValues(GET_CHILDREN_NODE_IDS_SQL, nodeId);
+        if(childNodeIds.isEmpty()) {
+            return false;
         }
+
+        if (theUser.isAdministrator() || theUser.isSubadministrator()) {
+            return true;
+        }
+
+        for(String childNodeId: childNodeIds) {
+            if (hasChildrenValidForUser(childNodeId, theUser)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public HierarchyNode getPersonalNodeForUser(final User user)
@@ -921,8 +854,7 @@ public final class HierarchyNodeDAO
 
     private boolean hasChildrenValidForUser(final String nodeId, final User theUser)
             throws SQLException, GeneralSecurityException {
-        return hasChildrenObjectNodesViaUac(nodeId, theUser)
-                || hasChildrenObjectNodesViaGac(nodeId, theUser)
+        return hasChildrenObjectNodesViaUac(nodeId, theUser) || hasChildrenObjectNodesViaGac(nodeId, theUser)
                 || hasChildrenNodes(nodeId, theUser);
     }
 
@@ -1242,15 +1174,9 @@ public final class HierarchyNodeDAO
     public void setDefaultPermissionsForNode(final String nodeId,
     		final Map<String,String> userPermMap, final Map<String,String> groupPermMap)
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_PASSWORD_DEFAULTS_FOR_NODE);
-        try {
-            ps.setString(1, nodeId);
-            ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
+        runResultlessParameterisedSQL(DELETE_PASSWORD_DEFAULTS_FOR_NODE, nodeId);
 
-        ps = BOMFactory.getCurrentConntection().prepareStatement(SET_PASSWORD_DEFAULTS_FOR_NODE);
+        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(SET_PASSWORD_DEFAULTS_FOR_NODE);
         try {
 	        ps.setString(1, nodeId);
 	        ps.setString(2, "u");
