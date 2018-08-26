@@ -28,10 +28,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.enterprisepasswordsafe.engine.database.Group;
 import com.enterprisepasswordsafe.engine.database.GroupDAO;
 import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
 import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO.GroupNodeDefaultPermission;
-import com.enterprisepasswordsafe.engine.database.derived.GroupSummary;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 /**
@@ -65,7 +65,7 @@ public class NodePasswordDefaultsGroupQuery extends HttpServlet {
 				final String nodeId = ServletUtils.getInstance().getNodeId(request);
 
 				HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
-				for(GroupSummary group : GroupDAO.getInstance().getSummaryBySearch(searchQuery)) {
+				for(Group group : GroupDAO.getInstance().searchNames(searchQuery)) {
 					results.add(hnDAO.getDefaultPermissionForGroup(group, nodeId));
 				}
 			}

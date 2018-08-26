@@ -84,6 +84,24 @@ abstract class StoredObjectManipulator<T> {
         return results;
     }
 
+    List<String> getFieldValues(final String sql, final String... parameters)
+            throws SQLException {
+        List<String> results = new ArrayList<>();
+        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
+            setParameters(ps, parameters);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    try {
+                        results.add(rs.getString(1));
+                    } catch(Exception e) {
+                        Logger.getAnonymousLogger().log(Level.SEVERE, "Error fetching object.", e);
+                    }
+                }
+            }
+        }
+        return results;
+    }
+
     public int countActiveUsers( )
             throws SQLException {
         try (Statement statement = BOMFactory.getCurrentConntection().createStatement()) {
@@ -93,20 +111,20 @@ abstract class StoredObjectManipulator<T> {
         }
     }
 
+    void runResultlessParameterisedSQL(String sql, String... parameters)
+            throws SQLException {
+        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
+            setParameters(ps, parameters);
+            ps.execute();
+        }
+    }
+
     private void setParameters(PreparedStatement ps, String... parameters)
             throws SQLException {
         int parameterId = 1;
         for (String parameter: parameters) {
             ps.setString(parameterId, parameter);
             parameterId++;
-        }
-    }
-
-    void runResultlessParameterisedSQL(String sql, String... parameters)
-            throws SQLException {
-        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
-            setParameters(ps, parameters);
-            ps.execute();
         }
     }
 }

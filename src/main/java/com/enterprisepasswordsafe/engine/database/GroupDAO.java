@@ -18,16 +18,11 @@ package com.enterprisepasswordsafe.engine.database;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-import com.enterprisepasswordsafe.engine.database.derived.GroupSummary;
 import com.enterprisepasswordsafe.engine.utils.Cache;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 import org.apache.commons.csv.CSVRecord;
 
@@ -101,7 +96,7 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
      */
 
     private static final String GET_SUMMARY_BY_SEARCH =
-    		"SELECT   group_id, group_name FROM groups WHERE group_name like ? ";
+    		"SELECT " + GROUP_FIELDS + " FROM groups WHERE group_name like ? ";
 
 	/**
 	 * Cache for groups.
@@ -139,22 +134,6 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
         }
     }
 
-
-    /**
-     * Create a group.
-     *
-     * @param theCreator The user creating the group.
-     * @param id The ID of the group to create.
-     * @param groupName The name of the group to create.
-     *
-     * @return The newly created group.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem creating the group key
-     * @throws UnsupportedEncodingException
-     * @throws InvalidLicenceException Thrown if the system licence key is not valid.
-     */
-
     public Group create(final User theCreator, final String id, final String groupName)
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         Group theGroup = getByName(groupName);
@@ -185,37 +164,10 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
         return newGroup;
     }
 
-    /**
-     * Create a group.
-     *
-     * @param theCreator The user creating the group.
-     * @param groupName The name of the group to create.
-     *
-     * @return The newly created group.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem creating the group key
-     * @throws UnsupportedEncodingException
-     * @throws InvalidLicenceException Thrown if the system licence key is not valid.
-     */
-
     public Group create(final User theCreator, final String groupName)
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         return create( theCreator, IDGenerator.getID(), groupName);
     }
-
-    /**
-     * Gets the admin group if it's possible to get the group from the given user.
-     *
-     * @param theUser The user to attempt to get the admin group for.
-     *
-     * @return The admin group (group 0), or null if the user does not have
-     *         admin or sub-admin rights.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting data.
-     * @throws UnsupportedEncodingException
-     */
 
     public Group getAdminGroup(final User theUser)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -237,20 +189,6 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
 
         return adminGroup;
     }
-
-    /**
-     * Gets a group including it's decrypted group key.
-     *
-     * @param groupId The id of the group to get
-     * @param user The user fetching the group.
-     *
-     * @return The group with it's decrypted key, or null if the group is unavailable
-     *  to the user.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting data.
-     * @throws UnsupportedEncodingException
-     */
 
     public Group getByIdDecrypted(final String groupId, final User user)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -274,19 +212,8 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
     	return theGroup;
     }
 
-    /**
-     * Writes a group to the database.
-     *
-     * @param group The group to write.
-     *
-     * @throws SQLException Thrown if there is a problem accessing thda database.
-     * @throws GeneralSecurityException Thrown if there is a problem encrypting the user data.
-     * @throws UnsupportedEncodingException
-     * @throws InvalidLicenceException Thrown if the licence is not valid.
-     */
-
     public void write(final Group group)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        throws SQLException {
         runResultlessParameterisedSQL(WRITE_GROUP_SQL, group.getGroupId(), group.getGroupName());
     }
 
@@ -300,100 +227,28 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
     	return getMultiple(GET_ALL_ENABLED_GROUPS_SQL);
     }
 
-    /**
-     * Gets all the group IDs.
-     *
-     * @return A List of all group IDs.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
     public List<String> getAllIds()
     	throws SQLException {
-        List<String> groups = new ArrayList<String>();
-
-        PreparedStatement stmt = BOMFactory.getCurrentConntection().prepareStatement(GET_ALL_GROUP_IDS_SQL);
-        try {
-            ResultSet rs = stmt.executeQuery();
-            try {
-	            while (rs.next()) {
-	                groups.add(rs.getString(1));
-	            }
-
-	            return groups;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(stmt);
-        }
+        return getFieldValues(GET_ALL_GROUP_IDS_SQL);
     }
 
-    /**
-     * Get the summary of the first 10 users which contain a specified search string
-     *
-     * @param searchQuery The query to search for
-     * @return The summaries
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem accessing the database.
-     */
-
-    public List<GroupSummary> getSummaryBySearch(String searchQuery)
+    public List<Group> searchNames(String searchQuery)
         throws SQLException {
-    	synchronized( this ) {
-    		List<GroupSummary> results= new ArrayList<GroupSummary>();
+        if(searchQuery == null) {
+            searchQuery = "%";
+        } else if(searchQuery.indexOf('%') == -1) {
+            searchQuery += "%";
+        }
 
-    		if(searchQuery == null) {
-    			searchQuery = "%";
-    		} else if(searchQuery.indexOf('%') == -1) {
-    			searchQuery += "%";
-    		}
-
-	        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_SUMMARY_BY_SEARCH);
-	        try {
-	            ps.setString(1, searchQuery);
-
-	            ResultSet rs = ps.executeQuery();
-	            try {
-		            while(rs.next()) {
-			            results.add( new GroupSummary(rs.getString(1), rs.getString(2)) );
-		            }
-
-		            return results;
-		        } finally {
-		            DatabaseConnectionUtils.close(rs);
-		        }
-	        } finally {
-	            DatabaseConnectionUtils.close(ps);
-	        }
-    	}
+        return getMultiple(GET_SUMMARY_BY_SEARCH, searchQuery);
     }
-
-    /**
-     * Method to see if a group exists.
-     *
-     * @param groupName The name of the group to look for.
-     * @return true if the group exists, false if not.
-     *
-     * @throws SQLException Exception thrown if there is a problem accessing the database
-     */
 
     public boolean nameExists(String groupName) throws SQLException {
     	return (getByName(groupName) != null);
     }
 
-    /**
-     * Method to see if a group exists.
-     *
-     * @param groupId The id of the group to look for.
-     * @return true if the group exists, false if not.
-     *
-     * @throws SQLException Exception thrown if there is a problem accessing the database
-     */
-
     public boolean idExists(String groupId) throws SQLException {
-    	return getById(groupId)!=null;
+    	return getById(groupId) != null;
     }
 
     //------------------------

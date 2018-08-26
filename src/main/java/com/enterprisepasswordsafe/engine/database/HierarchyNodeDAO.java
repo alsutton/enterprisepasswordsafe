@@ -33,7 +33,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.enterprisepasswordsafe.engine.database.actions.NodeObjectAction;
-import com.enterprisepasswordsafe.engine.database.derived.GroupSummary;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeSummary;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
@@ -1147,7 +1146,7 @@ public final class HierarchyNodeDAO
      *             Thrown if there is a problem accessing the database.
      */
 
-    public GroupNodeDefaultPermission getDefaultPermissionForGroup(final GroupSummary group, String nodeId)
+    public GroupNodeDefaultPermission getDefaultPermissionForGroup(final Group group, String nodeId)
         throws SQLException {
     	synchronized( this ) {
 	        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_PERMISSION_SUMMARY_FOR_GROUP);
@@ -1387,17 +1386,17 @@ public final class HierarchyNodeDAO
 
     public static class GroupNodeDefaultPermission
         implements JavaBean {
-    	private final GroupSummary group;
+    	private final Group group;
     	private final String permission;
 
 
-    	public GroupNodeDefaultPermission(final GroupSummary group, final String permission) {
+    	public GroupNodeDefaultPermission(final Group group, final String permission) {
     		this.group = group;
     		this.permission = permission;
     	}
 
 
-		public GroupSummary getGroup() {
+		public Group getGroup() {
 			return group;
 		}
 		public String getPermission() {
