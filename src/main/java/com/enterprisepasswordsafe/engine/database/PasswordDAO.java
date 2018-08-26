@@ -31,6 +31,7 @@ import com.enterprisepasswordsafe.engine.database.actions.PasswordAction;
 import com.enterprisepasswordsafe.engine.database.actions.password.ExpiringAccessiblePasswordsAction;
 import com.enterprisepasswordsafe.engine.database.derived.ExpiringAccessiblePasswords;
 import com.enterprisepasswordsafe.engine.database.derived.PasswordSummary;
+import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.utils.*;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 import org.apache.commons.csv.CSVRecord;
@@ -426,37 +427,20 @@ public final class PasswordDAO
         return newPassword;
     }
 
-    /**
-     * Sets the permissions on a password from the hierarchy defaults
-     * @throws GeneralSecurityException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-
     private void setDefaultPermissions(final Password newPassword, final String parentNodeId, final Group adminGroup)
     		throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
         Map<String,String> uPerms = new HashMap<>();
         Map<String,String> gPerms = new HashMap<>();
         HierarchyNodeDAO.getInstance().getCombinedDefaultPermissionsForNode(parentNodeId, uPerms, gPerms);
 
+        UserAccessControlDAO uacDAO = UserAccessControlDAO.getInstance();
         for(Map.Entry<String, String> thisEntry : uPerms.entrySet()) {
         	String userId = thisEntry.getKey();
         	User theUser = UserDAO.getInstance().getByIdDecrypted(userId, adminGroup);
         	if( theUser == null ) {
         		continue;
         	}
-
-        	boolean allowRead = false;
-        	boolean allowModify = false;
-        	String permissions = thisEntry.getValue();
-        	if			( permissions.equals("1") ) {
-        		allowRead = true;
-        	} else if	( permissions.equals("2") ) {
-        		allowRead = true;
-        		allowModify = true;
-        	}
-
-        	UserAccessControlDAO.getInstance().create(theUser, newPassword, allowRead, allowModify);
+        	addPermission(theUser, newPassword, uacDAO, thisEntry.getValue());
         }
 
         final User adminUser = UserDAO.getInstance().getAdminUser(adminGroup);
@@ -466,20 +450,18 @@ public final class PasswordDAO
         	if( theGroup == null ) {
         		continue;
         	}
-
-        	boolean allowRead = false;
-        	boolean allowModify = false;
-        	final String permissions = thisEntry.getValue();
-        	if			( permissions.equals("1") ) {
-        		allowRead = true;
-        	} else if	( permissions.equals("2") ) {
-        		allowRead = true;
-        		allowModify = true;
-        	}
-
-        	GroupAccessControlDAO.getInstance().create(theGroup, newPassword, allowRead, allowModify);
+            addPermission(theGroup, newPassword, uacDAO, thisEntry.getValue());
         }
     }
+
+    private void addPermission(EntityWithAccessRights entity, Password newPassword,
+            AccessControlDAOInterface acDAO, String permissions)
+            throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
+        boolean allowRead = "1".equals(permissions) || "2".equals(permissions);
+        boolean allowModify = "2".equals(permissions);
+        acDAO.create(entity, newPassword, allowRead, allowModify);
+    }
+
 
     /**
      * Stores a password in the database and creates a GAC for the admin group
