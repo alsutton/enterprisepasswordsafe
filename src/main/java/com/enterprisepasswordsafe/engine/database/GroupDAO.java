@@ -36,6 +36,12 @@ import org.apache.commons.csv.CSVRecord;
  */
 public class GroupDAO extends GroupStoreManipulator implements ExternalInterface {
 
+    /**
+     * The clause for excluding reserved system groups
+     */
+
+    private static final String EXCLUDE_RESERVED_GROUP_CLAUSE =
+            "grp.group_id != '0' AND grp.group_id != '1' AND grp.group_id != '2' AND grp.group_id != '3'";
 
     /**
      * The SQL to get a particular group by its' ID.
@@ -56,10 +62,7 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
 
     private static final String GET_ALL_GROUPS_SQL = "SELECT " + GROUP_FIELDS
             + "  FROM groups grp "
-            + " WHERE grp.group_id != '0' "
-            + "   AND grp.group_id != '1' "
-            + "   AND grp.group_id != '2' "
-            + "   AND grp.group_id != '3' "
+            + " WHERE  "
             + "	  AND grp.status < " + Group.STATUS_DELETED
             + " ORDER BY grp.group_name ASC";
 
@@ -67,26 +70,16 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
      * The SQL statement to get all the available groups.
      */
 
-    private static final String GET_ALL_GROUP_IDS_SQL = "SELECT group_id "
-            + "  FROM groups grp "
-            + " WHERE grp.group_id != '0' "
-            + "   AND grp.group_id != '1' "
-            + "   AND grp.group_id != '2' "
-            + "   AND grp.group_id != '3' "
-            + "	  AND grp.status < " + Group.STATUS_DELETED
+    private static final String GET_ALL_GROUP_IDS_SQL = "SELECT group_id FROM groups grp "
+            + " WHERE " + EXCLUDE_RESERVED_GROUP_CLAUSE+" AND grp.status < " + Group.STATUS_DELETED
             + " ORDER BY grp.group_name ASC";
 
     /**
      * The SQL statement to get all the available enabled groups.
      */
 
-    private static final String GET_ALL_ENABLED_GROUPS_SQL = "SELECT " + GROUP_FIELDS
-            + "  FROM groups grp "
-            + " WHERE grp.group_id != '0' "
-            + "   AND grp.group_id != '1' "
-            + "   AND grp.group_id != '2' "
-            + "   AND grp.group_id != '3' "
-            + "	  AND grp.status = " + Group.STATUS_ENABLED
+    private static final String GET_ALL_ENABLED_GROUPS_SQL = "SELECT " + GROUP_FIELDS+ "  FROM groups grp "
+            + " WHERE " + EXCLUDE_RESERVED_GROUP_CLAUSE + " AND grp.status = " + Group.STATUS_ENABLED
             + " ORDER BY grp.group_name ASC";
 
     /**
@@ -121,7 +114,7 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
 	 */
 
 	private GroupDAO() {
-		super(GET_BY_ID_SQL, GET_BY_NAME_SQL, null);
+		super(GET_BY_ID_SQL, GET_BY_NAME_SQL, COUNT_SQL);
 	}
 
     public void importGroup(final User theImporter, final CSVRecord record)
@@ -385,35 +378,6 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
             }
         } finally {
             DatabaseConnectionUtils.close(stmt);
-        }
-    }
-
-    /**
-     * Counts the number of members in a group.
-     *
-     * @param group The group to count the number of members.
-     *
-     * @return The number of users in the group.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
-    public int countMembers(final Group group) throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(COUNT_SQL);
-        try {
-            ps.setString(1, group.getGroupId());
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	                return rs.getInt(1);
-	            }
-
-	            return -1;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
