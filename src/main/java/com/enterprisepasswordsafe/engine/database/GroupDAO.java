@@ -110,12 +110,6 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
     private static final String GET_SUMMARY_BY_SEARCH =
     		"SELECT   group_id, group_name FROM groups WHERE group_name like ? ";
 
-    /**
-	 * Cache for decrypted groups.
-	 */
-
-	private final Cache<String, Group> decryptedGroupCache = new Cache<String, Group>();
-
 	/**
 	 * Cache for groups.
 	 */
@@ -268,13 +262,6 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
     public Group getByIdDecrypted(final String groupId, final User user)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
     	Group theGroup;
-    	synchronized(decryptedGroupCache) {
-    		theGroup = decryptedGroupCache.get(groupId);
-	    	if( theGroup != null ) {
-	    		return theGroup;
-	    	}
-    	}
-
     	if( user.isAdministrator() ) {
     		theGroup = UnfilteredGroupDAO.getInstance().getById(groupId);
     	} else {
@@ -291,9 +278,6 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
 
     	theGroup.updateAccessKey(mem);
 
-    	synchronized(decryptedGroupCache) {
-    		decryptedGroupCache.put(groupId, theGroup);
-    	}
     	return theGroup;
     }
 
