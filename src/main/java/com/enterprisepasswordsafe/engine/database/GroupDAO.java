@@ -28,32 +28,20 @@ import com.enterprisepasswordsafe.engine.utils.Cache;
 import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
 import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
-import com.enterprisepasswordsafe.engine.utils.TokenizerUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 import org.apache.commons.csv.CSVRecord;
 
 /**
  * Data access object for the group objects.
  */
-public class GroupDAO implements ExternalInterface {
-    /**
-     * The columns holding group information.
-     */
+public class GroupDAO extends GroupStoreManipulator implements ExternalInterface {
 
-    public static final String GROUP_FIELDS = " grp.group_id, grp.group_name, grp.status ";
 
     /**
      * The SQL to get a particular group by its' ID.
      */
 
     private static final String GET_BY_ID_SQL = "SELECT " + GROUP_FIELDS +" FROM groups grp" + " WHERE grp.group_id = ?";
-
-    /**
-     * The SQL to get a particular group by its' ID (includes disabled groups).
-     */
-
-    private static final String GET_BY_ID_EVEN_IF_DISABLED_SQL = "SELECT "
-            + GROUP_FIELDS + "  FROM groups grp " + " WHERE grp.group_id = ? AND grp.status < " + Group.STATUS_DELETED;
 
     /**
      * The SQL to get a particular group by its' name.
@@ -110,50 +98,10 @@ public class GroupDAO implements ExternalInterface {
             + "          VALUES(       ?,          ?, "+Group.STATUS_ENABLED+")";
 
     /**
-     * The SQL write a groups details to the database.
-     */
-
-    private static final String UPDATE_GROUP_SQL =
-            "UPDATE groups SET group_name = ?, status = ? WHERE group_id = ?";
-
-    /**
      * The SQL to count the number of members in a group.
      */
 
     private static final String COUNT_SQL = "SELECT count(*)  FROM membership  WHERE group_id = ?";
-
-    /**
-     * The SQL to count the number of members in a group.
-     */
-
-    private static final String MEMBER_LIST_SQL =
-            "SELECT " + User.USER_FIELDS
-            + " FROM application_users appusers, "
-            + "     membership m "
-            + " WHERE m.group_id = ? "
-            + "   AND m.user_id = appusers.user_id "
-            + "   AND appusers.user_id <> '0' "
-            + "   AND (appusers.disabled is null OR appusers.disabled = 'N')"
-            + " ORDER BY appusers.user_name ASC";
-
-    /**
-     * SQL to delete a group.
-     */
-
-    private static final String DELETE_SQL = "UPDATE groups SET status = "+Group.STATUS_DELETED+" WHERE group_id = ?";
-
-    /**
-     * SQL to delete the GACs for a group
-     */
-
-    private static final String DELETE_GAC_SQL = "DELETE FROM group_access_control WHERE group_id = ?";
-
-    /**
-     * SQL to delete the memberships for a group
-     */
-
-    private static final String DELETE_MEMBERSHIP_SQL = "DELETE FROM membership WHERE group_id = ?";
-
 
     /**
      * The SQL to get the user summary for a search
@@ -179,9 +127,8 @@ public class GroupDAO implements ExternalInterface {
 	 */
 
 	private GroupDAO() {
-		super();
+		super(GET_BY_ID_SQL, GET_BY_NAME_SQL, null);
 	}
-
 
     public void importGroup(final User theImporter, final CSVRecord record)
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -305,81 +252,6 @@ public class GroupDAO implements ExternalInterface {
     }
 
     /**
-     * Gets the data about an individual group if it is enabled.
-     *
-     * @param id The ID of the group to get.
-     *
-     * @return The group object, or null if the user does not exist.
-     *
-     * @throws SQLException Thrown if tehre is a problem getting the data from the database.
-     */
-
-    public Group getByIdEvenIfDisabled(final String id)
-            throws SQLException {
-        return getByIdWork(GET_BY_ID_EVEN_IF_DISABLED_SQL, id);
-    }
-
-    /**
-     * Gets the data about an individual group if it is enabled.
-     *
-     * @param id The ID of the group to get.
-     *
-     * @return The group object, or null if the user does not exist.
-     *
-     * @throws SQLException Thrown if tehre is a problem getting the data from the database.
-     */
-
-    public Group getById(final String id) throws SQLException {
-        return getByIdWork(GET_BY_ID_SQL, id);
-    }
-
-
-    /**
-     * Gets the data about an individual group using the SQL provided.
-     *
-     * @param sql The SQL to use.
-     * @param id The ID of the group to get.
-     *
-     * @return The group object, or null if the user does not exist.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
-    public Group getByIdWork(final String sql, final String id)
-            throws SQLException {
-    	Group group;
-    	synchronized(groupCache) {
-	    	group = groupCache.get(id);
-	    	if(group != null) {
-	    		return group;
-	    	}
-    	}
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql);
-        try {
-            ps.setString(1, id);
-            ps.setMaxRows(1);
-
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (!rs.next()) {
-	            	return null;
-	            }
-
-	            group = new Group(rs, 1);
-	        	synchronized(groupCache) {
-	        		groupCache.put(id, group);
-	        	}
-	            return group;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
-    }
-
-    /**
      * Gets a group including it's decrypted group key.
      *
      * @param groupId The id of the group to get
@@ -404,7 +276,7 @@ public class GroupDAO implements ExternalInterface {
     	}
 
     	if( user.isAdministrator() ) {
-    		theGroup = getByIdEvenIfDisabled(groupId);
+    		theGroup = UnfilteredGroupDAO.getInstance().getById(groupId);
     	} else {
     		theGroup = getById(groupId);
     	}
@@ -423,37 +295,6 @@ public class GroupDAO implements ExternalInterface {
     		decryptedGroupCache.put(groupId, theGroup);
     	}
     	return theGroup;
-    }
-
-    /**
-     * Gets the data about an individual group.
-     *
-     * @param name The Name of the group to get.
-     *
-     * @return The group object, or null if the user does not exist.
-     *
-     * @throws SQLException thrown if there is a problem accessing the database.
-     */
-
-    public Group getByName(final String name)
-            throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_NAME_SQL);
-        try {
-            ps.setString(1, name);
-
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	                return new Group(rs, 1);
-	            }
-
-	            return null;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
     }
 
     /**
@@ -478,31 +319,6 @@ public class GroupDAO implements ExternalInterface {
             DatabaseConnectionUtils.close(ps);
         }
     }
-
-    /**
-     * updates a group in the database.
-     *
-     * @param group The group to update.
-     *
-     * @throws SQLException Thrown if there is a problem accessing thda database.
-     * @throws GeneralSecurityException Thrown if there is a problem encrypting the user data.
-     * @throws UnsupportedEncodingException
-     * @throws InvalidLicenceException Thrown if the licence is not valid.
-     */
-
-    public void update(final Group group)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_GROUP_SQL);
-        try {
-            ps.setString(1, group.getGroupName());
-            ps.setInt(2, group.getStatus());
-            ps.setString(3, group.getGroupId());
-            ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
-    }
-
 
     /**
      * Gets all groups (including disabled ones).
@@ -615,73 +431,6 @@ public class GroupDAO implements ExternalInterface {
         } finally {
             DatabaseConnectionUtils.close(ps);
         }
-    }
-
-    /**
-     * Gets the members of this group.
-     *
-     * @param group The Group to get the list of members of.
-     *
-     * @return a List of User objects representing the members of the group.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
-    public List<User> getMemberList(final Group group) throws SQLException {
-        List<User> members = new ArrayList<User>();
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(MEMBER_LIST_SQL);
-        try {
-            ps.setString(1, group.getGroupId());
-
-            ResultSet rs = ps.executeQuery();
-            try {
-	            while (rs.next()) {
-	                members.add(new User(rs, 1));
-	            }
-
-	            return members;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
-    }
-
-    /**
-     * Delete a group.
-     *
-     * @param group The group to delete.
-     */
-
-    public void delete( final Group group )
-    	throws SQLException {
-    	String theGroupId = group.getGroupId();
-
-    	PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL);
-    	try {
-    		ps.setString(1, theGroupId);
-    		ps.executeUpdate();
-    	} finally {
-    		DatabaseConnectionUtils.close(ps);
-    	}
-
-    	ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_GAC_SQL);
-    	try {
-    		ps.setString(1, theGroupId);
-    		ps.executeUpdate();
-    	} finally {
-    		DatabaseConnectionUtils.close(ps);
-    	}
-
-    	ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_MEMBERSHIP_SQL);
-    	try {
-    		ps.setString(1, theGroupId);
-    		ps.executeUpdate();
-    	} finally {
-    		DatabaseConnectionUtils.close(ps);
-    	}
     }
 
     /**

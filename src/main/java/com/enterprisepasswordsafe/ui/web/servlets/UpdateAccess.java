@@ -163,7 +163,7 @@ public final class UpdateAccess extends HttpServlet {
 			return;
 		}
 
-		Group theGroup = GroupDAO.getInstance().getByIdEvenIfDisabled(groupId);
+		Group theGroup = UnfilteredGroupDAO.getInstance().getById(groupId);
 		if (theGroup == null) {
 			throw new RuntimeException("One of the specified groups does not exist anymore.");
 		}

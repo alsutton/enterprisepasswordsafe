@@ -33,6 +33,7 @@ import javax.security.auth.login.LoginException;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
 import com.enterprisepasswordsafe.engine.jaas.WebLoginCallbackHandler;
+import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
 import com.enterprisepasswordsafe.engine.utils.UserAccessKeyEncrypter;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
@@ -110,6 +111,12 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
               "   SET	user_name = ?, user_pass_b = ?, full_name = ?, email = ?, " +
               "			last_login_l = ?, disabled = ?, pwd_last_changed_l = ?, auth_source = ? "+
               " WHERE	user_id = ?";
+
+    private static final String GROUP_MEMBER_LIST_SQL =
+            "SELECT " + User.USER_FIELDS + " FROM application_users appusers, membership m "
+                    + " WHERE m.group_id = ? AND m.user_id = appusers.user_id AND appusers.user_id <> '0' "
+                    + " AND (appusers.disabled is null OR appusers.disabled = 'N') ORDER BY appusers.user_name ASC";
+
 
     /**
      * The SQL to see if a user is member of a particular group.
@@ -458,6 +465,11 @@ public final class UserDAO extends ObjectFetcher<User> implements ExternalInterf
 	            throw ex;
 	        }
         }
+    }
+
+    public List<User> getGroupMembers(Group group)
+            throws SQLException {
+        return getMultiple(GROUP_MEMBER_LIST_SQL, group.getGroupId());
     }
 
     //------------------------

@@ -220,7 +220,7 @@ public final class MembershipDAO implements ExternalInterface {
 
     public Membership create(final User remoteUser, final User user, final String groupId)
             throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-        Group theGroup = GroupDAO.getInstance().getByIdEvenIfDisabled(groupId);
+        Group theGroup = UnfilteredGroupDAO.getInstance().getById(groupId);
 
         Membership membership = getMembership(remoteUser, theGroup);
         if(membership == null) {

@@ -27,10 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserDAO;
+import com.enterprisepasswordsafe.engine.database.*;
 
 /**
  * Servlet to get the information relating to a group to be edited.
@@ -46,13 +43,14 @@ public final class EditGroup extends HttpServlet {
         throws ServletException, IOException {
         String id = request.getParameter("id");
 
-        GroupDAO gDAO = GroupDAO.getInstance();
+        GroupStoreManipulator gDAO = UnfilteredGroupDAO.getInstance();
+        UserDAO userDAO = UserDAO.getInstance();
         try {
-	        Group group = gDAO.getByIdEvenIfDisabled(id);
+	        Group group = gDAO.getById(id);
 	        request.setAttribute("group", group);
 
 	        if( group.isEnabled() ) {
-	            List<User> members = gDAO.getMemberList(group);
+	            List<User> members = userDAO.getGroupMembers(group);
 	            List<User> nonMembers = new ArrayList<User>(UserDAO.getInstance().getEnabledUsers());
 	            nonMembers.removeAll(members);
 

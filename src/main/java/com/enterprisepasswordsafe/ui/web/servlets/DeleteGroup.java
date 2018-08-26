@@ -25,24 +25,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-
-/**
- * Gets the details of a user to be edited.
- */
-
 public final class DeleteGroup extends HttpServlet {
-    /**
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
-
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
@@ -61,8 +48,8 @@ public final class DeleteGroup extends HttpServlet {
                 return;
             }
 
-	        GroupDAO gDAO = GroupDAO.getInstance();
-            Group theGroup = gDAO.getByIdEvenIfDisabled(groupId);
+	        GroupStoreManipulator gDAO = UnfilteredGroupDAO.getInstance();
+            Group theGroup = gDAO.getById(groupId);
 
             ServletUtils servletUtils = ServletUtils.getInstance();
             if (theGroup == null) {
@@ -70,27 +57,18 @@ public final class DeleteGroup extends HttpServlet {
             } else {
                 String groupName = theGroup.getGroupName();
                 gDAO.delete(theGroup);
-                TamperproofEventLogDAO.getInstance().create(
-                        TamperproofEventLog.LOG_LEVEL_GROUP_MANIPULATION,
-                        thisUser,
-                        null,
-                        "Deleted the group {group:" + theGroup.getGroupId() + "}",
-                        true
-                    );
+                TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_GROUP_MANIPULATION,
+                        thisUser,null, "Deleted the group {group:" + theGroup.getGroupId() + "}",
+                        true);
                 ServletUtils.getInstance().generateMessage(request, "The group " + groupName + " has been deleted");
 	        }
-        } catch(SQLException sqle) {
-        	throw new ServletException("The user details are unavailable due to an error.", sqle);
-        } catch(GeneralSecurityException gse) {
-        	throw new ServletException("The user details are unavailable due to an error.", gse);
+        } catch(SQLException | GeneralSecurityException e) {
+        	throw new ServletException("The user details are unavailable due to an error.", e);
         }
 
         response.sendRedirect(request.getContextPath() + "/admin/ViewGroups");
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Deletes the specified group.";

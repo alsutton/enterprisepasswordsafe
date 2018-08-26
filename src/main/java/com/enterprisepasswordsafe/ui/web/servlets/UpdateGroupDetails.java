@@ -25,31 +25,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.Membership;
-import com.enterprisepasswordsafe.engine.database.MembershipDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-/**
- * Servlet to alter the personal details of a user (Full name and email).
- */
 public final class UpdateGroupDetails extends HttpServlet {
 
-    /**
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
     	try {
 	        User user = SecurityUtils.getRemoteUser(request);
 
-	        GroupDAO gDAO = GroupDAO.getInstance();
+	        GroupStoreManipulator gDAO = UnfilteredGroupDAO.getInstance();
 	        String groupId = request.getParameter("group_id");
-	        Group group = gDAO.getByIdEvenIfDisabled(groupId);
+	        Group group = gDAO.getById(groupId);
 
 	        Membership membership = MembershipDAO.getInstance().getMembership(user, group);
 	        group.updateAccessKey(membership);
@@ -68,16 +58,11 @@ public final class UpdateGroupDetails extends HttpServlet {
 	        ServletUtils.getInstance().generateMessage(request, "The group information has been updated.");
 
 	        response.sendRedirect(request.getContextPath()+"/admin/EditGroup?id="+groupId);
-    	} catch(SQLException ex) {
-    		throw new ServletException("There was a problem updating the group.", ex);
-    	} catch(GeneralSecurityException ex) {
+    	} catch(SQLException | GeneralSecurityException ex) {
     		throw new ServletException("There was a problem updating the group.", ex);
     	}
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to alter a the details about a group.";
