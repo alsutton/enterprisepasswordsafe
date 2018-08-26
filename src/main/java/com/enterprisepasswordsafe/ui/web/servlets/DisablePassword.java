@@ -25,32 +25,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
-
 
 /**
  * Servlet to disable a specific password.
  */
 
 public final class DisablePassword extends HttpServlet {
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 8297516757555160139L;
-
-    /**
-     * @throws IOException
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
@@ -58,13 +41,13 @@ public final class DisablePassword extends HttpServlet {
         String id = servletUtils.getParameterValue(request, SharedParameterNames.PASSWORD_ID_PARAMETER);
         User user = SecurityUtils.getRemoteUser(request);
 
-        PasswordDAO pDAO = PasswordDAO.getInstance();
+		PasswordStoreManipulator pDAO = UnfilteredPasswordDAO.getInstance();
         try {
 	        AccessControl ac = AccessControlDAO.getInstance().getAccessControl(user, id);
 	        if(ac == null) {
 	        	throw new ServletException("You can not modify the password.");
 	        }
-	        Password password = pDAO.getByIdEvenIfDisabled(ac, id);
+	        Password password = pDAO.getById(id, ac);
 	        password.setEnabled(false);
 	        pDAO.update(password, user, ac);
 
@@ -76,18 +59,13 @@ public final class DisablePassword extends HttpServlet {
 	        		"Disabled the password",
 	        		sendEmail
 	        	);
-        } catch(SQLException sqle) {
-        	throw new ServletException("The password could not be disabled due to an error.", sqle);
-        } catch(GeneralSecurityException sqle) {
-        	throw new ServletException("The password could not be disabled due to an error.", sqle);
+        } catch(SQLException | GeneralSecurityException e) {
+        	throw new ServletException("The password could not be disabled due to an error.", e);
         }
 
         request.getRequestDispatcher("/system/EditPassword").forward(request, response);
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Disable a password";

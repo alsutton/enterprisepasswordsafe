@@ -25,7 +25,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServlet;
@@ -33,12 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.HistoricalPasswordDAO;
-import com.enterprisepasswordsafe.engine.database.PasswordBase;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -49,16 +43,6 @@ import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 public final class ViewPasswordImage extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -5824139595352894340L;
-
-    /**
-     * @throws UnsupportedEncodingException
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException {
@@ -79,7 +63,7 @@ public final class ViewPasswordImage extends HttpServlet {
 
 	        PasswordBase password;
 	        if (dt == null || dt.length() == 0) {
-	            password = PasswordDAO.getInstance().getByIdEvenIfDisabled(ac, id);
+	            password = UnfilteredPasswordDAO.getInstance().getById(id, ac);
 	        } else {
 	        	long timestamp = Long.parseLong(dt);
 	            password = HistoricalPasswordDAO.getInstance().getByIdForTime(ac, id, timestamp);
@@ -129,9 +113,6 @@ public final class ViewPasswordImage extends HttpServlet {
         request.setAttribute("nextOtid", session.getAttribute("otid"));
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Gets a graphical representation of a password.";

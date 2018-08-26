@@ -465,7 +465,7 @@ public final class HierarchyNodeDAO
      */
 
     public void deleteNode(final HierarchyNode node, final User deletingUser)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException, IOException {
         if (node.getType() == HierarchyNode.CONTAINER_NODE) {
             // Look for children nodes to recursively delete
             PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_ALL_CHILDREN_NODES_SQL);

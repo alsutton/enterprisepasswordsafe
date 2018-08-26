@@ -42,15 +42,6 @@ import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 public final class DeletePassword extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 7770307220996832669L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
@@ -73,22 +64,16 @@ public final class DeletePassword extends HttpServlet {
 	        }
 
 	        PasswordDAO pDAO = PasswordDAO.getInstance();
-	    	Password thePassword = pDAO.getById(ac, passwordId);
+	    	Password thePassword = pDAO.getById(passwordId, ac);
 	    	pDAO.delete(remoteUser, thePassword);
 
 	    	ServletUtils.getInstance().generateMessage(request, "The password has been deleted.");
-    	} catch(SQLException sqle) {
-    		throw new ServletException("The password could not be deleted due to an error.", sqle);
-    	} catch(GeneralSecurityException gse) {
-    		throw new ServletException("The password could not be deleted due to an error.", gse);
+    	} catch(SQLException | GeneralSecurityException e) {
+    		throw new ServletException("The password could not be deleted due to an error.", e);
     	}
 
     	response.sendRedirect(request.getContextPath()+"/system/ViewPersonalFolder");
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

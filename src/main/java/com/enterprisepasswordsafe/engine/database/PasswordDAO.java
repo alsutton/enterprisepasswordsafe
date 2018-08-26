@@ -38,7 +38,9 @@ import org.apache.commons.csv.CSVRecord;
 /**
  * Data access object for passwords.
  */
-public final class PasswordDAO implements ExternalInterface {
+public final class PasswordDAO
+        extends PasswordStoreManipulator
+        implements ExternalInterface {
 
 	/**
 	 * Empty string used for null password summaries.
@@ -63,23 +65,7 @@ public final class PasswordDAO implements ExternalInterface {
      */
 
     private static final String USE_CHECK_SQL =
-    		"SELECT password_id FROM passwords WHERE restriction_id = ?";
-
-    /**
-     * The SQL to get all the active passwords to be acted on.
-     */
-
-    private static final String DELETE_SQL =
-            "DELETE FROM passwords "
-            + "      WHERE password_id = ?";
-
-    /**
-     * The fields needed to create a Password object from a ResultSet.
-     */
-
-    public static final String PASSWORD_FIELDS = PasswordBase.PASSWORD_BASE_FIELDS
-            + ", pass.enabled, pass.audited, pass.history_stored, pass.restriction_id, "
-            + "pass.ra_enabled, pass.ra_approvers, pass.ra_blockers, pass.ptype";
+    		"SELECT " + PASSWORD_FIELDS + " FROM passwords pass WHERE pass.restriction_id = ?";
 
     /**
      * The SQL statement to get a password from an ID.
@@ -88,14 +74,6 @@ public final class PasswordDAO implements ExternalInterface {
     private static final String GET_BY_ID_SQL = "SELECT " + PASSWORD_FIELDS
             + "  FROM passwords pass" + " WHERE pass.password_id = ? "
             + "   AND (pass.enabled is null OR pass.enabled = 'Y')";
-
-    /**
-     * The SQL statement to get a password from an ID.
-     */
-
-    private static final String GET_BY_ID_EVEN_IF_DISABLED_SQL = "SELECT "
-            + PASSWORD_FIELDS + "  FROM passwords pass "
-            + " WHERE pass.password_id = ?";
 
     /**
      * Selects all of the available locations from the database.
@@ -240,16 +218,6 @@ public final class PasswordDAO implements ExternalInterface {
             + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
     /**
-     * The SQL to update a password within the database.
-     */
-
-    private static final String UPDATE_PASSWORD_SQL =
-        "UPDATE passwords SET enabled = ?, audited = ?, "
-       + "history_stored = ?, restriction_id = ?, ra_enabled = ?, "
-       + " ra_approvers = ?, ra_blockers = ?, ptype = ?, password_data = ? "
-       + "WHERE password_id = ?";
-
-    /**
      * SQL to fetch the id and expiry date for the passwords.
      */
 
@@ -261,7 +229,7 @@ public final class PasswordDAO implements ExternalInterface {
 	 */
 
 	private PasswordDAO( ) {
-		super();
+		super(GET_BY_ID_SQL, null, null);
 	}
 
 	/**
@@ -308,7 +276,7 @@ public final class PasswordDAO implements ExternalInterface {
      */
 
     public String getSummaryById(User user, final String id)
-            throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+            throws SQLException, IOException, GeneralSecurityException {
         return getSummaryById( AccessControlDAO.getInstance().getReadAccessControl(user, id), id );
     }
 
@@ -328,11 +296,11 @@ public final class PasswordDAO implements ExternalInterface {
      */
 
     public String getSummaryById(AccessControl ac, final String id)
-            throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+            throws SQLException, IOException, GeneralSecurityException {
         if( ac == null )
         	return EMPTY_STRING;
 
-        Password password = getById(ac, id);
+        Password password = getById(id, ac);
         if(password != null) {
         	return password.toString();
         }
@@ -356,146 +324,12 @@ public final class PasswordDAO implements ExternalInterface {
      */
 
 	public Password getById(final User user, final String id)
-            throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+            throws SQLException, IOException, GeneralSecurityException {
         AccessControl ac = AccessControlDAO.getInstance().getReadAccessControl(user, id);
         if( ac == null )
         	return null;
 
-        return getById(ac, id);
-    }
-
-    /**
-     * Gets the data about an individual password and decrypts it for
-     * the user.
-     *
-     * @param ac The access control to decrypt the password
-     * @param id The ID of the password to get.
-     *
-     * @return The Password object, or null if the user does not exist.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem getting the password.
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
-     */
-
-	public Password getById(final AccessControl ac, final String id)
-            throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-        return getByIdWork(GET_BY_ID_SQL, id, ac);
-    }
-
-    /**
-     * Gets the data about an individual password even if it is disabled.
-     *
-     * @param user The user to get the password for.
-     * @param id The ID of the password to get.
-     *
-     * @return The Password object, or null if the user does not exist.
-     *
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     * @throws GeneralSecurityException
-     */
-
-    public Password getByIdEvenIfDisabled(final User user, final String id)
-            throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-        AccessControl ac = AccessControlDAO.getInstance().getReadAccessControl(user, id);
-        if( ac == null )
-        	return null;
-
-        return getByIdEvenIfDisabled(ac, id);
-    }
-
-    /**
-     * Gets the data about an individual password even if it is disabled.
-     *
-     * @param ac The access control to decrypt the password with.
-     * @param id The ID of the password to get.
-     *
-     * @return The Password object, or null if the user does not exist.
-     *
-     * @throws SQLException
-     */
-
-    public Password getByIdEvenIfDisabled(final AccessControl ac, final String id)
-            throws SQLException {
-        return getByIdWork(GET_BY_ID_EVEN_IF_DISABLED_SQL, id, ac);
-    }
-
-    /**
-     * Gets the data about an individual password.
-     *
-     * @param sql The SQL to use to fetch the password.
-     * @param id The ID of the password to get.
-     *
-     * @return The Password object, or null if the user does not exist.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem getting the password.
-     */
-
-    private Password getByIdWork(final String sql, final String id, final AccessControl ac)
-            throws SQLException {
-        if (id == null) {
-            return null;
-        }
-
-        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
-            ps.setString(1, id);
-        	ps.setMaxRows(1);
-            try(ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    return null;
-                }
-
-                Password password = new Password(id, rs.getBytes(2), ac);
-
-                int idx = 3;
-
-                String value = rs.getString(idx++);
-                if(value != null) {
-                    password.setEnabled(value.equals("Y"));
-                }
-
-                value = rs.getString(idx++);
-                if(value != null) {
-                    switch(value) {
-                        case "Y":
-                            password.setAuditLevel(Password.AUDITING_FULL);
-                            break;
-                        case "L":
-                            password.setAuditLevel(Password.AUDITING_LOG_ONLY);
-                            break;
-                        default:
-                            password.setAuditLevel(Password.AUDITING_NONE);
-                            break;
-                    }
-                }
-
-                value = rs.getString(idx++);
-                if(value != null) {
-                    password.setHistoryStored(value.equals("Y"));
-                }
-
-                value = rs.getString(idx++);
-                if(value != null) {
-                    password.setRestrictionId(value);
-                }
-
-                value = rs.getString(idx++);
-                if(value != null) {
-                    password.setRaEnabled(value.equals("Y"));
-                }
-
-                password.setRaApprovers(rs.getInt(idx++));
-                password.setRaBlockers(rs.getInt(idx++));
-                password.setPasswordType(rs.getInt(idx));
-
-	            return password;
-            } catch (IOException | GeneralSecurityException e) {
-            	throw new SQLException("Error reading password", e);
-            }
-        }
+        return getById(id, ac);
     }
 
     /**
@@ -513,51 +347,14 @@ public final class PasswordDAO implements ExternalInterface {
      */
 
 	public Password getByIdForUser(final User user, final String id)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException, IOException {
     	Password thePassword;
     	if( user.isAdministrator() || user.isSubadministrator()) {
-    		thePassword = getByIdEvenIfDisabled(user, id);
+    		thePassword = UnfilteredPasswordDAO.getInstance().getById(user, id);
     	} else {
     		thePassword = getById(user, id);
     	}
         return thePassword;
-    }
-
-    /**
-     * Deletes a password from the database.
-     *
-     * @param deletingUser The user deleting the password.
-     * @param password The password to delete.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem with the access credentials.
-     * @throws UnsupportedEncodingException
-     */
-
-	public void delete(final User deletingUser, final Password password)
-			throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	if(password == null) {
-    		return;
-    	}
-
-    	PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL);
-        try {
-            ps.setString(1, password.getId());
-            ps.executeUpdate();
-
-            if( password.getPasswordType() != Password.TYPE_PERSONAL ) {
-            	boolean sendEmail = ((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-	            TamperproofEventLogDAO.getInstance().create(
-						TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-	            		deletingUser,
-	            		null,
-	            		"Deleted the password " + password.toString(),
-	            		sendEmail
-	            	);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
     }
 
     /**
@@ -757,113 +554,6 @@ public final class PasswordDAO implements ExternalInterface {
             }
         }
     }
-
-    /**
-     * Updates a password in the database.
-     *
-     * @param password The password to update.
-     * @param modifyingUser The user performing the modification.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws IOException Thrown if there is an IOException
-     */
-
-    public void update(final Password password, final User modifyingUser)
-            throws SQLException, GeneralSecurityException, IOException {
-        AccessControl ac = AccessControlDAO.getInstance().getAccessControl(modifyingUser, password);
-        if(ac.getModifyKey() == null) {
-            throw new GeneralSecurityException("Unable to get a write access control to modify the password");
-        }
-        update(password, modifyingUser, ac);
-    }
-
-    /**
-     * Updates a password in the database.
-     *
-     * @param password The password to update.
-     * @param modifyingUser The user performing the modification.
-     * @param ac The access control to encrypt the password with.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws IOException Thrown if there is an IOException
-     */
-
-    public void update(final Password password, final User modifyingUser, final AccessControl ac)
-            throws SQLException, GeneralSecurityException, IOException {
-        updateWork(password, ac);
-
-        // Write the password with the data encrypted
-        if (password.isHistoryStored()) {
-        	HistoricalPasswordDAO.getInstance().writeHistoryEntry(password, ac);
-        }
-
-        if( password.getPasswordType() != Password.TYPE_PERSONAL
-        &&  password.getAuditLevel()   != Password.AUDITING_NONE ) {
-        	boolean sendEmail = ((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-	        TamperproofEventLogDAO.getInstance().
-	        		create(
-	    				TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-	    				modifyingUser,
-	    				password,
-	    				"Changed the password",
-	    				sendEmail
-	    			);
-        }
-    }
-
-    /**
-     * Updates a password in the database.
-     *
-     * @param password The password to update.
-     * @param ac The access control to encrypt the password with.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws IOException Thrown if there is a problem encrypting the password.
-     */
-
-    private void updateWork(final Password password, final AccessControl ac)
-            throws SQLException, GeneralSecurityException, IOException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_PASSWORD_SQL);
-        try {
-            int idx = 1;
-            if (password.isEnabled()) {
-                ps.setString(idx++, null);
-            } else {
-                ps.setString(idx++, "N");
-            }
-            if (password.getAuditLevel() == Password.AUDITING_FULL) {
-                ps.setString(idx++, "Y");
-            } else if (password.getAuditLevel() == Password.AUDITING_LOG_ONLY) {
-                ps.setString(idx++, "L");
-            } else {
-                ps.setString(idx++, "N");
-            }
-            if (password.isHistoryStored()) {
-                ps.setString(idx++, "Y");
-            } else {
-                ps.setString(idx++, "N");
-            }
-            ps.setString(idx++, password.getRestrictionId());
-            if(password.isRaEnabled()) {
-            	ps.setString(idx++, "Y");
-            } else {
-            	ps.setString(idx++, "N");
-            }
-            ps.setInt(idx++, password.getRaApprovers());
-            ps.setInt(idx++, password.getRaBlockers());
-            ps.setInt(idx++, password.getPasswordType());
-            ps.setBytes(idx++, PasswordUtils.encrypt(password, ac));
-
-            ps.setString(idx, password.getId());
-            ps.executeUpdate();
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
-        }
-    }
-
 
     /**
      * Import a password from a CSVRecord.
@@ -1157,29 +847,8 @@ public final class PasswordDAO implements ExternalInterface {
      */
 
     public List<Password> getPasswordsRestrictionAppliesTo(final User user, final String restrictionId)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(USE_CHECK_SQL);
-        try {
-        	List<Password> passwords = new ArrayList<>();
-            ps.setString(1, restrictionId);
-            ResultSet rs = ps.executeQuery();
-            try {
-	            while( rs.next() ) {
-	            	String id = rs.getString(1);
-	            	AccessControl ac = AccessControlDAO.getInstance().getAccessControl(user, id);
-	            	Password thePassword = getById(ac, id);
-	            	if( thePassword == null ) {
-	            		continue;
-	            	}
-	            	passwords.add( thePassword );
-	            }
-	            return passwords;
-	        } finally {
-	            DatabaseConnectionUtils.close(rs);
-	        }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
-        }
+            throws SQLException, GeneralSecurityException, IOException {
+        return getMultiple(USE_CHECK_SQL, restrictionId);
     }
 
     /**

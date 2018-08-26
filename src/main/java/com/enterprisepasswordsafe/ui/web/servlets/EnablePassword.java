@@ -25,46 +25,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
-
 
 /**
  * Servlet to enable a specific password.
  */
 
 public final class EnablePassword extends HttpServlet {
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 3281728438595209394L;
-
-	/**
-     * The generic error message for this servlet.
-     */
-
-    private static final String GENERIC_ERROR_MESSAGE = "The password could not be enabled due to an error.";
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#getGenericErrorMessage()
-     */
-
-    protected String getGenericErrorMessage() {
-        return GENERIC_ERROR_MESSAGE;
-    }
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
-    @Override
+	@Override
     protected void doGet(final HttpServletRequest request, HttpServletResponse response)
     		throws IOException, ServletException {
         String id = ServletUtils.getInstance().getParameterValue(request, SharedParameterNames.PASSWORD_ID_PARAMETER);
@@ -75,7 +45,7 @@ public final class EnablePassword extends HttpServlet {
 	        if( ac == null ) {
 	        	throw new ServletException("You can not modify the password.");
 	        }
-	        Password password = PasswordDAO.getInstance().getByIdEvenIfDisabled(ac, id);
+	        Password password = UnfilteredPasswordDAO.getInstance().getById(id, ac);
 	        password.setEnabled(true);
 	        PasswordDAO.getInstance().update(password, user, ac);
 
@@ -87,21 +57,14 @@ public final class EnablePassword extends HttpServlet {
 	        		"Enabled the password",
 	        		sendEmail
 	    		);
-        } catch(SQLException sqle) {
-        	throw new ServletException("The password could not be enabled due to an error.", sqle);
-        } catch(GeneralSecurityException gse) {
-        	throw new ServletException("The password could not be enabled due to an error.", gse);
+        } catch(SQLException | GeneralSecurityException e) {
+        	throw new ServletException("The password could not be enabled due to an error.", e);
         }
 
         response.sendRedirect("/system/EditPassword");
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
-    @Override
 	public String getServletInfo() {
         return "Enable a password";
     }
-
 }

@@ -30,16 +30,8 @@ import com.enterprisepasswordsafe.engine.database.Password;
 import com.enterprisepasswordsafe.engine.database.PasswordDAO;
 import com.enterprisepasswordsafe.engine.database.User;
 
-
-/**
- * Servlet to list the authentication sources.
- */
-
 public final class UpdatePassword extends RawAPIServlet {
 
-	/**
-     * @see RawAPIServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
 	@Override
     protected void doPost(final HttpServletRequest request, HttpServletResponse response)
     	throws IOException {
@@ -47,7 +39,7 @@ public final class UpdatePassword extends RawAPIServlet {
     		User user = super.getAndAuthenticateUser(request);
     		String passwordId = request.getParameter("id");
     		AccessControl ac = AccessControlDAO.getInstance().getAccessControl(user, passwordId);
-    		Password password = PasswordDAO.getInstance().getById(ac, passwordId);
+    		Password password = PasswordDAO.getInstance().getById(passwordId, ac);
 
     		String newPassword = request.getParameter("newPassword");
     		if( newPassword == null ) {
@@ -67,9 +59,6 @@ public final class UpdatePassword extends RawAPIServlet {
     	}
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Raw API Servlet to find a password id from a x@y format";

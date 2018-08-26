@@ -49,7 +49,7 @@ public final class ViewRAPassword extends HttpServlet {
 	        } else {
 	            ac = AccessControlDAO.getInstance().getAccessControl(thisUser, passwordId);
 	        }
-	        Password password = PasswordDAO.getInstance().getById(ac, passwordId);
+	        Password password = PasswordDAO.getInstance().getById(passwordId, ac);
 
 	        if (ac == null) {
 	        	ServletUtils.getInstance().generateMessage(request,"You are not allowed to view the selected password.");

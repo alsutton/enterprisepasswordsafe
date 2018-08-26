@@ -17,8 +17,6 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -29,18 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.database.HistoricalPasswordDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
-import com.enterprisepasswordsafe.engine.database.PasswordRestrictionDAO;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.EmailerThread;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -65,7 +52,7 @@ public final class ChangePassword extends HttpServlet {
             throw new ServletException("Permission Denied");
         }
 
-        Map<String,String> customFields = new TreeMap<String,String>();
+        Map<String,String> customFields = new TreeMap<>();
 		int cfCount = -1;
 		int fieldCount = 1;
 
@@ -113,7 +100,7 @@ public final class ChangePassword extends HttpServlet {
     	        if( ac == null || ac.getModifyKey() == null ) {
     	        	throw new ServletException("You can not update the passsword.");
     	        }
-    	        password = pDAO.getByIdEvenIfDisabled(ac, passwordId);
+    	        password = UnfilteredPasswordDAO.getInstance().getById(passwordId, ac);
         	} else {
         		password = new Password();
         	}
@@ -178,30 +165,14 @@ public final class ChangePassword extends HttpServlet {
         return date < today;
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
-
     @Override
 	public String getServletInfo() {
         return "Updates a password";
     }
 
-    /**
-     * Update the password from the request.
-     *
-     * @param request The request holding the updated information
-     * @param thisUser The user doing the update.
-     * @param thePassword The password being updated.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
-     */
     private boolean updatePassword(final HttpServletRequest request, final User thisUser,
     		final Password thePassword )
-    	throws SQLException, UnsupportedEncodingException, ParseException,
-                GeneralSecurityException, ServletException {
+    	throws SQLException, ParseException, ServletException {
         String password = extractPassword(request);
     	String restrictionId = extractRestrictionID(request);
         if(!isRestrictionCompliant(password, restrictionId)) {
@@ -246,7 +217,7 @@ public final class ChangePassword extends HttpServlet {
         String password1 = request.getParameter("password_1");
         String password2 = request.getParameter("password_2");
         if (password1 != null && password1.length() > 0) {
-            if (password2 == null || !password1.equals(password2)) {
+            if (!password1.equals(password2)) {
                 throw new ServletException("The password was not updated because the passwords typed did not match.");
             }
             return password1;
@@ -285,14 +256,8 @@ public final class ChangePassword extends HttpServlet {
 		return request.getParameter("restriction_id");
 	}
 
-	/**
-	 * Verify the restrictions are valid for the password.
-	 * @throws GeneralSecurityException
-	 * @throws UnsupportedEncodingException
-	 */
-
 	private boolean isRestrictionCompliant(final String password, final String restrictionId )
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException, ServletException {
+		throws SQLException {
         PasswordRestriction control = PasswordRestrictionDAO.getInstance().getById(restrictionId);
         return control == null || control.verify(password);
 	}

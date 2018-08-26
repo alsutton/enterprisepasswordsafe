@@ -25,14 +25,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupAccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserAccessControlDAO;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -56,7 +49,7 @@ public final class AlterAccess extends HttpServlet {
 	            throw new ServletException("You can not modify access to this password");
 	        }
 
-	        Password thisPassword = PasswordDAO.getInstance().getByIdEvenIfDisabled(thisUser, passwordId);
+	        Password thisPassword = UnfilteredPasswordDAO.getInstance().getById(thisUser, passwordId);
 
 	        GroupDAO gDAO = GroupDAO.getInstance();
 	        Group everyoneGroup = gDAO.getByIdDecrypted(Group.ALL_USERS_GROUP_ID, thisUser);

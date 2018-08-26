@@ -28,25 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.AccessRole;
-import com.enterprisepasswordsafe.engine.database.AccessRoleDAO;
-import com.enterprisepasswordsafe.engine.database.ApproverListDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.engine.database.HistoricalPasswordDAO;
-import com.enterprisepasswordsafe.engine.database.IntegrationModuleScriptDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordBase;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.RestrictedAccessRequest;
-import com.enterprisepasswordsafe.engine.database.RestrictedAccessRequestDAO;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -171,7 +153,7 @@ public final class ViewPassword extends HttpServlet {
 	        String dt = request.getParameter(BaseServlet.DATE_TIME_PARAMETER);
 	        PasswordBase thisPassword;
 	        if (dt == null || dt.length() == 0) {
-	            thisPassword = PasswordDAO.getInstance().getByIdEvenIfDisabled(ac, id);
+	            thisPassword = UnfilteredPasswordDAO.getInstance().getById(id, ac);
 	        } else {
 	        	long timestamp = Long.parseLong(dt);
 	            thisPassword = HistoricalPasswordDAO.getInstance().getByIdForTime(ac, id, timestamp);
@@ -203,7 +185,7 @@ public final class ViewPassword extends HttpServlet {
 	        if(thisPassword instanceof Password) {
 	        	sendEmail = ((((Password)thisPassword).getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
 	        } else {
-	            Password currentPassword = PasswordDAO.getInstance().getByIdEvenIfDisabled(ac, id);
+	            Password currentPassword = UnfilteredPasswordDAO.getInstance().getById(id, ac);
 	        	sendEmail = ((currentPassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
 	        }
 
@@ -360,12 +342,9 @@ public final class ViewPassword extends HttpServlet {
 			}
 
 			request.getRequestDispatcher("/system/view_password.jsp").forward(request, response);
-	    } catch(SQLException ex) {
-            Logger.getAnonymousLogger().log(Level.WARNING, "Problem obtaining password details.", ex);
-            throw new ServletException("There was a problem obtaining the password details.",ex);
-        } catch(GeneralSecurityException ex) {
-            Logger.getAnonymousLogger().log(Level.WARNING, "Problem obtaining password details.", ex);
-            throw new ServletException("There was a problem obtaining the password details.",ex);
+	    } catch(SQLException | GeneralSecurityException e) {
+            Logger.getAnonymousLogger().log(Level.WARNING, "Problem obtaining password details.", e);
+            throw new ServletException("There was a problem obtaining the password details.",e);
 	    }
 
     }

@@ -47,14 +47,8 @@ import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-/**
- * Servlet to run the integration scripts
- */
 public final class RandomizePassword extends HttpServlet {
 
-    /**
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
         throws ServletException, IOException {
@@ -68,11 +62,13 @@ public final class RandomizePassword extends HttpServlet {
 	    	if( ac.getModifyKey() == null ) {
 	    		throw new ServletException( "You do not have modification rights to the password.");
 	    	}
-	    	final Password password = PasswordDAO.getInstance().getById(ac, passwordId);
+
+	    	PasswordDAO pDAO = PasswordDAO.getInstance();
+	    	final Password password = pDAO.getById(passwordId, ac);
 
 
 	    	// Create the password changing properties.
-	    	final Map<String,String> passwordProperties = new HashMap<String,String>();
+	    	final Map<String,String> passwordProperties = new HashMap<>();
 			passwordProperties.put(PasswordChanger.USERNAME_PROPERTY, password.getUsername());
 			passwordProperties.put(PasswordChanger.SYSTEM, password.getLocation());
 			passwordProperties.put(PasswordChanger.OLD_PASSWORD, password.getPassword());
@@ -97,7 +93,7 @@ public final class RandomizePassword extends HttpServlet {
 	    	}
 
 	    	password.setPassword(newPassword);
-	        PasswordDAO.getInstance().update(password, user, ac);
+	        pDAO.update(password, user, ac);
 
 	        TamperproofEventLogDAO.getInstance().create(
 	        				TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
@@ -114,9 +110,6 @@ public final class RandomizePassword extends HttpServlet {
     	request.getRequestDispatcher(ServletPaths.getExplorerPath()).forward(request, response);
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to alter the scripts associated with a password";

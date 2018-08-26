@@ -16,7 +16,6 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Calendar;
 import java.util.List;
@@ -84,7 +83,7 @@ public final class ViewObjectEvents extends HttpServlet {
 	    	if( ac == null ) {
 	        	throw new GeneralSecurityException("You are not allowed to view the history for that password.");
 	    	}
-	        Password thePassword = PasswordDAO.getInstance().getById(ac, passwordLimit);
+	        Password thePassword = PasswordDAO.getInstance().getById(passwordLimit, ac);
 	        if( thePassword == null ) {
 	        	throw new GeneralSecurityException("The password was not found.");
 	        }
@@ -92,16 +91,9 @@ public final class ViewObjectEvents extends HttpServlet {
 	    	request.setAttribute("object.name", thePassword.toString());
 
 
-	        final String delimiter = ConfigurationDAO.getValue(ConfigurationOption.REPORT_SEPARATOR);
 	        List<EventsForDay> events = TamperproofEventLogDAO.getInstance().
-	        					getEventsForDateRange(
-	    							startDate,
-	    							endDate,
-	    							null,
-	    							passwordLimit,
-	    							remoteUser,
-	    							true,
-	    							false);
+	        					getEventsForDateRange( startDate, endDate, null,
+	    							passwordLimit, remoteUser, true, false);
 
 	        request.setAttribute(SharedParameterNames.PASSWORD_ID_PARAMETER, passwordLimit);
 

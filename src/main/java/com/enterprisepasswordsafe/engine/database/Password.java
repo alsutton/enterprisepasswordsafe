@@ -174,12 +174,11 @@ public final class Password
 
     private int passwordType = TYPE_SYSTEM;
 
-    /**
-     * Creates an empty instance of Password for population.
-     *
-     * @throws NoSuchProviderException
-     * @throws NoSuchAlgorithmException
+    /*
+     * Encrypted representation of the password properties
      */
+
+    private byte[] encryptedPasswordProperties;
 
     public Password() throws NoSuchAlgorithmException, NoSuchProviderException {
     	super();
@@ -300,41 +299,44 @@ public final class Password
         isHistoryStored = newHistoryStored;
     }
 
-    /**
-     * Creates a new instance of Password.
-     *
-     * @param passwordId The ID of the password being represented
-     * @param data encrypted password data.
-     * @param ac The access control to decrypt the password with.
-     *
-     * @throws SQLException
-     * @throws GeneralSecurityException
-     * @throws IOException
-     */
-
     public Password(final String passwordId, final byte[] data, final AccessControl ac)
-        throws SQLException, IOException, GeneralSecurityException {
+            throws IOException, GeneralSecurityException, SQLException {
         super(passwordId);
+        encryptedPasswordProperties = data;
+        decryptPasswordProperties(ac);
+    }
+
+    public Password(final String passwordId, final byte[] data) {
+        super(passwordId);
+        encryptedPasswordProperties = data;
+    }
+
+    public void decryptPasswordProperties(AccessControl ac)
+            throws IOException, GeneralSecurityException, SQLException {
+        if (encryptedPasswordProperties == null) {
+            // null indicates there's no work to be done to decrypt the properties.
+            return;
+        }
 
         Properties props = new Properties();
-        PasswordUtils.decrypt(this, ac, data, props);
+        PasswordUtils.decrypt(this, ac, encryptedPasswordProperties, props);
 
         String systemAuditState = ConfigurationDAO.getValue( ConfigurationOption.PASSWORD_AUDIT_LEVEL );
         if        ( systemAuditState.equals(Password.SYSTEM_AUDIT_NONE) ) {
-        	auditLevel = Password.AUDITING_NONE;
+            auditLevel = Password.AUDITING_NONE;
         } else if ( systemAuditState.equals(Password.SYSTEM_AUDIT_FULL) ) {
-        	auditLevel = Password.AUDITING_FULL;
+            auditLevel = Password.AUDITING_FULL;
         } else if ( systemAuditState.equals(Password.SYSTEM_AUDIT_LOG_ONLY) ) {
-        	auditLevel = Password.AUDITING_LOG_ONLY;
+            auditLevel = Password.AUDITING_LOG_ONLY;
         } else {
-        	auditLevel = Password.AUDITING_FULL;
+            auditLevel = Password.AUDITING_FULL;
 
             String defaultAuditLevel = props.getProperty(AUDIT_PARAMETER);
             if (defaultAuditLevel != null) {
                 if (defaultAuditLevel.equalsIgnoreCase("L")) {
-                	auditLevel = Password.AUDITING_LOG_ONLY;
+                    auditLevel = Password.AUDITING_LOG_ONLY;
                 } else if (defaultAuditLevel.equalsIgnoreCase("N")) {
-                	auditLevel = Password.AUDITING_NONE;
+                    auditLevel = Password.AUDITING_NONE;
                 }
             }
         }
@@ -346,17 +348,19 @@ public final class Password
 
         String raState = props.getProperty(RESTRICTED_ACCESS_PARAMETER);
         if(raState != null && raState.charAt(0) == 'Y') {
-        	raEnabled = true;
-        	raApprovers = Integer.parseInt(props.getProperty(RESTRICTED_ACCESS_PARAMETER+"_a"));
-        	raBlockers = Integer.parseInt(props.getProperty(RESTRICTED_ACCESS_PARAMETER+"_b"));
+            raEnabled = true;
+            raApprovers = Integer.parseInt(props.getProperty(RESTRICTED_ACCESS_PARAMETER+"_a"));
+            raBlockers = Integer.parseInt(props.getProperty(RESTRICTED_ACCESS_PARAMETER+"_b"));
         } else {
-        	raEnabled = false;
+            raEnabled = false;
         }
 
         String passwordTypeString = props.getProperty(TYPE_PARAMETER);
         if(passwordTypeString != null) {
             passwordType = Integer.parseInt(passwordTypeString);
         }
+
+        encryptedPasswordProperties = null;
     }
 
     /**

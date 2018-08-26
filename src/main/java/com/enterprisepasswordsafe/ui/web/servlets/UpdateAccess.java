@@ -96,7 +96,7 @@ public final class UpdateAccess extends HttpServlet {
 	        	return;
 	        }
 
-	        Password password = PasswordDAO.getInstance().getByIdEvenIfDisabled(ac, passwordId);
+	        Password password = UnfilteredPasswordDAO.getInstance().getById(passwordId, ac);
 	        User adminUser = UserDAO.getInstance().getAdminUser(adminGroup);
 
 	        processRoleChanges(request, password, adminUser, adminGroup, currentUser, ac);

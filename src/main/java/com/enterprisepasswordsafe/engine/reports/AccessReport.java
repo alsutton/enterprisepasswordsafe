@@ -20,8 +20,8 @@ import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
+import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,19 +46,14 @@ public class AccessReport
      */
 
     private static final String GET_ACCESSIBLE_PASSWORDS_FOR_USER_VIA_GAC_SQL =
-            "SELECT gac.group_id, "
-                    + "     gac.item_id "
-                    + "  FROM membership m, "
-                    + "     group_access_control gac "
-                    + " WHERE m.user_id = ? "
-                    + "   AND m.group_id = gac.group_id "
-                    + "   AND gac.rkey is not null ";
+            "SELECT gac.group_id, gac.item_id FROM membership m, group_access_control gac "
+            + " WHERE m.user_id = ? AND m.group_id = gac.group_id AND gac.rkey is not null ";
 
     /**
      * Private constructor to prevent instantiation
      */
 
-    public AccessReport() {
+    private AccessReport() {
         super();
     }
 
@@ -70,7 +65,7 @@ public class AccessReport
      * @param separator The separator to use between elements on a line.
      */
     public void generateReport(final User user, final PrintWriter printWriter, final String separator)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException, IOException {
         GroupDAO gDAO = GroupDAO.getInstance();
         Group adminGroup = gDAO.getAdminGroup(user);
 
@@ -117,13 +112,13 @@ public class AccessReport
                             if( group == null )
                                 continue;
 
-                            String passwordId = rsPasswords.getString(idx++);
+                            String passwordId = rsPasswords.getString(idx);
 
                             AccessControl ac = gacDAO.getGac(thisUser, group, passwordId);
                             if( ac == null )
                                 continue;
 
-                            Password password = pDAO.getById(ac, passwordId);
+                            Password password = pDAO.getById(passwordId, ac);
                             if( password == null )
                                 continue;
 
@@ -142,23 +137,8 @@ public class AccessReport
 
     }
 
-
-    /**
-     * Constructs a string holding the details of the password.
-     *
-     * @param user The user this line is for.
-     * @param password The password this line is for.
-     * @param group The group involved in facilitating the access.
-     * @param separator The separator between elements.
-     *
-     * @return A string holding the access details as a CSV line.
-     *
-     * @throws java.security.GeneralSecurityException
-     * @throws java.io.UnsupportedEncodingException
-     */
-
-    private String constructDetails(final User user, final Password password, final Group group,  final String separator)
-            throws UnsupportedEncodingException, GeneralSecurityException {
+    private String constructDetails(final User user, final Password password,
+                                    final Group group,  final String separator) {
         final StringBuilder details = new StringBuilder();
         details.append(user.getUserName());
         details.append(separator);

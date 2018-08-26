@@ -210,7 +210,7 @@ public final class EditHierarchy extends HttpServlet {
 
     private String performAction(final HttpSession session, final HttpServletRequest request, final User user,
     		final String action, final HierarchyNode node)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException, CloneNotSupportedException {
+            throws SQLException, GeneralSecurityException, IOException, CloneNotSupportedException {
         if (action.equals(EditHierarchy.ADD_ACTION)) {
             return "/subadmin/add_subnode.jsp";
         }

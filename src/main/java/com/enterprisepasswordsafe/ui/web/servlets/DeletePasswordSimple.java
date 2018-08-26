@@ -25,30 +25,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 
-/**
- * Servlet to create a new password.
- */
-
 public final class DeletePasswordSimple extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 7770307220996832669L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
@@ -56,7 +39,7 @@ public final class DeletePasswordSimple extends HttpServlet {
 
     	String passwordId = request.getParameter("id");
 
-    	final PasswordDAO pDAO = PasswordDAO.getInstance();
+    	final PasswordStoreManipulator pDAO = UnfilteredPasswordDAO.getInstance();
     	try {
     		request.setAttribute("error_page", "/system/ViewPersonalFolder");
 
@@ -64,22 +47,16 @@ public final class DeletePasswordSimple extends HttpServlet {
 	        if( ac == null ) {
 	        	throw new ServletException("You can not delete the password.");
 	        }
-    		Password thePassword = pDAO.getById(ac, passwordId);
+    		Password thePassword = pDAO.getById(passwordId, ac);
 	    	pDAO.delete(remoteUser, thePassword);
 
 	    	ServletUtils.getInstance().generateMessage(request, "The password has been deleted.");
-    	} catch(SQLException sqle) {
-    		throw new ServletException("The password could not be deleted due to an error.", sqle);
-    	} catch(GeneralSecurityException sqle) {
-    		throw new ServletException("The password could not be deleted due to an error.", sqle);
+    	} catch(SQLException | GeneralSecurityException e) {
+    		throw new ServletException("The password could not be deleted due to an error.", e);
     	}
 
     	response.sendRedirect(response.encodeRedirectURL("/system/ViewPersonalFolder"));
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

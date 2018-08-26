@@ -29,31 +29,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.database.LocationDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
-import com.enterprisepasswordsafe.engine.database.PasswordRestrictionDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-
-/**
- * Obtain a password before editing.
- */
-
 public final class EditPassword extends HttpServlet {
-
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -6464646829591606184L;
 
     @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response)
@@ -72,7 +53,7 @@ public final class EditPassword extends HttpServlet {
 	        if (ac == null) {
 	            throw new ServletException("You are not allowed to view the selected password.");
 	        }
-	        Password password = PasswordDAO.getInstance().getByIdEvenIfDisabled(ac, id);
+	        Password password = UnfilteredPasswordDAO.getInstance().getById(id, ac);
 
 	        ServletUtils servletUtils = ServletUtils.getInstance();
 
@@ -190,9 +171,7 @@ public final class EditPassword extends HttpServlet {
 	    	if( cFields == null ) {
 	        	Map<String,String> customFields = password.getAllCustomFields();
 	        	if( customFields != null ) {
-	        		Map<String,String> sortedCustomFields = new TreeMap<String,String>();
-	        		sortedCustomFields.putAll(customFields);
-	        		cFields = sortedCustomFields;
+	        		cFields = new TreeMap<>(customFields);
 	        	}
 	    	}
 	    	if( cFields != null ) {
@@ -202,16 +181,11 @@ public final class EditPassword extends HttpServlet {
 	    	servletUtils.setAttributeAllowingOverride( request, "notes", password.getNotes() );
 
 	    	request.getRequestDispatcher("/system/edit_password.jsp").forward(request, response);
-        } catch(SQLException sqle) {
-        	throw new ServletException("There was a problem obtaining the password details.", sqle);
-        } catch(GeneralSecurityException gse) {
-        	throw new ServletException("There was a problem obtaining the password details.", gse);
+        } catch(SQLException | GeneralSecurityException e) {
+        	throw new ServletException("There was a problem obtaining the password details.", e);
         }
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Obtains the information to be used in the password editing screen.";
