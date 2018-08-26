@@ -16,6 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.database.derived;
 
+import java.util.Collection;
 import java.util.Set;
 
 import com.enterprisepasswordsafe.engine.database.HierarchyNode;
@@ -32,7 +33,7 @@ public class HierarchyNodeChildren
      * The list of child container nodes.
      */
 
-    private Set<HierarchyNode> nodes;
+    private Collection<HierarchyNode> nodes;
 
     /**
      * The set of child object nodes.
@@ -49,7 +50,7 @@ public class HierarchyNodeChildren
      *            The child Object nodes.
      */
 
-    public HierarchyNodeChildren(final Set<HierarchyNode> newNodes, final Set<Password> newObjects) {
+    public HierarchyNodeChildren(final Collection<HierarchyNode> newNodes, final Set<Password> newObjects) {
         nodes = newNodes;
         objects = newObjects;
     }
@@ -60,7 +61,7 @@ public class HierarchyNodeChildren
      * @return The List of nodes.
      */
 
-    public Set<HierarchyNode> getNodes() {
+    public Collection<HierarchyNode> getNodes() {
         return nodes;
     }
 
@@ -72,13 +73,6 @@ public class HierarchyNodeChildren
 
     public Set<Password> getObjects() {
         return objects;
-    }
-
-    /**
-     * @param newNodes The nodes to use.
-     */
-    public void setNodes(final Set<HierarchyNode> newNodes) {
-        nodes = newNodes;
     }
 
     /**

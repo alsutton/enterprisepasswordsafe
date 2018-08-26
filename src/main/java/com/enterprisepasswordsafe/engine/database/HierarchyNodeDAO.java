@@ -22,13 +22,7 @@ import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -208,12 +202,8 @@ public final class HierarchyNodeDAO
      * The SQL statement to get the child container nodes of a specific node.
      */
 
-    private static final String GET_CHILDREN_NODES_SQL =
-            "SELECT   node_id, name, parent_id, type"
-            + "  FROM hierarchy"
-            + " WHERE parent_id = ? "
-            + "   AND type=" + HierarchyNode.CONTAINER_NODE;
-
+    private static final String GET_CHILD_CONTAINER_NODES_SQL =
+            "SELECT " + NODE_FIELDS + "  FROM hierarchy WHERE parent_id = ? AND type=" + HierarchyNode.CONTAINER_NODE;
 
     /**
      * The SQL statement to get the child container nodes of a specific node.
@@ -578,47 +568,6 @@ public final class HierarchyNodeDAO
     }
 
     /**
-     * Checks if this node is the parent of another node.
-     *
-     * @param parent The parent to be tested for
-     * @param child The child to check.
-     *
-     * @return true if this node is a child of the specified node, false if not.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem accessing the database.
-     */
-
-    public boolean isChild(final HierarchyNode parent, final HierarchyNode child)
-            throws SQLException {
-    	final String parentId = parent.getNodeId();
-        if (parentId.equals(HierarchyNode.ROOT_NODE_ID)) {
-        	return true;
-        }
-        if (child.getNodeId().equals(HierarchyNode.ROOT_NODE_ID)) {
-            return false;
-        }
-        if (child.getParentId().equals(parentId)) {
-        	return true;
-        }
-        if (parent.equals(child)) {
-            return true;
-        }
-
-        String currentParentId = child.getParentId();
-        while(!currentParentId.equals(HierarchyNode.ROOT_NODE_ID)) {
-        	final HierarchyNode thisParent = getById(currentParentId);
-        	final String thisParentId = thisParent.getNodeId();
-        	if( thisParentId.equals(parentId)) {
-        		return true;
-        	}
-        	currentParentId = thisParentId;
-        }
-
-        return false;
-    }
-
-    /**
      * Gets all of the Password children of a given node.
      *
      * @param node The node to get the Passwords under.
@@ -716,57 +665,30 @@ public final class HierarchyNodeDAO
         }
     }
 
-    public Set<HierarchyNode> getChildrenContainerNodesForUser(final HierarchyNode node,
+    public Collection<HierarchyNode> getChildrenContainerNodesForUser(final HierarchyNode node,
             final User theUser, boolean includeEmpty, final Comparator<HierarchyNode> comparator)
         throws SQLException, GeneralSecurityException {
-        Set<HierarchyNode> nodeSet;
-        if(comparator == null) {
-        	nodeSet = new TreeSet<HierarchyNode>();
-        } else {
-        	nodeSet = new TreeSet<HierarchyNode>(comparator);
+        List<HierarchyNode> children = getMultiple(GET_CHILD_CONTAINER_NODES_SQL, node.getNodeId());
+        if( theUser.isAdministrator() ) {
+            return children;
         }
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_CHILDREN_NODES_SQL);
-        try {
-            ps.setString(1, node.getNodeId());
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if( theUser.isAdministrator() ) {
-                    while (rs.next()) {
-                        nodeSet.add(new HierarchyNode(rs, 1));
-                    }
-                    return nodeSet;
-                }
 
-                HierarchyNodeAccessRuleDAO hnarDAO = HierarchyNodeAccessRuleDAO.getInstance();
-
-                if( includeEmpty ) {
-                    while (rs.next()) {
-                        String nodeId = rs.getString(1);
-                        if (hnarDAO.getAccessibilityForUser(nodeId, theUser, false)
-                                != HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
-                            nodeSet.add(new HierarchyNode(rs, 1));
-                        }
-                    }
-                    return nodeSet;
-                }
-
-                while (rs.next()) {
-                    String nodeId = rs.getString(1);
-                    if( hnarDAO.getAccessibilityForUser(nodeId, theUser, false)
-                                            != HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
-                        if( hasChildrenValidForUser(nodeId, theUser) ) {
-                            nodeSet.add(new HierarchyNode(rs, 1));
-                        }
-                    }
-                }
-
-	        	return nodeSet;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
+        HierarchyNodeAccessRuleDAO hnarDAO = HierarchyNodeAccessRuleDAO.getInstance();
+        List<HierarchyNode> blockedNodes= new ArrayList<>();
+        for(HierarchyNode thisNode : children) {
+            if (hnarDAO.getAccessibilityForUser(thisNode.getNodeId(), theUser, false) ==
+                    HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED
+            ||  (!includeEmpty && !hasChildrenValidForUser(thisNode.getNodeId(), theUser) )) {
+                blockedNodes.add(thisNode);
             }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
+
+        children.removeAll(blockedNodes);
+        if (comparator != null) {
+            children.sort(comparator);
+        }
+
+        return children;
     }
 
     /**
@@ -787,7 +709,7 @@ public final class HierarchyNodeDAO
     public HierarchyNodeChildren getChildrenValidForUser(final HierarchyNode node, final User theUser,
     		boolean includeEmpty, final Comparator<HierarchyNode> nodeComparator, final Comparator<Password> objectComparator)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        Set<HierarchyNode> containers = getChildrenContainerNodesForUser(node, theUser, includeEmpty, nodeComparator);
+        Collection<HierarchyNode> containers = getChildrenContainerNodesForUser(node, theUser, includeEmpty, nodeComparator);
         Set<Password> objects = getAllChildrenObjects(node, theUser, objectComparator);
 
         return new HierarchyNodeChildren(containers, objects);
@@ -871,98 +793,6 @@ public final class HierarchyNodeDAO
     public List<HierarchyNode> getAllChildren(final HierarchyNode node)
         throws SQLException {
         return getMultiple(GET_ALL_CHILDREN_NODES_SQL, node.getNodeId());
-    }
-
-    /**
-     * Move this node to another parent.
-     *
-     * @param node The HierarchyNode to move.
-     * @param newParent The new parent.
-     *
-     * @throws SQLException If there is a problem getting accessing the database.
-     */
-
-    public void moveTo(final HierarchyNode node, final HierarchyNode newParent)
-        throws SQLException, GeneralSecurityException {
-        if (newParent == null) {
-            throw new GeneralSecurityException("The new parent node does not exist.");
-        }
-
-        if (isChild(node, newParent)) {
-            throw new GeneralSecurityException("Can not move a node beneath itself.");
-        }
-
-        node.setParentId(newParent.getNodeId());
-        store(node);
-    }
-
-    /**
-     * Copy this node to another parent.
-     *
-     * @param node The node to copy.
-     * @param newParentId The ID of the node to put the new copy under.
-     *
-     * @return The copy of the node.
-     *
-     * @throws SQLException If there is a problem getting accessing the database.
-     * @throws CloneNotSupportedException
-     */
-
-    public HierarchyNode copyTo(final HierarchyNode node, final String newParentId)
-            throws SQLException, CloneNotSupportedException, GeneralSecurityException {
-        if (newParentId == null) {
-            throw new GeneralSecurityException("The new parent node does not exist.");
-        }
-
-        HierarchyNode newNode = new HierarchyNode(node.getName(), newParentId, node.getType());
-        store(newNode);
-
-        return newNode;
-    }
-
-    /**
-     * Performs a deep copy (i.e. copies a node and all it's children to a new
-     * parent).
-     *
-     * @param node The node to copy.
-     * @param newParentId The ID of the node to put the new copy under.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws CloneNotSupportedException
-     */
-
-    public void deepCopyTo(final HierarchyNode node, final String newParentId)
-            throws SQLException, CloneNotSupportedException, GeneralSecurityException {
-        HierarchyNode newParent = getById(newParentId);
-        if (newParent == null) {
-            throw new GeneralSecurityException("The new parent node does not exist.");
-        }
-
-        if (isChild(node, newParent)) {
-            throw new GeneralSecurityException("Can not deep copy a node to a place beneath itself.");
-        }
-
-        deepCopyToWork(node, newParentId);
-    }
-
-    /**
-     * Performs a deep copy (i.e. copies a node and all it's children to a new
-     * parent).
-     *
-     * @param node The node to copy.
-     * @param newParent The ID of the node to put the new copy under.
-     *
-     * @throws SQLException Thrown if there is a problem manipulating the database.
-     * @throws CloneNotSupportedException
-     */
-
-    private void deepCopyToWork(final HierarchyNode node, final String newParent)
-            throws SQLException, CloneNotSupportedException, GeneralSecurityException {
-        copyTo(node, newParent);
-
-        for(HierarchyNode thisNode : getAllChildren(node)) {
-            deepCopyToWork(thisNode, newParent);
-        }
     }
 
     /**
