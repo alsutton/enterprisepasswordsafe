@@ -33,26 +33,11 @@ import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditi
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-
-/**
- * Servlet to direct the user to the hierarchy editing screen.
- */
-
 public final class UpdateNodePasswordDefaults extends HttpServlet {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 845407929391972060L;
-	/**
-	 * The access authenticator
-	 */
 
 	private static final AccessApprover accessApprover =
 		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
 
-    /**
-     * @see HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
 	protected void doPost( final HttpServletRequest request, final HttpServletResponse response)
     	throws ServletException, IOException {
@@ -61,8 +46,8 @@ public final class UpdateNodePasswordDefaults extends HttpServlet {
 	    	SecurityUtils.isAllowedAccess(accessApprover, remoteUser);
 
 	        String nodeId = ServletUtils.getInstance().getNodeId(request);
-	        Map<String, String> uPerms = new HashMap<String, String>();
-	        Map<String, String> gPerms = new HashMap<String, String>();
+	        Map<String, String> uPerms = new HashMap<>();
+	        Map<String, String> gPerms = new HashMap<>();
 
 			Enumeration<String> paramNames = request.getParameterNames();
 	        while( paramNames.hasMoreElements() ) {
@@ -88,7 +73,7 @@ public final class UpdateNodePasswordDefaults extends HttpServlet {
 	        	ChangePermissionsAction action = new ChangePermissionsAction(adminGroup, node, uPerms, gPerms);
 	        	applyPermissions(remoteUser, hnDAO, node, uPerms, gPerms, action);
 	        } else {
-	        	hnDAO.setDefaultPermissionsForNode(nodeId, uPerms, gPerms);
+	        	new HierarchyNodePermissionDAO().setDefaultPermissionsForNode(nodeId, uPerms, gPerms);
 	        }
 
 	        ServletUtils.getInstance().generateMessage(request, "The default permissions have been updated");
@@ -99,26 +84,13 @@ public final class UpdateNodePasswordDefaults extends HttpServlet {
         response.sendRedirect(request.getContextPath()+"/subadmin/NodePasswordDefaults");
     }
 
-    /**
-     * Apply the permissions to a specific node.
-     * @throws Exception
-     */
-
     private void applyPermissions(final User remoteUser, final HierarchyNodeDAO hnDAO, final HierarchyNode node,
     		final Map<String, String> uPerms, final Map<String, String> gPerms, final ChangePermissionsAction action)
     	throws Exception {
-    	hnDAO.setDefaultPermissionsForNode(node.getNodeId(), uPerms, gPerms);
+    	new HierarchyNodePermissionDAO().setDefaultPermissionsForNode(node.getNodeId(), uPerms, gPerms);
     	hnDAO.processObjectNodes(node, remoteUser, action, false);
     	for(HierarchyNode thisNode : hnDAO.getChildrenContainerNodesForUser(node, remoteUser, true, null)) {
     		applyPermissions(remoteUser, hnDAO, thisNode, uPerms, gPerms, action);
     	}
-    }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
-    @Override
-	public String getServletInfo() {
-        return "Updates the default password permissions for a node.";
     }
 }

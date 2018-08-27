@@ -24,22 +24,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.AccessControledObject;
-import com.enterprisepasswordsafe.engine.database.BOMFactory;
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupAccessControl;
-import com.enterprisepasswordsafe.engine.database.GroupAccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserAccessControl;
-import com.enterprisepasswordsafe.engine.database.UserAccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.UserDAO;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
+import com.enterprisepasswordsafe.engine.database.*;
 
 /**
  * PasswordAction to handle changing permissions on a password.
@@ -55,12 +40,12 @@ public class ChangePermissionsAction implements NodeObjectAction {
     /**
      * The user permissions to set.
      */
-    private final Map<User,String> uPerms = new HashMap<User,String>();
+    private final Map<User,String> uPerms = new HashMap<>();
 
     /**
      * The group permissions to set.
      */
-    private final Map<Group,String> gPerms = new HashMap<Group,String>();
+    private final Map<Group,String> gPerms = new HashMap<>();
 
     /**
      * Constructor. Stores the user performing the search and the search chain
@@ -70,10 +55,6 @@ public class ChangePermissionsAction implements NodeObjectAction {
      * @param node The node at which the permissions are being set
      * @param userPermissions The user permissions to set.
      * @param groupPermissions The group permissions to set.
-     *
-     * @throws SQLException
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
      */
 
     public ChangePermissionsAction(final Group adminGroup, final HierarchyNode node,
@@ -81,8 +62,8 @@ public class ChangePermissionsAction implements NodeObjectAction {
     		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
         this.adminGroup = adminGroup;
 
-        HierarchyNodeDAO.getInstance().
-        	getDefaultPermissionsForNodeIncludingInherited(node.getParentId(), userPermissions, groupPermissions);
+        new HierarchyNodePermissionDAO().getDefaultPermissionsForNodeIncludingInherited(
+                node.getParentId(), userPermissions, groupPermissions);
 
         UserDAO uDAO = UserDAO.getInstance();
         for(Map.Entry<String, String> thisEntry : userPermissions.entrySet()) {

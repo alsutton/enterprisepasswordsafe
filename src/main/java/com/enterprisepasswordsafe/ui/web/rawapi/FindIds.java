@@ -35,9 +35,6 @@ import com.enterprisepasswordsafe.engine.database.User;
 
 public final class FindIds extends RawAPIServlet {
 
-	/**
-     * @see RawAPIServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, HttpServletResponse response)
     	throws IOException {
@@ -63,9 +60,8 @@ public final class FindIds extends RawAPIServlet {
     	}
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
+
+
     @Override
 	public String getServletInfo() {
         return "Raw API Servlet to find a password id from a x@y format";

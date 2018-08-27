@@ -30,27 +30,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.Group;
 import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
 import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO.GroupNodeDefaultPermission;
+import com.enterprisepasswordsafe.engine.database.HierarchyNodePermissionDAO;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 /**
  * Servlet implementation class UserQuery
  */
 public class NodePasswordDefaultsGroupQuery extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public NodePasswordDefaultsGroupQuery() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setHeader("Cache-Control","no-cache"); //HTTP 1.1
@@ -58,13 +45,13 @@ public class NodePasswordDefaultsGroupQuery extends HttpServlet {
 		response.setDateHeader ("Expires", 0);
 
 		try {
-			List<GroupNodeDefaultPermission> results= new ArrayList<GroupNodeDefaultPermission>();
+			List<GroupNodeDefaultPermission> results= new ArrayList<>();
 
 			final String searchQuery = request.getParameter("s");
 			if(searchQuery != null && !searchQuery.isEmpty()) {
 				final String nodeId = ServletUtils.getInstance().getNodeId(request);
 
-				HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
+				HierarchyNodePermissionDAO hnDAO = new HierarchyNodePermissionDAO();
 				for(Group group : GroupDAO.getInstance().searchNames(searchQuery)) {
 					results.add(hnDAO.getDefaultPermissionForGroup(group, nodeId));
 				}

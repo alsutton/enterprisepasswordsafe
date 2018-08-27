@@ -30,28 +30,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
 import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO.UserNodeDefaultPermission;
+import com.enterprisepasswordsafe.engine.database.HierarchyNodePermissionDAO;
 import com.enterprisepasswordsafe.engine.database.UserDAO;
 import com.enterprisepasswordsafe.engine.database.UserSummaryDAO;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-/**
- * Servlet implementation class UserQuery
- */
 public class NodePasswordDefaultsUserSetDefaultPermission extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public NodePasswordDefaultsUserSetDefaultPermission() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setHeader("Cache-Control","no-cache"); //HTTP 1.1
@@ -65,7 +52,7 @@ public class NodePasswordDefaultsUserSetDefaultPermission extends HttpServlet {
 			if(searchQuery != null && !searchQuery.isEmpty()) {
 				final String nodeId = ServletUtils.getInstance().getNodeId(request);
 
-				HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
+				HierarchyNodePermissionDAO hnDAO = new HierarchyNodePermissionDAO();
 				for(UserSummary user : UserSummaryDAO.getInstance().getSummaryBySearch(searchQuery)) {
 					results.add(hnDAO.getDefaultPermissionForUser(user, nodeId));
 				}

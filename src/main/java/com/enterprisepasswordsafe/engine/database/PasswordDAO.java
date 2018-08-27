@@ -425,7 +425,7 @@ public final class PasswordDAO
     		throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
         Map<String,String> uPerms = new HashMap<>();
         Map<String,String> gPerms = new HashMap<>();
-        HierarchyNodeDAO.getInstance().getCombinedDefaultPermissionsForNode(parentNodeId, uPerms, gPerms);
+        new HierarchyNodePermissionDAO().getCombinedDefaultPermissionsForNode(parentNodeId, uPerms, gPerms);
 
         UserAccessControlDAO uacDAO = UserAccessControlDAO.getInstance();
         for(Map.Entry<String, String> thisEntry : uPerms.entrySet()) {

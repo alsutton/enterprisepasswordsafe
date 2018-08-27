@@ -82,7 +82,7 @@ public class PasswordImporter {
         Map<String,String> userPermissions = new HashMap<>();
         Map<String,String> groupPermissions = new HashMap<>();
 
-        HierarchyNodeDAO.getInstance().getDefaultPermissionsForNodeIncludingInherited(
+        new HierarchyNodePermissionDAO().getDefaultPermissionsForNodeIncludingInherited(
                 parentNode, userPermissions, groupPermissions);
 
         updateWithImportedPermissions(userPermissions, groupPermissions, importedPermissions);

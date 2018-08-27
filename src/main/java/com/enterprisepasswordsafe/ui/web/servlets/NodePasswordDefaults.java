@@ -41,16 +41,9 @@ import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 public final class NodePasswordDefaults extends HttpServlet {
 
-	/**
-	 * The access authenticator
-	 */
-
 	private static final AccessApprover accessApprover =
 		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
 
-    /**
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
     		throws ServletException, IOException {
@@ -70,13 +63,14 @@ public final class NodePasswordDefaults extends HttpServlet {
 
 	        su.setCurrentNodeId(request, nodeId);
 
-	        Map<String, String> uPerms = new HashMap<String, String>();
-	        Map<String, String> gPerms = new HashMap<String, String>();
-	        hnDAO.getDefaultPermissionsForNode(nodeId, uPerms, gPerms);
+	        Map<String, String> uPerms = new HashMap<>();
+	        Map<String, String> gPerms = new HashMap<>();
+	        HierarchyNodePermissionDAO hierarchyNodePermissionDAO = new HierarchyNodePermissionDAO();
+			hierarchyNodePermissionDAO.getDefaultPermissionsForNode(nodeId, uPerms, gPerms);
 
-	        Map<String, String> parentUPerms = new HashMap<String, String>();
-	        Map<String, String> parentGPerms = new HashMap<String, String>();
-	        hnDAO.getCombinedDefaultPermissionsForNode(node.getParentId(), parentUPerms, parentGPerms);
+	        Map<String, String> parentUPerms = new HashMap<>();
+	        Map<String, String> parentGPerms = new HashMap<>();
+			hierarchyNodePermissionDAO.getCombinedDefaultPermissionsForNode(node.getParentId(), parentUPerms, parentGPerms);
 
 	        String everyonePerm = gPerms.remove(Group.ALL_USERS_GROUP_ID);
 	        if( everyonePerm == null ) {
@@ -96,10 +90,8 @@ public final class NodePasswordDefaults extends HttpServlet {
             request.setAttribute("groups", GroupDAO.getInstance().getAll());
             request.setAttribute("groupPermissions", gPerms);
             request.setAttribute("groupPermissionsForParent", parentGPerms);
-    	} catch(GeneralSecurityException gse) {
-    		throw new ServletException("There was a problem obtaining the password defaults.", gse);
-    	} catch(SQLException sqle) {
-    		throw new ServletException("There was a problem obtaining the password defaults.", sqle);
+    	} catch(GeneralSecurityException | SQLException e) {
+    		throw new ServletException("There was a problem obtaining the password defaults.", e);
     	}
     	request.getRequestDispatcher("/subadmin/edit_subnodes_pdefaults.jsp").forward(request, response);
     }

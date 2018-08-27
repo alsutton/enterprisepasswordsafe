@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
 import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO.UserNodeDefaultPermission;
+import com.enterprisepasswordsafe.engine.database.HierarchyNodePermissionDAO;
 import com.enterprisepasswordsafe.engine.database.UserSummaryDAO;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -53,7 +53,7 @@ public class NodePasswordDefaultsUserQuery extends HttpServlet {
 			if(searchQuery != null && !searchQuery.isEmpty()) {
 				final String nodeId = ServletUtils.getInstance().getNodeId(request);
 
-				HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
+				HierarchyNodePermissionDAO hnDAO = new HierarchyNodePermissionDAO();
 				for(UserSummary user : UserSummaryDAO.getInstance().getSummaryBySearch(searchQuery)) {
 					results.add(hnDAO.getDefaultPermissionForUser(user, nodeId));
 				}

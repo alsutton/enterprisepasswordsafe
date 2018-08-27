@@ -15,7 +15,8 @@ import java.util.logging.Logger;
  *
  * @param <T> The type of object being fetched
  */
-abstract class StoredObjectManipulator<T> {
+abstract class StoredObjectManipulator<T>
+    extends JDBCBase {
 
     private String getByIdSql;
 
@@ -108,23 +109,6 @@ abstract class StoredObjectManipulator<T> {
             try(ResultSet rs = statement.executeQuery(getCountSql)) {
                 return rs.next() ? rs.getInt(1) : 0;
             }
-        }
-    }
-
-    void runResultlessParameterisedSQL(String sql, String... parameters)
-            throws SQLException {
-        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
-            setParameters(ps, parameters);
-            ps.execute();
-        }
-    }
-
-    private void setParameters(PreparedStatement ps, String... parameters)
-            throws SQLException {
-        int parameterId = 1;
-        for (String parameter: parameters) {
-            ps.setString(parameterId, parameter);
-            parameterId++;
         }
     }
 }
