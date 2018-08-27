@@ -111,7 +111,7 @@ public final class PasswordDAO
      */
 
     private static final String SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_USER_SQL =
-            "SELECT   pass.password_id, pass.password_data "
+            "SELECT   " + PASSWORD_FIELDS
             + "  FROM passwords             pass, "
             + "       user_access_control   uac "
             + " WHERE uac.user_id = ?"
@@ -124,7 +124,7 @@ public final class PasswordDAO
      */
 
     private static final String SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_GROUP_SQL =
-            "SELECT   pass.password_id, pass.password_data, gac.group_id "
+            "SELECT   " + PASSWORD_FIELDS
             + "  FROM passwords             pass, "
             + "       group_access_control  gac, "
             + "       membership            mem "
@@ -559,8 +559,7 @@ public final class PasswordDAO
      */
 
     public boolean hasExpiringPasswords(final User user)
-    	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-
+            throws SQLException, GeneralSecurityException, IOException {
     	Calendar expiryCal = Calendar.getInstance();
         String warningPeriod = ConfigurationDAO.getValue(ConfigurationOption.DAYS_BEFORE_EXPIRY_TO_WARN);
         if (warningPeriod != null && warningPeriod.length() > 0) {
@@ -575,35 +574,10 @@ public final class PasswordDAO
         }
         long expiryWarningDate = expiryCal.getTimeInMillis();
 
-        Statement stmt = BOMFactory.getCurrentConntection().createStatement();
-        try {
-        	ResultSet rs = stmt.executeQuery(GET_EXPIRY_DETAILS_SQL);
-        	try {
-	        	while(rs.next()) {
-	        		String id = rs.getString(1);
-	        		byte[] data = rs.getBytes(2);
-	        		if( rs.wasNull() ) {
-	        			continue;
-	        		}
-	        		AccessControl ac = AccessControlDAO.getInstance().getReadAccessControl(user, id);
-	        		if(ac == null) {
-	        			continue;
-	        		}
-
-	        		try {
-	        			Password password = new Password(id, data, ac);
-		        		if( password.getExpiry() < expiryWarningDate) {
-		        			return true;
-		        		}
-	        		} catch(IOException ioe) {
-	        			// Do nothing
-	        		}
-	        	}
-        	} finally {
-            	DatabaseConnectionUtils.close(rs);
-        	}
-        } finally {
-        	DatabaseConnectionUtils.close(stmt);
+        for(Password password : getMultiple(user, GET_EXPIRY_DETAILS_SQL)) {
+            if( password.getExpiry() < expiryWarningDate) {
+                return true;
+            }
         }
 
         return false;
@@ -621,31 +595,11 @@ public final class PasswordDAO
     public void processAllPasswords(final User user, final PasswordAction action) throws Exception {
         List<String> processedIds = new ArrayList<>();
         if (user.isAdministrator()) {
-            processAllPasswordsWork(
-                    user,
-                    action,
-                    GET_ALL_PASSWORDS_FOR_ACTION_BY_USER_EVEN_IF_DISABLED_SQL,
-                    processedIds
-                );
-            processAllPasswordsWork(
-                    user,
-                    action,
-                    GET_ALL_PASSWORDS_FOR_ACTION_BY_GROUP_EVEN_IF_DISABLED_SQL,
-                    processedIds
-                );
+            processAllPasswordsWork(user, action, GET_ALL_PASSWORDS_FOR_ACTION_BY_USER_EVEN_IF_DISABLED_SQL, processedIds);
+            processAllPasswordsWork(user, action, GET_ALL_PASSWORDS_FOR_ACTION_BY_GROUP_EVEN_IF_DISABLED_SQL, processedIds);
         } else {
-            processAllPasswordsWork(
-                    user,
-                    action,
-                    GET_ALL_PASSWORDS_FOR_ACTION_BY_USER_SQL,
-                    processedIds
-                );
-            processAllPasswordsWork(
-                    user,
-                    action,
-                    GET_ALL_PASSWORDS_FOR_ACTION_BY_GROUP_SQL,
-                    processedIds
-                );
+            processAllPasswordsWork(user, action, GET_ALL_PASSWORDS_FOR_ACTION_BY_USER_SQL, processedIds);
+            processAllPasswordsWork(user, action, GET_ALL_PASSWORDS_FOR_ACTION_BY_GROUP_SQL, processedIds);
         }
     }
 
@@ -814,60 +768,19 @@ public final class PasswordDAO
      * @return The list of Ids.
      */
 	public Set<String> performRawAPISearch(User user, String searchUsername, String searchLocation)
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+            throws SQLException, IOException, GeneralSecurityException {
 		Set<String> ids = new TreeSet<>();
         String locationId = LocationDAO.getInstance().getId(searchLocation);
 
-		performRawAPIUserSearch(
-                user,
-                searchUsername,
-                locationId,
-                ids
-            );
-		performRawAPIGroupSearch(
-                user,
-                searchUsername,
-                locationId,
-                ids
-            );
+		performRawAPIUserSearch(user, searchUsername, locationId, ids);
+		performRawAPIGroupSearch(user, searchUsername, locationId, ids);
 		return ids;
 	}
 
-	/**
-	 * Get all of the passwords in a location.
-	 *
-	 * @param user The user fetching the list.
-	 * @param locationId The ID of the location to get the passwords for.
-	 * @param passwords The Set to add the Passwords to.
-     *
-	 * @throws SQLException
-	 * @throws IOException
-	 */
 	public void getAllForLocation(final User user, final String locationId, final Set<Password> passwords)
 			throws SQLException, GeneralSecurityException, IOException {
-		PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_ALL_FOR_LOCATION_SQL);
-		try {
-			ps.setString(1, locationId);
-			ResultSet rs = ps.executeQuery();
-			try {
-				AccessControlDAO acDAO = AccessControlDAO.getInstance();
-				while(rs.next()) {
-		            final String id = rs.getString(1);
-		            final AccessControl ac = acDAO.getAccessControl(user, id);
-		            if( ac == null ) {
-		            	continue;
-		            }
-		            final Password thisPassword = new Password(id, rs.getBytes(2), ac);
-		            passwords.add(thisPassword);
-				}
-			} finally {
-				DatabaseConnectionUtils.close(rs);
-			}
-		} finally {
-			DatabaseConnectionUtils.close(ps);
-		}
+	    passwords.addAll(getMultiple(user, GET_ALL_FOR_LOCATION_SQL, locationId));
 	}
-
 
     /**
      * Returns a list of the password IDs which match he given search criteria.
@@ -879,35 +792,18 @@ public final class PasswordDAO
      */
 	public void performRawAPIUserSearch(final User user, final String searchUsername,
 			final String searchLocation, final Set<String> ids)
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-		PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_USER_SQL);
-		try {
-			ps.setString(1, user.getUserId());
-			ps.setString(2, searchLocation);
-			ResultSet rs = ps.executeQuery();
-			try {
-				while(rs.next()) {
-					final String passwordId = rs.getString(1);
-					byte[] data = rs.getBytes(2);
-
-					UserAccessControl ac = UserAccessControlDAO.getInstance().getUac(user, passwordId);
-
-					Password password = new Password();
-					try {
-						PasswordUtils.decrypt(password, ac, data);
-						if( password.getUsername().equals(searchUsername) ) {
-							ids.add(passwordId);
-						}
-					} catch(IOException ioe) {
-						// Do nothing on a fail
-					}
-				}
-			} finally {
-				DatabaseConnectionUtils.close(rs);
-			}
-		} finally {
-			DatabaseConnectionUtils.close(ps);
-		}
+            throws SQLException, IOException, GeneralSecurityException {
+	    for(Password password:
+                getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_USER_SQL, user.getUserId(), searchLocation)) {
+            UserAccessControl ac = UserAccessControlDAO.getInstance().getUac(user, password.getId());
+            if(ac == null) {
+                continue;
+            }
+            password.decryptPasswordProperties(ac);
+            if (searchUsername != null && searchUsername.equals(password.getUsername())) {
+                ids.add(password.getId());
+            }
+        }
 	}
 
     /**
@@ -920,37 +816,18 @@ public final class PasswordDAO
      */
 	public void performRawAPIGroupSearch(final User user, final String searchUsername,
 			final String searchLocation, final Set<String> ids)
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-		PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_GROUP_SQL);
-		try {
-			ps.setString(1, user.getUserId());
-			ps.setString(2, searchLocation);
-			ResultSet rs = ps.executeQuery();
-			try {
-				while(rs.next()) {
-					final String passwordId = rs.getString(1);
-					byte[] data = rs.getBytes(2);
-					String groupId = rs.getString(3);
-
-					Group group = GroupDAO.getInstance().getByIdDecrypted(groupId, user);
-					GroupAccessControl ac = GroupAccessControlDAO.getInstance().getGac(user, group, passwordId);
-
-					Password password = new Password();
-					try {
-						PasswordUtils.decrypt(password, ac, data);
-						if( password.getUsername().equals(searchUsername) ) {
-							ids.add(passwordId);
-						}
-					} catch(IOException ioe) {
-						// Do nothing on a fail
-					}
-				}
-			} finally {
-				DatabaseConnectionUtils.close(rs);
-			}
-		} finally {
-			DatabaseConnectionUtils.close(ps);
-		}
+            throws SQLException, IOException, GeneralSecurityException {
+        for(Password password:
+                getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_GROUP_SQL, user.getUserId(), searchLocation)) {
+            GroupAccessControl ac = GroupAccessControlDAO.getInstance().getGac(user, password.getId());
+            if(ac == null) {
+                continue;
+            }
+            password.decryptPasswordProperties(ac);
+            if (searchUsername != null && searchUsername.equals(password.getUsername())) {
+                ids.add(password.getId());
+            }
+        }
 	}
 
     //------------------------

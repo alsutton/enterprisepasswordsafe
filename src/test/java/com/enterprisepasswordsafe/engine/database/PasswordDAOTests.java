@@ -74,8 +74,7 @@ public class PasswordDAOTests extends EmbeddedDatabaseTestBase {
         password.setRestrictionId(createdRestriction.getId());
         pDAO.update(password, adminUser);
 
-        List<Password> passwords
-            = pDAO.getPasswordsRestrictionAppliesTo(adminUser, createdRestriction.getId());
+        List<Password> passwords= pDAO.getPasswordsRestrictionAppliesTo(adminUser, createdRestriction.getId());
         assertThat(passwords.isEmpty(), is(false));
 
         boolean found = false;
