@@ -138,7 +138,7 @@ public abstract class PasswordStoreManipulator
 
     public void update(final Password password, final User modifyingUser, final AccessControl ac)
             throws SQLException, GeneralSecurityException, IOException {
-        updateWork(password, ac);
+        update(password, ac);
 
         // Write the password with the data encrypted
         if (password.isHistoryStored()) {
@@ -153,7 +153,7 @@ public abstract class PasswordStoreManipulator
         }
     }
 
-    void updateWork(final Password password, final AccessControl ac)
+    public void update(final Password password, final AccessControl ac)
             throws SQLException, GeneralSecurityException, IOException {
         PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_PASSWORD_SQL);
         try {

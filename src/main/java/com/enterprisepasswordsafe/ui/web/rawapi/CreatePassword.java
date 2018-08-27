@@ -26,8 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.enterprisepasswordsafe.engine.database.Group;
 import com.enterprisepasswordsafe.engine.database.GroupDAO;
 import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
 import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.passwords.PasswordImporter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -49,14 +49,10 @@ public final class CreatePassword extends RawAPIServlet {
 
 			CSVParser parser = CSVParser.parse(data, CSVFormat.RFC4180);
 			for(CSVRecord record : parser) {
-				PasswordDAO.getInstance().importPassword(user, adminGroup, HierarchyNode.ROOT_NODE_ID, record);
+				new PasswordImporter().importPassword(user, adminGroup, HierarchyNode.ROOT_NODE_ID, record);
 			}
     	} catch( Exception ex ) {
-    		Logger.getAnonymousLogger().log(
-    				Level.WARNING,
-    				"Error during GetPassword",
-    				ex
-				);
+    		Logger.getAnonymousLogger().log(Level.WARNING, "Error during GetPassword", ex);
     		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
     	}
     }

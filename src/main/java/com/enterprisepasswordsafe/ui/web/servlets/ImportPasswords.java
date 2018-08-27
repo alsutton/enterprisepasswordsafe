@@ -28,8 +28,8 @@ import com.enterprisepasswordsafe.engine.database.Group;
 import com.enterprisepasswordsafe.engine.database.GroupDAO;
 import com.enterprisepasswordsafe.engine.database.HierarchyNode;
 import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
 import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.passwords.PasswordImporter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 import org.apache.commons.csv.CSVRecord;
@@ -46,12 +46,8 @@ public final class ImportPasswords extends ImporterServlet {
 							CSVRecord record) throws ServletException {
     	Group adminGroup = (Group)request.getAttribute("adminGroup");
     	try {
-			PasswordDAO.getInstance().importPassword(theUser, adminGroup, parentNode, record);
-		} catch (SQLException e) {
-        	throw new ServletException("Password import failed", e);
-		} catch (GeneralSecurityException e) {
-        	throw new ServletException("Password import failed", e);
-		} catch (IOException e) {
+			new PasswordImporter().importPassword(theUser, adminGroup, parentNode, record);
+		} catch (SQLException | GeneralSecurityException | IOException e) {
         	throw new ServletException("Password import failed", e);
 		}
     }
