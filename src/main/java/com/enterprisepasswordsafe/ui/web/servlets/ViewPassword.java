@@ -41,11 +41,6 @@ import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 public final class ViewPassword extends HttpServlet {
 
 	/**
-	 *
-	 */
-	private static final long serialVersionUID = -2618853020633824143L;
-
-	/**
 	 * The attribute used to hold any applicable restriced access request.
 	 */
 
@@ -123,9 +118,7 @@ public final class ViewPassword extends HttpServlet {
 		        if( requestOtid == null ) {
 		        	requestOtid = (String) request.getAttribute("otid");
 		        }
-		        if (sessionOtid == null
-		        ||	requestOtid == null
-		        ||  !sessionOtid.equals(requestOtid)) {
+		        if (sessionOtid == null || !sessionOtid.equals(requestOtid)) {
 					throw new ServletException("You can not view passwords using your browsers back button.");
 		        }
 			}
@@ -133,7 +126,8 @@ public final class ViewPassword extends HttpServlet {
 	        User thisUser = SecurityUtils.getRemoteUser(request);
 
             if(thisUser.isNonViewingUser()) {
-                throw new ServletException("You are not allowed to view passwords.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
             }
 
 	        final ServletUtils servletUtils = ServletUtils.getInstance();
@@ -147,7 +141,8 @@ public final class ViewPassword extends HttpServlet {
 	        }
 
 	        if (ac == null) {
-	        	throw new ServletException("You are not allowed to view the selected password.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
 	        }
 
 	        String dt = request.getParameter(BaseServlet.DATE_TIME_PARAMETER);
@@ -168,27 +163,12 @@ public final class ViewPassword extends HttpServlet {
 	        }
 
 
-	        thisPassword.decrypt(ac);
+            thisPassword.decrypt(ac);
 
-	        if(thisPassword instanceof Password
-	        && ((Password)thisPassword).getPasswordType() == Password.TYPE_PERSONAL ) {
-	        	HierarchyNodeDAO hDAO = HierarchyNodeDAO.getInstance();
-	        	String containerNodeId = hDAO.getByName(thisPassword.getId()).getNodeId();
-	        	HierarchyNode containerNode = hDAO.getById(containerNodeId);
-	        	HierarchyNode personalNode = hDAO.getPersonalNodeForUser(thisUser);
-	        	if(personalNode == null || !personalNode.getNodeId().equals(containerNode.getParentId())) {
-			        throw new ServletException("You are not allowed to view the selected password.");
-	        	}
-	        }
-
-	        boolean sendEmail;
-	        if(thisPassword instanceof Password) {
-	        	sendEmail = ((((Password)thisPassword).getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-	        } else {
-	            Password currentPassword = UnfilteredPasswordDAO.getInstance().getById(id, ac);
-	        	sendEmail = ((currentPassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-	        }
-
+            if(isCrossUserPersonalPasswordAccessAttempt(thisUser, thisPassword)) {
+	            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+	            return;
+            }
 
 	        RestrictedAccessRequest raRequest = null;
 	    	String reason = null;
@@ -260,38 +240,10 @@ public final class ViewPassword extends HttpServlet {
 	    	}
 
 	    	if(logRequired) {
-		    	StringBuilder logMessage = new StringBuilder();
-		    	logMessage.append("The password was viewed by the user");
-		        if (dt != null) {
-		            logMessage.append(" as it was at ");
-		            logMessage.append(DateFormatter.convertToDateTimeString(Long.parseLong(dt)));
-		        }
-		        logMessage.append('.');
-		        if( reason != null && reason.length() > 0 ) {
-		        	logMessage.append(" The reason given was\n\"");
-		        	logMessage.append(reason);
-		        	logMessage.append('\"');
-		            logMessage.append('.');
-		        }
-		        if( raRequest != null ) {
-		        	logMessage.append(" The user(s) who approved the request are; ");
-
-		        	String listId = raRequest.getApproversListId();
-		        	for(String approverId : ApproverListDAO.getInstance().getApproverIDs(listId)) {
-		        		logMessage.append( " {user:");
-		        		logMessage.append( approverId );
-		        		logMessage.append( "}," );
-		        	}
-		        	logMessage.deleteCharAt(logMessage.length()-1);
-		        	logMessage.append('.');
-		        }
-		        TamperproofEventLogDAO.getInstance().create(
-							TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-		        			thisUser,
-		        			thisPassword,
-		        			logMessage.toString(),
-		        			sendEmail
-		    			);
+		        TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+		        			thisUser, thisPassword,
+                            constructAccessReasonLogMessage(dt, reason, raRequest),
+                            shouldSendEmail(thisPassword, ac));
 	    	}
 
 	        String passwordTimeout = ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_ON_SCREEN_TIME);
@@ -301,43 +253,13 @@ public final class ViewPassword extends HttpServlet {
 	        request.setAttribute(BaseServlet.USER_ATTRIBUTE, thisUser);
 	        request.setAttribute("password", thisPassword);
 	        request.setAttribute(SharedParameterNames.PASSWORD_TIMEOUT_ATTRIBUTE, passwordTimeout);
-
-	        if( IntegrationModuleScriptDAO.getInstance().hasScripts(thisPassword) ) {
-	        	request.setAttribute(SCRIPTS_IN_USE, Boolean.TRUE);
-	        } else {
-	        	request.setAttribute(SCRIPTS_IN_USE, Boolean.FALSE);
-	        }
-
-	        String displayType = ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_DISPLAY_TYPE);
-	        request.setAttribute("password_displayType", displayType);
-
-	        String display = request.getParameter("display");
-	        if( display == null || display.length() == 0 ) {
-	        	String displayDefault = ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_DISPLAY);
-	        	display = Boolean.toString(displayDefault.charAt(0) =='s');
-	        }
-	        request.setAttribute("display", display);
-
+			request.setAttribute(SCRIPTS_IN_USE, IntegrationModuleScriptDAO.getInstance().hasScripts(thisPassword));
+	        request.setAttribute("password_displayType", ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_DISPLAY_TYPE));
+	        request.setAttribute("display", shouldDisplay(request.getParameter("display")));
 	        request.setAttribute("cfields", thisPassword.getAllCustomFields());
+			request.setAttribute("showHistoryOption", shouldShowHistory(thisUser, thisPassword));
 
-			Boolean showHistory = Boolean.FALSE;
-	    	if	( AccessRoleDAO.getInstance().hasRole(
-									thisUser.getUserId(),
-									thisPassword.getId(),
-									AccessRole.HISTORYVIEWER_ROLE) ) {
-	    		showHistory = Boolean.TRUE;
-	    	} else if			( thisUser.isAdministrator() ) {
-				showHistory = Boolean.TRUE;
-			} else if	( thisUser.isSubadministrator() ) {
-				String showSubadminHistory =
-						ConfigurationDAO.getValue(ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS);
-				if( showSubadminHistory.charAt(0) == 'Y' ) {
-					showHistory = Boolean.TRUE;
-				}
-			}
-			request.setAttribute("showHistoryOption", showHistory);
-
-			if(thisPassword != null && thisPassword.getPassword() != null) {
+			if(thisPassword.getPassword() != null) {
 				request.setAttribute("encodedPassword", thisPassword.getPassword().replace("\"", "\\\""));
 			}
 
@@ -349,17 +271,90 @@ public final class ViewPassword extends HttpServlet {
 
     }
 
-    /**
-     * ViewPassword may have data POSTed to it
-     */
-
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
     	throws IOException, ServletException {
     	doGet(request, response);
     }
 
-    /**
+    private String constructAccessReasonLogMessage(String accessTimestamp, String reason,
+                                                   RestrictedAccessRequest raRequest) throws SQLException {
+        StringBuilder logMessage = new StringBuilder();
+        logMessage.append("The password was viewed by the user");
+        if (accessTimestamp != null) {
+            logMessage.append(" as it was at ");
+            logMessage.append(DateFormatter.convertToDateTimeString(Long.parseLong(accessTimestamp)));
+        }
+        logMessage.append('.');
+        if( reason != null && reason.length() > 0 ) {
+            logMessage.append(" The reason given was\n\"");
+            logMessage.append(reason);
+            logMessage.append('\"');
+            logMessage.append('.');
+        }
+        if( raRequest != null ) {
+            logMessage.append(" The user(s) who approved the request are; ");
+
+            String listId = raRequest.getApproversListId();
+            for(String approverId : ApproverListDAO.getInstance().getApproverIDs(listId)) {
+                logMessage.append( " {user:");
+                logMessage.append( approverId );
+                logMessage.append( "}," );
+            }
+            logMessage.deleteCharAt(logMessage.length()-1);
+            logMessage.append('.');
+        }
+        return logMessage.toString();
+    }
+
+    private boolean isCrossUserPersonalPasswordAccessAttempt(User thisUser, PasswordBase thisPassword)
+            throws SQLException {
+        if(!(thisPassword instanceof Password) || ((Password)thisPassword).getPasswordType() != Password.TYPE_PERSONAL ) {
+            return false;
+        }
+        HierarchyNodeDAO hDAO = HierarchyNodeDAO.getInstance();
+        String containerNodeId = hDAO.getByName(thisPassword.getId()).getNodeId();
+        HierarchyNode containerNode = hDAO.getById(containerNodeId);
+        HierarchyNode personalNode = hDAO.getPersonalNodeForUser(thisUser);
+        return personalNode == null || !personalNode.getNodeId().equals(containerNode.getParentId());
+    }
+
+    private boolean shouldSendEmail(PasswordBase thisPassword, AccessControl accessControl)
+            throws GeneralSecurityException, SQLException, IOException {
+        if(thisPassword instanceof Password) {
+            return ((((Password)thisPassword).getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
+        }
+
+        Password currentPassword = UnfilteredPasswordDAO.getInstance().getById(thisPassword.getId(), accessControl);
+        return ((currentPassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
+    }
+
+    private String shouldDisplay(String requestSetting)
+			throws SQLException {
+		if( requestSetting == null || requestSetting.length() == 0 ) {
+			String displayDefault = ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_DISPLAY);
+			return Boolean.toString(displayDefault.charAt(0) =='s');
+		}
+		return Boolean.FALSE.toString();
+	}
+
+	private Boolean shouldShowHistory(final User thisUser, final PasswordBase thisPassword)
+			throws SQLException {
+		if	( AccessRoleDAO.getInstance().hasRole(thisUser.getUserId(), thisPassword.getId(),
+				AccessRole.HISTORYVIEWER_ROLE) ) {
+			return Boolean.TRUE;
+		} else if			( thisUser.isAdministrator() ) {
+			return Boolean.TRUE;
+		} else if	( thisUser.isSubadministrator() ) {
+			String showSubadminHistory = ConfigurationDAO.getValue(ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS);
+			if( showSubadminHistory.charAt(0) == 'Y' ) {
+				return Boolean.TRUE;
+			}
+		}
+		return Boolean.FALSE;
+	}
+
+	/**
      * Get the page to divert the user to to handle a restricted access request.
      *
      * @param password The password which is being viewed.
@@ -429,9 +424,6 @@ public final class ViewPassword extends HttpServlet {
    		return null;
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Gets the details about a specific password.";
