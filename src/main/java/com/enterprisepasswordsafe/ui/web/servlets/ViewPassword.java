@@ -369,59 +369,56 @@ public final class ViewPassword extends HttpServlet {
     	throws SQLException {
     	HttpSession session = request.getSession();
 
-   		RestrictedAccessRequest raRequest =
-   			(RestrictedAccessRequest) session.getAttribute(RA_REQUEST_ATTRIBUTE);
-
-   		if( raRequest != null  ) {
-   			if( !raRequest.getItemId().equals(password.getId())
-   			||	!raRequest.getRequesterId().equals(requester.getUserId())) {
-   				session.removeAttribute(RA_REQUEST_ATTRIBUTE);
-   				raRequest = null;
-   			}
+   		RestrictedAccessRequest raRequest = (RestrictedAccessRequest) session.getAttribute(RA_REQUEST_ATTRIBUTE);
+   		if( raRequest != null
+        && (!raRequest.getItemId().equals(password.getId()) || !raRequest.getRequesterId().equals(requester.getUserId()))) {
+            session.removeAttribute(RA_REQUEST_ATTRIBUTE);
+            raRequest = null;
    		}
 
    		if( raRequest == null ) {
-   			raRequest = RestrictedAccessRequestDAO.getInstance().getValidRequest(
-   								password.getId(),
-   								requester.getUserId()
-							);
+   			raRequest = RestrictedAccessRequestDAO.getInstance().getValidRequest(password.getId(), requester.getUserId());
 			session.setAttribute(RA_REQUEST_ATTRIBUTE, raRequest);
    		}
 
-   		if( raRequest == null ) {
-   			request.setAttribute("id", password.getId());
-   			return RESTRICTED_ACCESS_PAGE;
-   		}
-
-		if	(raRequest.hasExpired()) {
-			session.removeAttribute(RA_REQUEST_ATTRIBUTE);
-   			return RESTRICTED_ACCESS_EXPIRED_PAGE;
-   		}
-
-		int blockers = ApproverListDAO.getInstance().countBlockers(raRequest.getApproversListId());
-		int blockersNeeded = password.getRaBlockers();
-		if   ( blockersNeeded != 0 && blockers >= blockersNeeded){
-			session.removeAttribute(RA_REQUEST_ATTRIBUTE);
-   			return RESTRICTED_ACCESS_DENIED_PAGE;
-   		}
-
-		int approvers = ApproverListDAO.getInstance().countApprovers(raRequest.getApproversListId());
-		if (approvers < password.getRaApprovers()){
-   			request.setAttribute(
-   					RA_LAST_REFRESH,
-   					DateFormatter.convertToDateTimeString(DateFormatter.getNow())
-				);
-
-   			request.setAttribute("rarId", raRequest.getRequestId());
-   			request.setAttribute("ra_refresh_url", "/system/ViewPassword?id="+request.getParameter("id"));
-   			return RESTRICTED_ACCESS_HOLDING_PAGE;
-   		}
+   		String divertPage = getDivertPageIfNeeded(request, password, raRequest);
+   		if (divertPage != null) {
+   		    return divertPage;
+        }
 
 		if( raRequest.getViewedDT() < 0 ) {
 			RestrictedAccessRequestDAO.getInstance().setViewedDT(raRequest, DateFormatter.getNow());
 		}
-
    		return null;
+    }
+
+    private boolean hasRequestBeenBlocked(Password password, RestrictedAccessRequest raRequest)
+            throws SQLException {
+        int blockers = ApproverListDAO.getInstance().countBlockers(raRequest.getApproversListId());
+        int blockersNeeded = password.getRaBlockers();
+        return blockersNeeded != 0 && blockers >= blockersNeeded;
+    }
+
+    private String getDivertPageIfNeeded(HttpServletRequest request, Password password, RestrictedAccessRequest raRequest)
+            throws SQLException {
+        if( raRequest == null ) {
+            request.setAttribute("id", password.getId());
+            return RESTRICTED_ACCESS_PAGE;
+        }
+        if (raRequest.hasExpired() || hasRequestBeenBlocked(password, raRequest)) {
+            request.getSession().removeAttribute(RA_REQUEST_ATTRIBUTE);
+            return RESTRICTED_ACCESS_EXPIRED_PAGE;
+        }
+
+        int approvers = ApproverListDAO.getInstance().countApprovers(raRequest.getApproversListId());
+        if (approvers < password.getRaApprovers()) {
+            request.setAttribute(RA_LAST_REFRESH, DateFormatter.convertToDateTimeString(DateFormatter.getNow()));
+            request.setAttribute("rarId", raRequest.getRequestId());
+            request.setAttribute("ra_refresh_url", "/system/ViewPassword?id=" + request.getParameter("id"));
+            return RESTRICTED_ACCESS_HOLDING_PAGE;
+        }
+
+        return null;
     }
 
     @Override
