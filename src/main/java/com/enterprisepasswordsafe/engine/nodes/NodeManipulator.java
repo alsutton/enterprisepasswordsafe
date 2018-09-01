@@ -6,9 +6,9 @@ import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
-public class NodeManipulator {
+public abstract class NodeManipulator {
 
-    private HierarchyNodeDAO hierarchyNodeDAO;
+    HierarchyNodeDAO hierarchyNodeDAO;
 
     public NodeManipulator() {
         this(HierarchyNodeDAO.getInstance());
@@ -18,125 +18,32 @@ public class NodeManipulator {
         this.hierarchyNodeDAO = hierarchyNodeDAO;
     }
 
-    /**
-     * Move this node to another parent.
-     *
-     * @param node The HierarchyNode to move.
-     * @param newParent The new parent.
-     *
-     * @throws SQLException If there is a problem getting accessing the database.
-     */
+    public abstract HierarchyNode performAction(final HierarchyNode node, final HierarchyNode newParent)
+            throws SQLException, GeneralSecurityException;
 
-    public void moveTo(final HierarchyNode node, final HierarchyNode newParent)
-            throws SQLException, GeneralSecurityException {
+    void ensureParentIsValid(final HierarchyNode newParent)
+            throws GeneralSecurityException {
         if (newParent == null) {
             throw new GeneralSecurityException("The new parent node does not exist.");
         }
-
-        if (isChild(node, newParent)) {
-            throw new GeneralSecurityException("Can not move a node beneath itself.");
-        }
-
-        node.setParentId(newParent.getNodeId());
-        hierarchyNodeDAO.store(node);
     }
 
-    /**
-     * Copy this node to another parent.
-     *
-     * @param node The node to copy.
-     * @param newParentId The ID of the node to put the new copy under.
-     *
-     * @return The copy of the node.
-     *
-     * @throws SQLException If there is a problem getting accessing the database.
-     * @throws CloneNotSupportedException
-     */
-
-    public HierarchyNode copyTo(final HierarchyNode node, final String newParentId)
-            throws SQLException, CloneNotSupportedException, GeneralSecurityException {
-        if (newParentId == null) {
-            throw new GeneralSecurityException("The new parent node does not exist.");
-        }
-
-        HierarchyNode newNode = new HierarchyNode(node.getName(), newParentId, node.getType());
-        hierarchyNodeDAO.store(newNode);
-
-        return newNode;
-    }
-
-    /**
-     * Performs a deep copy (i.e. copies a node and all it's children to a new
-     * parent).
-     *
-     * @param node The node to copy.
-     * @param newParentId The ID of the node to put the new copy under.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws CloneNotSupportedException
-     */
-
-    public void deepCopyTo(final HierarchyNode node, final String newParentId)
-            throws SQLException, CloneNotSupportedException, GeneralSecurityException {
-        HierarchyNode newParent = hierarchyNodeDAO.getById(newParentId);
-        if (newParent == null) {
-            throw new GeneralSecurityException("The new parent node does not exist.");
-        }
-
+    void ensureOperationWontCauseInfiniteRecursion(final HierarchyNode node, final HierarchyNode newParent)
+            throws GeneralSecurityException, SQLException {
         if (isChild(node, newParent)) {
             throw new GeneralSecurityException("Can not deep copy a node to a place beneath itself.");
         }
-
-        deepCopyToWork(node, newParentId);
     }
 
-    /**
-     * Performs a deep copy (i.e. copies a node and all it's children to a new
-     * parent).
-     *
-     * @param node The node to copy.
-     * @param newParent The ID of the node to put the new copy under.
-     *
-     * @throws SQLException Thrown if there is a problem manipulating the database.
-     * @throws CloneNotSupportedException
-     */
-
-    private void deepCopyToWork(final HierarchyNode node, final String newParent)
-            throws SQLException, CloneNotSupportedException, GeneralSecurityException {
-        copyTo(node, newParent);
-
-        for(HierarchyNode thisNode : hierarchyNodeDAO.getAllChildren(node)) {
-            deepCopyToWork(thisNode, newParent);
-        }
-    }
-
-
-    /**
-     * Checks if this node is the parent of another node.
-     *
-     * @param parent The parent to be tested for
-     * @param child The child to check.
-     *
-     * @return true if this node is a child of the specified node, false if not.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem accessing the database.
-     */
-
-    public boolean isChild(final HierarchyNode parent, final HierarchyNode child)
+    boolean isChild(final HierarchyNode parent, final HierarchyNode child)
             throws SQLException {
         final String parentId = parent.getNodeId();
-        if (parentId.equals(HierarchyNode.ROOT_NODE_ID)) {
+        if (parentId.equals(HierarchyNode.ROOT_NODE_ID) || child.getParentId().equals(parentId)
+        ||  parent.equals(child)) {
             return true;
         }
         if (child.getNodeId().equals(HierarchyNode.ROOT_NODE_ID)) {
             return false;
-        }
-        if (child.getParentId().equals(parentId)) {
-            return true;
-        }
-        if (parent.equals(child)) {
-            return true;
         }
 
         String currentParentId = child.getParentId();
@@ -152,4 +59,63 @@ public class NodeManipulator {
         return false;
     }
 
+
+    // Move a node to another target
+    public static class MoveNodeManipulator extends NodeManipulator {
+        public MoveNodeManipulator(HierarchyNodeDAO hierarchyNodeDAO) {
+            super(hierarchyNodeDAO);
+        }
+
+        public HierarchyNode performAction(final HierarchyNode node, final HierarchyNode newParent)
+                throws SQLException, GeneralSecurityException {
+            ensureParentIsValid(newParent);
+            ensureOperationWontCauseInfiniteRecursion(node, newParent);
+            node.setParentId(newParent.getNodeId());
+            hierarchyNodeDAO.store(node);
+            return node;
+        }
+    }
+
+    // Copy the node to another parent
+    public static class CopyNodeManipulator extends NodeManipulator {
+        public CopyNodeManipulator(HierarchyNodeDAO hierarchyNodeDAO) {
+            super(hierarchyNodeDAO);
+        }
+
+        public HierarchyNode performAction(final HierarchyNode node, final HierarchyNode newParent)
+                throws SQLException, GeneralSecurityException {
+            ensureParentIsValid(newParent);
+            return performCopy(node, newParent);
+        }
+
+        HierarchyNode performCopy(final HierarchyNode node, final HierarchyNode newParent)
+                throws SQLException {
+            HierarchyNode newNode = new HierarchyNode(node.getName(), newParent.getNodeId(), node.getType());
+            hierarchyNodeDAO.store(newNode);
+            return newNode;
+        }
+    }
+
+    // Copy the node and all subnodes to another location
+    public static class DeepCopyNodeManipulator extends CopyNodeManipulator {
+        public DeepCopyNodeManipulator(HierarchyNodeDAO hierarchyNodeDAO) {
+            super(hierarchyNodeDAO);
+        }
+
+        public HierarchyNode performAction(final HierarchyNode node, final HierarchyNode newParent)
+            throws SQLException, GeneralSecurityException {
+            ensureParentIsValid(newParent);
+            ensureOperationWontCauseInfiniteRecursion(node, newParent);
+            return deepCopyToWork(node, newParent);
+        }
+
+        private HierarchyNode deepCopyToWork(final HierarchyNode node, final HierarchyNode newParent)
+                throws SQLException {
+            HierarchyNode newNode = performCopy(node, newParent);
+            for(HierarchyNode thisNode : hierarchyNodeDAO.getAllChildren(node)) {
+                deepCopyToWork(thisNode, newParent);
+            }
+            return newNode;
+        }
+    }
 }

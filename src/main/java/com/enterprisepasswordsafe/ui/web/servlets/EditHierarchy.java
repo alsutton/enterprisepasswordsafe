@@ -203,8 +203,7 @@ public final class EditHierarchy extends HttpServlet {
                         .getParameterValues(BaseServlet.NODE_LIST_PARAMETER);
                 if (nodes == null || nodes.length == 0) {
                     StringBuilder message = new StringBuilder();
-                    if (action.equals(EditHierarchy.COPY_ACTION)
-                            || action.equals(EditHierarchy.DEEP_COPY_ACTION)) {
+                    if (action.equals(EditHierarchy.COPY_ACTION) || action.equals(EditHierarchy.DEEP_COPY_ACTION)) {
                         message.append("Copy");
                     } else if (action.equals(EditHierarchy.CUT_ACTION)) {
                         message.append("Cut");
@@ -324,15 +323,6 @@ public final class EditHierarchy extends HttpServlet {
         return null;
     }
 
-    /**
-     * Verify the user has the permission to delete a hierarchy node.
-     *
-     * @param user The user trying to perform the delete.
-     * @param node The Node being deleted.
-     *
-     * @return true if the node can be deleted by the user, false if not.
-     */
-
     private boolean isNotDeletableByUser(final User user, final HierarchyNode node)
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         if(node.getType() == HierarchyNode.OBJECT_NODE) {
@@ -349,53 +339,25 @@ public final class EditHierarchy extends HttpServlet {
         return true;
     }
 
-    /**
-     * Paste a series of nodes which have been cut.
-     *
-     * @param hnDAO The DAO for manipulating HierarchyNode objects.
-     * @param node The new parent node.
-     * @param nodes The list of nodes which were cut.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-    private void pasteCutNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode node, final String[] nodes)
+    private void pasteCutNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode newParent, final String[] nodes)
             throws SQLException, GeneralSecurityException {
-        NodeManipulator nodeManipulator = new NodeManipulator(hnDAO);
-        for(String nodeId : nodes) {
-            if (nodeId == null) {
-                continue;
-            }
-
-            HierarchyNode theNode = hnDAO.getById(nodeId);
-            if (theNode != null) {
-            	nodeManipulator.moveTo(theNode, node);
-            } else {
-                log("Unable to cut/paste " + nodeId + " - Node was null.");
-            }
-        }
+        runManipulatorOnNodes(hnDAO, newParent, nodes, new NodeManipulator.MoveNodeManipulator(hnDAO));
     }
 
     private void pasteCopiedNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode newParent, final String[] nodes)
-        throws SQLException, GeneralSecurityException, CloneNotSupportedException {
-        NodeManipulator nodeManipulator = new NodeManipulator(hnDAO);
-    	String newParentId = newParent.getNodeId();
-        for(String nodeId : nodes) {
-            if (nodeId == null) {
-                continue;
-            }
-
-            HierarchyNode theNode = hnDAO.getById(nodeId);
-            if (theNode != null) {
-            	nodeManipulator.copyTo(theNode, newParentId);
-            } else {
-                log("Unable to copy " + nodeId + " - Node was null.");
-            }
-        }
+        throws SQLException, GeneralSecurityException {
+        runManipulatorOnNodes(hnDAO, newParent, nodes, new NodeManipulator.CopyNodeManipulator(hnDAO));
     }
 
-    private void pasteDeepCopiedNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode node, final String[] nodes)
-        throws SQLException, GeneralSecurityException, CloneNotSupportedException {
-        NodeManipulator nodeManipulator = new NodeManipulator(hnDAO);
+    private void pasteDeepCopiedNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode newParent,
+                                      final String[] nodes)
+        throws SQLException, GeneralSecurityException {
+        runManipulatorOnNodes(hnDAO, newParent, nodes, new NodeManipulator.DeepCopyNodeManipulator(hnDAO));
+    }
+
+    private void runManipulatorOnNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode node, final String[] nodes,
+                                       NodeManipulator nodeManipulator)
+            throws GeneralSecurityException, SQLException {
         for(String nodeId : nodes) {
             if (nodeId == null) {
                 continue;
@@ -403,9 +365,9 @@ public final class EditHierarchy extends HttpServlet {
 
             HierarchyNode theNode = hnDAO.getById(nodeId);
             if (theNode != null) {
-            	nodeManipulator.deepCopyTo(theNode, node.getNodeId());
+                nodeManipulator.performAction(theNode, node);
             } else {
-                log("Unable to copy " + nodeId + " - Node was null.");
+                log("Unable to work on node " + nodeId + " - Node was unavailable.");
             }
         }
     }
