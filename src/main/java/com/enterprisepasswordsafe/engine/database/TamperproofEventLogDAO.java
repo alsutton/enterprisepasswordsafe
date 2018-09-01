@@ -62,9 +62,7 @@ public class TamperproofEventLogDAO
             + "  FROM event_log evl "
             + "  LEFT OUTER JOIN application_users usr ON evl.user_id = usr.user_id"
             + "  LEFT OUTER JOIN passwords pass        ON evl.item_id = pass.password_id"
-            + " WHERE evl.dt_l >= ? "
-            + "   AND evl.dt_l <= ? "
-            + " ORDER BY evl.dt_l ASC";
+            + " WHERE evl.dt_l >= ? AND evl.dt_l <= ? ORDER BY evl.dt_l ASC";
 
     /**
      * SQL Statement to get all the log entries for a given date for a given
@@ -76,10 +74,7 @@ public class TamperproofEventLogDAO
             + "  FROM event_log evl "
             + "  LEFT OUTER JOIN application_users usr ON evl.user_id = usr.user_id"
             + "  LEFT OUTER JOIN passwords pass        ON evl.item_id = pass.password_id"
-            + " WHERE evl.dt_l >= ? "
-            + "   AND evl.dt_l <= ? "
-            + "   AND evl.user_id = ? "
-            + " ORDER BY evl.dt_l ASC";
+            + " WHERE evl.dt_l >= ? AND evl.dt_l <= ? AND evl.user_id = ? ORDER BY evl.dt_l ASC";
 
     /**
      * SQL Statement to get all the log entries for a given date for a given
@@ -91,10 +86,7 @@ public class TamperproofEventLogDAO
             + "  FROM event_log evl"
             + "  LEFT OUTER JOIN application_users usr ON evl.user_id = usr.user_id"
             + "  LEFT OUTER JOIN passwords pass        ON evl.item_id = pass.password_id"
-            + " WHERE evl.dt_l >= ? "
-            + "   AND evl.dt_l <= ? "
-            + "   AND evl.item_id = ? "
-            + " ORDER BY evl.datetime ASC";
+            + " WHERE evl.dt_l >= ? AND evl.dt_l <= ? AND evl.item_id = ? ORDER BY evl.datetime ASC";
 
     /**
      * SQL Statement to get all the log entries for a given date for a given
@@ -106,19 +98,14 @@ public class TamperproofEventLogDAO
             + "  FROM event_log evl "
             + "  LEFT OUTER JOIN application_users usr ON evl.user_id = usr.user_id"
             + "  LEFT OUTER JOIN passwords pass        ON evl.item_id = pass.password_id"
-            + " WHERE evl.dt_l >= ? "
-            + "   AND evl.dt_l <= ? "
-            + "   AND evl.user_id = ? "
-            + "   AND evl.item_id = ? "
-            + " ORDER BY evl.datetime ASC";
+            + " WHERE evl.dt_l >= ? AND evl.dt_l <= ? AND evl.user_id = ? AND evl.item_id = ? ORDER BY evl.datetime ASC";
 
     /**
      * SQL statement to write the event to the log.
      */
 
     private static final String WRITE_SQL =
-              "INSERT INTO event_log(dt_l, item_id, event, user_id, stamp_b) "
-            + "              VALUES (   ?,      ?,      ?,       ?,     ?)";
+              "INSERT INTO event_log(dt_l, item_id, event, user_id, stamp_b) VALUES (?, ?, ?, ?, ?)";
 
 	/**
 	 * Private constructor to prevent instantiation.
@@ -127,18 +114,6 @@ public class TamperproofEventLogDAO
 	private TamperproofEventLogDAO( ) {
 		super();
 	}
-
-	/**
-	 * Create a new log entry.
-	 *
-	 * @param theUser The user who caused the event.
-	 * @param message The message to be logged.
-	 * @param createTamperstamp Whether or not a tamperstamp should be created.
-	 *
-	 * @throws SQLException
-	 * @throws GeneralSecurityException
-	 * @throws UnsupportedEncodingException
-	 */
 
 	public void create( final User theUser, final AccessControledObject item,
 						final String message, final boolean createTamperstamp,
@@ -152,38 +127,11 @@ public class TamperproofEventLogDAO
 		write(logLevel, event, item, sendEmail);
 	}
 
-	/**
-	 * Create a new log entry.
-	 *
-     * @param logLevel The log level this message should be logged with.
-	 * @param theUser The user who caused the event.
-     * @param item The item associated with this event.
-	 * @param message The message to be logged.
-     * @param sendEmail Whether or not to send an email for the event.
-	 *
-	 * @throws SQLException
-	 * @throws GeneralSecurityException
-	 * @throws UnsupportedEncodingException
-	 */
-
 	public void create( final String logLevel, final User theUser, final AccessControledObject item,
 						final String message, final boolean sendEmail )
 		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
 		create(theUser, item, message, true, logLevel, sendEmail);
 	}
-
-	/**
-	 * Create a new log entry.
-	 *
-     * @param logLevel The log level this message should be logged with.
-	 * @param theUser The user who caused the event.
-	 * @param message The message to be logged.
-	 * @param createTamperstamp Whether or not a tamperstamp should be created.
-	 *
-	 * @throws SQLException
-	 * @throws GeneralSecurityException
-	 * @throws UnsupportedEncodingException
-	 */
 
 	public void create( final String logLevel, final User theUser, final String message,
 			final boolean createTamperstamp )
@@ -191,33 +139,10 @@ public class TamperproofEventLogDAO
 		create(theUser, null, message, createTamperstamp, logLevel, true);
 	}
 
-	/**
-	 * Create a new log entry.
-	 *
-     * @param logLevel The log level this message should be logged with.
-	 * @param theUser The user who caused the event.
-	 * @param message The message to be logged.
-	 *
-	 * @throws SQLException
-	 * @throws GeneralSecurityException
-	 * @throws UnsupportedEncodingException
-	 */
-
 	public void create( String logLevel, final User theUser, final String message )
 		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
 		create(theUser, null, message, true, logLevel, true);
 	}
-
-    /**
-     * Calculates the string to replace a variable with (e.g. user:0 will be
-     * replaced with "admin".
-     *
-     * @param variable The value to replace.
-     *
-     * @return The value to replace the variable with.
-     *
-     * @throws SQLException Thrown if there are problems retrieving the information.
-     */
 
     private String valueOfToken(final String variable)
             throws SQLException {
@@ -258,17 +183,6 @@ public class TamperproofEventLogDAO
 
         return "<< UNKNOWN >>";
     }
-
-    /**
-     * Gets the event message with any special references parsed out (e.g.
-     * {user:0} replaced with the user name "admin".
-     *
-     * @param event The event message to expand.
-     *
-     * @return The message correctly parsed
-     *
-     * @throws SQLException Thrown if there is a problem retrieving the information.
-     */
 
     public String getParsedMessage(final String event)
         throws SQLException {
@@ -374,13 +288,40 @@ public class TamperproofEventLogDAO
         	}
         }
 
-        String smtpHost = ConfigurationDAO.getValue(ConfigurationOption.SMTP_HOST);
-        String sender = ConfigurationDAO.getValue(ConfigurationOption.SMTP_FROM);
+        Transport.send(constructMessage(eventLogEntry, item));
+    }
 
+    private MimeMessage constructMessage(final TamperproofEventLog eventLogEntry,
+                                         final AccessControledObject item)
+            throws SQLException, MessagingException {
+        Properties props = new Properties();
+        props.put("mail.smtp.host", ConfigurationDAO.getValue(ConfigurationOption.SMTP_HOST));
+        Session s = Session.getInstance(props, null);
+
+        MimeMessage message = new MimeMessage(s);
+
+        InternetAddress from = new InternetAddress(ConfigurationDAO.getValue(ConfigurationOption.SMTP_FROM));
+        message.setFrom(from);
+
+        String recipient = determineRecipients(eventLogEntry);
+        StringTokenizer recipientTokenizer = new StringTokenizer(recipient, ";");
+        while (recipientTokenizer.hasMoreTokens()) {
+            InternetAddress to = new InternetAddress(recipientTokenizer.nextToken());
+            message.addRecipient(Message.RecipientType.TO, to);
+        }
+
+        message.setSubject(getParsedMessage(eventLogEntry.getEvent()));
+        message.setText(getFullMessage(eventLogEntry, item));
+
+        return message;
+    }
+
+    private String determineRecipients(final TamperproofEventLog eventLogEntry)
+            throws SQLException {
         String recipient = ConfigurationDAO.getValue(ConfigurationOption.SMTP_TO_PROPERTY);
         String includeUser = ConfigurationDAO.getValue(ConfigurationOption.INCLUDE_USER_ON_AUDIT_EMAIL);
         if (includeUser != null && includeUser.equalsIgnoreCase("Y")) {
-        	User theUser = UserDAO.getInstance().getById(eventLogEntry.getUserId());
+            User theUser = UserDAO.getInstance().getById(eventLogEntry.getUserId());
             if (theUser != null ) {
                 String userEmail = theUser.getEmail();
                 if( userEmail != null && userEmail.length() > 0) {
@@ -394,26 +335,7 @@ public class TamperproofEventLogDAO
             }
         }
 
-        Properties props = new Properties();
-        props.put("mail.smtp.host", smtpHost);
-        Session s = Session.getInstance(props, null);
-
-        MimeMessage message = new MimeMessage(s);
-
-        InternetAddress from = new InternetAddress(sender);
-        message.setFrom(from);
-
-        StringTokenizer recipientTokenizer = new StringTokenizer(recipient, ";");
-        while (recipientTokenizer.hasMoreTokens()) {
-            InternetAddress to = new InternetAddress(recipientTokenizer
-                    .nextToken());
-            message.addRecipient(Message.RecipientType.TO, to);
-        }
-
-        message.setSubject(getParsedMessage(eventLogEntry.getEvent()));
-        message.setText(getFullMessage(eventLogEntry, item));
-
-        Transport.send(message);
+        return recipient;
     }
 
     /**
@@ -474,19 +396,6 @@ public class TamperproofEventLogDAO
             DatabaseConnectionUtils.close(ps);
         }
     }
-
-    /**
-     * Checks to see and events tamperstamp is valid.
-     *
-     * @param eventLogEntry The entry to validate.
-     * @param validatingUser The user attempting to validate the tamperstamp.
-     *
-     * @return true if the tamperstamp is valid, false if not.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws UnsupportedEncodingException
-     */
 
     public boolean validateTamperstamp(TamperproofEventLog eventLogEntry, final User validatingUser)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -553,70 +462,75 @@ public class TamperproofEventLogDAO
             		UnsupportedEncodingException,
             		GeneralSecurityException {
     	Group adminGroup = GroupDAO.getInstance().getAdminGroup(fetchingUser);
+
+        try (PreparedStatement ps =
+                     BOMFactory.getCurrentConntection().prepareStatement(getSQLStatement(userIdLimit, itemIdLimit))) {
+            prepareSearchStatement(ps, startDate, endDate, userIdLimit, itemIdLimit);
+            try (ResultSet rs = ps.executeQuery()) {
+                return processResults(rs, fetchingUser, adminGroup, includePersonal, validateTamperstamp);
+            }
+        }
+    }
+
+    private void prepareSearchStatement(final PreparedStatement ps, final long startDate, final long endDate,
+                                         final String userIdLimit, final String itemIdLimit)
+        throws SQLException {
+        int idx = 1;
+        ps.setLong(idx++, startDate);
+        ps.setLong(idx++, endDate);
+
+        if (userIdLimit != null) {
+            ps.setString(idx++, userIdLimit);
+        }
+        if (itemIdLimit != null) {
+            ps.setString(idx, itemIdLimit);
+        }
+    }
+
+    private String getSQLStatement(final String userIdLimit, final String itemIdLimit) {
+        String sql;
+        if (userIdLimit != null && itemIdLimit != null) {
+            sql = GET_BY_DATE_RANGE_AND_USER_AND_ITEM_SQL;
+        } else if (userIdLimit != null) {
+            sql = GET_BY_DATE_RANGE_AND_USER_SQL;
+        } else if (itemIdLimit != null) {
+            sql = GET_BY_DATE_RANGE_AND_ITEM_SQL;
+        } else {
+            sql = GET_BY_DATE_RANGE_SQL;
+        }
+        return sql;
+    }
+
+    private List<EventsForDay> processResults(final ResultSet rs, User fetchingUser, Group adminGroup,
+                                             final boolean includePersonal, final boolean validateTamperstamp)
+            throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
         List<EventsForDay> events = new ArrayList<>();
 
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            String sql = GET_BY_DATE_RANGE_SQL;
-            if (userIdLimit != null && itemIdLimit != null) {
-                sql = GET_BY_DATE_RANGE_AND_USER_AND_ITEM_SQL;
-            } else if (userIdLimit != null) {
-                sql = GET_BY_DATE_RANGE_AND_USER_SQL;
-            } else if (itemIdLimit != null) {
-                sql = GET_BY_DATE_RANGE_AND_ITEM_SQL;
+        Map<String, User> userCache = new HashMap<>();
+        List<ExpandedTamperproofEventLogEntry> daysEvents = new ArrayList<>();
+        long currentDate = Long.MIN_VALUE;
+        while (rs.next()) {
+            long newDate = DateFormatter.stripTime(rs.getLong(1));
+            if (currentDate != Long.MIN_VALUE && currentDate != newDate) {
+                EventsForDay eventsForDay = new EventsForDay(currentDate, daysEvents);
+                events.add(eventsForDay);
+                daysEvents = new ArrayList<>();
+            }
+            String itemId = rs.getString(3);
+            if (!includePersonal
+                    && (rs.wasNull() || itemId == null)
+                    && HierarchyNodeDAO.getInstance().isPersonalByName(itemId)) {
+                continue;
             }
 
-            int idx = 1;
-            ps = BOMFactory.getCurrentConntection().prepareStatement(sql);
-            ps.setLong(idx++, startDate);
-            ps.setLong(idx++, endDate);
+            daysEvents.add( new ExpandedTamperproofEventLogEntry( rs,
+                    fetchingUser, adminGroup, validateTamperstamp, userCache));
+            currentDate = newDate;
+        }
 
-            if (userIdLimit != null) {
-                ps.setString(idx++, userIdLimit);
-            }
-            if (itemIdLimit != null) {
-                ps.setString(idx, itemIdLimit);
-            }
-
-            rs = ps.executeQuery();
-
-            Map<String,User> userCache = new HashMap<>();
-            List<ExpandedTamperproofEventLogEntry> daysEvents = new ArrayList<>();
-            long currentDate = Long.MIN_VALUE;
-            while (rs.next()) {
-                long newDate = DateFormatter.stripTime(rs.getLong(1));
-                if( currentDate != Long.MIN_VALUE && currentDate != newDate) {
-                	EventsForDay eventsForDay = new EventsForDay(currentDate, daysEvents);
-                	events.add(eventsForDay);
-                	daysEvents = new ArrayList<>();
-                }
-                String itemId = rs.getString(3);
-                if( !includePersonal
-                && (rs.wasNull() || itemId == null)
-                && HierarchyNodeDAO.getInstance().isPersonalByName(itemId)) {
-                	continue;
-                }
-
-                daysEvents.add(
-                		new ExpandedTamperproofEventLogEntry(
-                				rs,
-                				fetchingUser,
-                				adminGroup,
-                				validateTamperstamp,
-                				userCache
-                			)
-            		);
-                currentDate = newDate;
-            }
-
-            if( daysEvents.size() > 0 ) {
-            	EventsForDay eventsForDay = new EventsForDay(currentDate, daysEvents);
-            	events.add(eventsForDay);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(rs);
-            DatabaseConnectionUtils.close(ps);
+        if (daysEvents.size() > 0) {
+            EventsForDay eventsForDay = new EventsForDay(currentDate, daysEvents);
+            events.add(eventsForDay);
         }
 
         return events;
