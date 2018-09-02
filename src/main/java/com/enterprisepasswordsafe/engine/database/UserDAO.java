@@ -32,8 +32,9 @@ import javax.security.auth.login.LoginException;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
 import com.enterprisepasswordsafe.engine.jaas.WebLoginCallbackHandler;
+import com.enterprisepasswordsafe.engine.users.UserAccessKeyEncryptionHandler;
+import com.enterprisepasswordsafe.engine.users.UserPasswordEncryptionHandler;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.engine.utils.UserAccessKeyEncrypter;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
@@ -273,7 +274,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
 	            kgen.init(User.USER_KEY_SIZE);
 	            SecretKey accessKey = kgen.generateKey();
 
-	            Encrypter newEncrypter = new UserAccessKeyEncrypter(accessKey);
+	            Encrypter newEncrypter = new UserAccessKeyEncryptionHandler(accessKey);
 	            UserAccessControlDAO.getInstance().updateEncryptionOnKeys(theUser, newEncrypter);
 	            MembershipDAO.getInstance().updateEncryptionOnKeys(theUser, newEncrypter);
 
@@ -364,7 +365,8 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
             ps.setString(7, "N");
 
             final byte[] keyData = theUser.getAccessKey().getEncoded();
-            ps.setBytes (8, theUser.encryptWithPassword(initialPassword, keyData));
+            UserPasswordEncryptionHandler encryptionHandler = new UserPasswordEncryptionHandler(initialPassword);
+            ps.setBytes (8, encryptionHandler.encrypt(keyData));
             ps.setBytes (9, adminGroup.encrypt(keyData));
             ps.executeUpdate();
         }

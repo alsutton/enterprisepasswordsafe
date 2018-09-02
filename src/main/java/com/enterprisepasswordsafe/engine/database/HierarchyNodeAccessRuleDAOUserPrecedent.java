@@ -48,7 +48,7 @@ public class HierarchyNodeAccessRuleDAOUserPrecedent
 	    if( rule != null ) {
 	    	byte decodedRule;
 	    	if( rule.length > 1 ) {
-	    		decodedRule = user.decrypt( rule )[0];
+	    		decodedRule = user.getKeyDecrypter().decrypt( rule )[0];
 	    	} else {
 	    		decodedRule = rule[0];
 	    	}

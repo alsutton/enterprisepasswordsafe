@@ -28,15 +28,6 @@ import java.util.List;
 public class HierarchyNodeAccessRuleDAOGroupPrecedent
 	extends HierarchyNodeAccessRuleDAO {
 
-	/**
-     * Check if this node is usable by a specific user.
-     *
-     * @param conn The connection to the database.
-     * @param user The user to get the rule for.
-     *
-     * @return true If the node is accessible by the user, false if not.
-     */
-
     @Override
 	public byte getAccessibilityForUser( final String nodeId, final User user, boolean recurse)
         throws SQLException, GeneralSecurityException {
@@ -68,7 +59,7 @@ public class HierarchyNodeAccessRuleDAOGroupPrecedent
 	    if( rule != null ) {
 	    	byte decodedRule;
 	    	if( rule.length > 1 ) {
-	    		decodedRule = user.decrypt( rule )[0];
+	    		decodedRule = user.getKeyDecrypter().decrypt( rule )[0];
 	    	} else {
 	    		decodedRule = rule[0];
 	    	}

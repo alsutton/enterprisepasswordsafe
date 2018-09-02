@@ -196,7 +196,7 @@ public final class TamperproofEventLog
 
         byte[] stampHash = createHash(tamperStampData);
         if (theUser != null) {
-            stampHash = theUser.encrypt(stampHash);
+            stampHash = theUser.getKeyEncrypter().encrypt(stampHash);
         }
         return stampHash;
     }

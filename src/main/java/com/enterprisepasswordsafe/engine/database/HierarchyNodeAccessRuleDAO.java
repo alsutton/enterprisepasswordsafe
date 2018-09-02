@@ -56,47 +56,35 @@ public abstract class HierarchyNodeAccessRuleDAO implements ExternalInterface {
      */
 
     private static final String GET_USER_NODE_RULE_SQL =
-            "SELECT setting "
-        +   "  FROM hierarchy_access_control "
-        +   " WHERE node_id = ? "
-        +   "   AND user_id = ?";
+            "SELECT setting FROM hierarchy_access_control WHERE node_id = ? AND user_id = ?";
 
     /**
      * SQL to get the access rule for a node and user.
      */
 
     private static final String GET_NODE_RULES_SQL =
-            "SELECT hac.setting"
-        +   "  FROM hierarchy_access_control hac"
-        +   " WHERE node_id = ? "
-        +   "   AND user_id = ? ";
+            "SELECT hac.setting FROM hierarchy_access_control hac WHERE node_id = ? AND user_id = ? ";
 
     /**
      * SQL to insert an access rule for a node and user.
      */
 
     private static final String INSERT_USER_NODE_RULE_SQL =
-           "INSERT INTO hierarchy_access_control(setting, node_id, user_id) "
-        +   "                             VALUES(      ?,       ?,       ?) ";
+           "INSERT INTO hierarchy_access_control(setting, node_id, user_id) VALUES(?, ?, ?) ";
 
     /**
      * SQL to update an access rule for a node and user.
      */
 
     private static final String UPDATE_USER_NODE_RULE_SQL =
-           "UPDATE hierarchy_access_control "
-        +  "   SET setting = ? "
-        +  " WHERE node_id = ? "
-        + "    AND user_id = ? ";
+           "UPDATE hierarchy_access_control SET setting = ? WHERE node_id = ? AND user_id = ? ";
 
     /**
      * SQL to insert an access rule for a node and user.
      */
 
     private static final String DELETE_USER_NODE_RULE_SQL =
-           "DELETE FROM hierarchy_access_control "
-         + " WHERE node_id = ? "
-         + "    AND user_id = ? ";
+           "DELETE FROM hierarchy_access_control WHERE node_id = ? AND user_id = ? ";
 
     /**
      * SQL to get the access rule for a node and user via the groups
@@ -104,295 +92,142 @@ public abstract class HierarchyNodeAccessRuleDAO implements ExternalInterface {
      */
 
     private static final String GET_USERS_GROUP_NODE_RULES_SQL =
-            "SELECT hgac.setting "
-        +   "  FROM hierarchy_group_access_control hgac,"
-        +	"       membership mem "
-        +   " WHERE hgac.node_id = ? "
-        +   "   AND hgac.group_id = mem.group_id "
-        +	"	AND mem.user_id = ?";
+            "SELECT hgac.setting FROM hierarchy_group_access_control hgac, membership mem "
+        +   " WHERE hgac.node_id = ? AND hgac.group_id = mem.group_id AND mem.user_id = ?";
 
     /**
      * SQL to get the access rule for a node and group.
      */
 
     private static final String GET_GROUP_NODE_RULE_SQL =
-            "SELECT setting "
-        +   "  FROM hierarchy_group_access_control "
-        +   " WHERE node_id = ? "
-        +   "   AND group_id = ? ";
+            "SELECT setting FROM hierarchy_group_access_control WHERE node_id = ? AND group_id = ? ";
 
     /**
      * SQL to insert an access rule for a node and user.
      */
 
     private static final String INSERT_GROUP_NODE_RULE_SQL =
-           "INSERT INTO hierarchy_group_access_control(setting, node_id, group_id) "
-        +   "                                    VALUES(     ?,       ?,       ?) ";
+           "INSERT INTO hierarchy_group_access_control(setting, node_id, group_id) VALUES(?, ?, ?) ";
 
     /**
      * SQL to update an access rule for a node and user.
      */
 
     private static final String UPDATE_GROUP_NODE_RULE_SQL =
-           "UPDATE hierarchy_group_access_control "
-        +  "   SET setting = ? "
-        +  " WHERE node_id = ? "
-        + "    AND group_id = ? ";
+           "UPDATE hierarchy_group_access_control SET setting = ? WHERE node_id = ? AND group_id = ? ";
 
     /**
      * SQL to insert an access rule for a node and user.
      */
 
     private static final String DELETE_GROUP_NODE_RULE_SQL =
-           "DELETE FROM hierarchy_group_access_control "
-         + " WHERE node_id = ? "
-         + "   AND group_id = ? ";
-
-    /**
-     * Check if this node is usable by a specific user.
-     *
-     * @param conn The connection to the database.
-     * @param user The user to get the rule for.
-     *
-     * @return true If the node is accessible by the user, false if not.
-     */
+           "DELETE FROM hierarchy_group_access_control WHERE node_id = ? AND group_id = ? ";
 
     public byte getAccessibilityForUser( final HierarchyNode node, final User user)
         throws SQLException, GeneralSecurityException {
     	return getAccessibilityForUser( node.getNodeId(), user, true);
     }
 
-    /**
-     * Check if this node is usable by a specific user.
-     *
-     * @param conn The connection to the database.
-     * @param user The user to get the rule for.
-     *
-     * @return true If the node is accessible by the user, false if not.
-     */
-
     public byte getAccessibilityForUser( final String nodeId, final User user)
         throws SQLException, GeneralSecurityException {
         	return getAccessibilityForUser( nodeId, user, true);
 	}
 
-    /**
-     * Check if this node is usable by a specific user.
-     *
-     * @param conn The connection to the database.
-     * @param user The user to get the rule for.
-     *
-     * @return true If the node is accessible by the user, false if not.
-     */
-
     public abstract byte getAccessibilityForUser( final String nodeId, final User user, boolean recurse)
         throws SQLException, GeneralSecurityException;
 
-    /**
-     * Check if this node is usable by a specific user.
-     *
-     * @param conn The connection to the database.
-     * @param userId The ID of the user to get the rule for.
-     *
-     * @return true If the node is accessible by the user, false if not.
-     */
-
     protected byte[] getUserAccessibilityRule( final String nodeId, final User user)
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_USER_NODE_RULE_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_USER_NODE_RULE_SQL)) {
             ps.setString(1, nodeId);
             ps.setString(2, user.getUserId());
 
-	        ResultSet rs = ps.executeQuery();
-	        try {
-	            if (rs.next()) {
-	                return rs.getBytes(1);
-	            }
-	            return null;
-	        } finally {
-	        	DatabaseConnectionUtils.close(rs);
+	        try(ResultSet rs = ps.executeQuery()) {
+	            return rs.next() ? rs.getBytes(1) : null;
 	        }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
 
-    /**
-     * Check if this node is usable by a specific user.
-     *
-     * @param conn The connection to the database.
-     * @param userId The ID of the user to get the rule for.
-     *
-     * @return true If the node is accessible by the user, false if not.
-     */
-
     protected List<byte[]> getUsersGroupAccessibilityRules( final String nodeId, final User user)
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_USERS_GROUP_NODE_RULES_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_USERS_GROUP_NODE_RULES_SQL)) {
             ps.setString(1, nodeId);
             ps.setString(2, user.getUserId());
-
-            ResultSet rs = ps.executeQuery();
-            try {
-	        	List<byte[]> ruleList = new ArrayList<byte[]>();
+            try(ResultSet rs = ps.executeQuery()) {
+	        	List<byte[]> ruleList = new ArrayList<>();
 	            while(rs.next()) {
 	                ruleList.add( rs.getBytes(1) );
 	            }
 	            return ruleList;
-        	} finally {
-        		DatabaseConnectionUtils.close(rs);
         	}
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
 
-    /**
-     * Get the rule for the specified group accessing this node.
-     *
-     * @param conn The connection to the database.
-     * @param groupdId The ID of the group to get the rule for.
-     *
-     * @return The accesibility rule.
-     */
-
-    protected byte[] getGroupAccessibilityRule( final HierarchyNode node,
-            final String groupId)
+    protected byte[] getGroupAccessibilityRule( final HierarchyNode node, final String groupId)
         throws SQLException {
-
-    	PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_GROUP_NODE_RULE_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_GROUP_NODE_RULE_SQL)) {
             ps.setString(1, node.getNodeId());
             ps.setString(2,   groupId);
-
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if(rs.next()) {
-	                return rs.getBytes(1);
-	            }
-
-	            return null;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
+			ps.setMaxRows(1);
+            try(ResultSet rs = ps.executeQuery()) {
+            	return rs.next() ? rs.getBytes(1) : null;
             }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
 
-    /**
-     * Get all of the rules for this node.
-     *
-     * @param conn The connection to the database.
-     * @param adminGroup The admin group to decrypt the users admin key.
-     *
-     * @return A Map of username to access rule.
-     * @throws UnsupportedEncodingException
-     */
+    public Set<HierarchyNodeAccessRule> getAccessibilityRules( final HierarchyNode node, final Group adminGroup)
+    	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+    	Set<HierarchyNodeAccessRule> permissions = new TreeSet<>();
 
-    public Set<HierarchyNodeAccessRule> getAccessibilityRules( final HierarchyNode node,
-            final Group adminGroup)
-    throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	Set<HierarchyNodeAccessRule> permissions = new TreeSet<HierarchyNodeAccessRule>();
-
-    	PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_NODE_RULES_SQL);
-    	try {
+    	try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_NODE_RULES_SQL)) {
 	        ps.setString(1, node.getNodeId());
 
 			UserDAO uDAO = UserDAO.getInstance();
 	        UserSummaryDAO usDAO = UserSummaryDAO.getInstance();
 	    	for(UserSummary thisUser : usDAO.getSummaryListExcludingAdmin()) {
-	            ResultSet rs = null;
-	            try {
-	            	ps.setString(2, thisUser.getId());
-	                rs = ps.executeQuery();
+				ps.setString(2, thisUser.getId());
+	            try(ResultSet rs = ps.executeQuery()) {
 	                byte ruleByte = HierarchyNodeAccessRuleDAO.ACCESIBILITY_DEFAULT;
 	                if(rs.next()) {
 	                	byte[] rule = rs.getBytes(1);
 	                	if( rule.length > 1 ) {
 	                		User theUser = uDAO.getByIdDecrypted(thisUser.getId(), adminGroup);
-	                		rule = theUser.decrypt(rule);
+	                		rule = theUser.getKeyDecrypter().decrypt(rule);
 	                		ruleByte = rule[0];
 	                	}
 	                }
 
-	                permissions.add(
-	                		new HierarchyNodeAccessRule(
-	                				thisUser.getId(),
-	                				thisUser.getName(),
-	                				ruleByte
-	        				     )
-	            		);
-	            } finally {
-	                DatabaseConnectionUtils.close(rs);
+	                permissions.add(new HierarchyNodeAccessRule(thisUser.getId(), thisUser.getName(), ruleByte));
 	            }
 	    	}
-    	} finally {
-            DatabaseConnectionUtils.close(ps);
     	}
-
 
         return permissions;
     }
 
-    /**
-     * Get all of the rules for this node.
-     *
-     * @param conn The connection to the database.
-     * @param adminGroup The admin group to decrypt the users admin key.
-     *
-     * @return A Map of username to access rule.
-     */
-
     public Set<HierarchyNodeAccessRule> getGroupAccessibilityRules( final HierarchyNode node )
-    throws SQLException, GeneralSecurityException {
-    	Set<HierarchyNodeAccessRule> permissions = new TreeSet<HierarchyNodeAccessRule>();
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_GROUP_NODE_RULE_SQL);
-        try {
+	    throws SQLException {
+    	Set<HierarchyNodeAccessRule> permissions = new TreeSet<>();
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_GROUP_NODE_RULE_SQL)) {
 	        ps.setString(1, node.getNodeId());
 
 	        for(Group thisGroup : GroupDAO.getInstance().getAll()) {
 	        	ps.setString(2, thisGroup.getGroupId());
-
-		        ResultSet rs = null;
-		        try {
-		            rs = ps.executeQuery();
+		        try(ResultSet rs = ps.executeQuery()) {
 	                byte ruleByte = HierarchyNodeAccessRuleDAO.ACCESIBILITY_DEFAULT;
 		            if(rs.next()) {
 		            	byte[] rule = rs.getBytes(1);
 		            	ruleByte = rule[0];
 		            }
-	            	permissions.add(
-	            			new HierarchyNodeAccessRule(
-	            					thisGroup.getGroupId(),
-	            					thisGroup.getGroupName(),
-	            					ruleByte)
-            			);
-		        } finally {
-		            DatabaseConnectionUtils.close(rs);
+	            	permissions.add(new HierarchyNodeAccessRule(thisGroup.getGroupId(),thisGroup.getGroupName(),ruleByte));
 		        }
 	        }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
 
         return permissions;
     }
 
-    /**
-     * Check if this node is usable by a specific user.
-     *
-     * @param conn The connection to the database.
-     * @param userID The ID of the user the rule is being set for.
-     *
-     * @return true If the node is accessible by the user, false if not.
-     */
-
-    public void setAccessibleByUser( final HierarchyNode node,
-            final User user, final byte accessibility)
+    public void setAccessibleByUser( final HierarchyNode node, final User user, final byte accessibility)
         throws SQLException, GeneralSecurityException {
     	String sql;
     	if (accessibility == ACCESIBILITY_DEFAULT) {
@@ -405,34 +240,21 @@ public abstract class HierarchyNodeAccessRuleDAO implements ExternalInterface {
     		}
     	}
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
             int idx = 1;
             byte[] rule = new byte[1];
             rule[0] = accessibility;
-            if (sql != DELETE_USER_NODE_RULE_SQL) {
-            	ps.setBytes(idx++, user.encrypt(rule));
+            if (!DELETE_USER_NODE_RULE_SQL.equals(sql)) {
+            	ps.setBytes(idx++, user.getKeyEncrypter().encrypt(rule));
             }
             ps.setString(idx++, node.getNodeId());
             ps.setString(idx,   user.getUserId());
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
-    /**
-     * Check if this node is usable by a specific user.
-     *
-     * @param conn The connection to the database.
-     * @param user The user to get the rule for.
-     *
-     * @return true If the node is accessible by the user, false if not.
-     */
-
-    public void setAccessibleByGroup( final HierarchyNode node,
-            final String groupId, final byte accessibility)
-        throws SQLException, GeneralSecurityException {
+    public void setAccessibleByGroup( final HierarchyNode node, final String groupId, final byte accessibility)
+        throws SQLException {
     	String sql;
     	if (accessibility == ACCESIBILITY_DEFAULT) {
     		sql = DELETE_GROUP_NODE_RULE_SQL;
@@ -444,19 +266,16 @@ public abstract class HierarchyNodeAccessRuleDAO implements ExternalInterface {
     		}
     	}
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql);;
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
             int idx = 1;
             byte[] rule = new byte[1];
             rule[0] = accessibility;
-            if (sql != DELETE_GROUP_NODE_RULE_SQL) {
+            if (!DELETE_GROUP_NODE_RULE_SQL.equals(sql)) {
             	ps.setBytes(idx++, rule);
             }
             ps.setString(idx++, node.getNodeId());
             ps.setString(idx,   groupId);
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 

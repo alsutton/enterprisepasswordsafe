@@ -18,7 +18,6 @@ package com.enterprisepasswordsafe.engine.database;
 
 import java.io.UnsupportedEncodingException;
 import java.security.*;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,16 +28,13 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.enterprisepasswordsafe.engine.UserAccessControlDecryptor;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
+import com.enterprisepasswordsafe.engine.users.UserAccessKeyEncryptionHandler;
+import com.enterprisepasswordsafe.engine.users.UserPasswordEncryptionHandler;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.engine.utils.UserAccessKeyEncrypter;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 
@@ -85,26 +81,6 @@ public final class User
     private static final String PASSWORD_HASH_ALGORITHM = "MD5";
 
     /**
-     * The algorythm for the secure random number generator.
-     */
-
-    private static final String PBE_ALGORYTHM = "PBEWithMD5AndDES";
-
-    /**
-     * The salt used for PBE.
-     */
-
-    private static final byte[] PBE_SALT = {(byte) 0xc7, (byte) 0x73,
-            (byte) 0x21, (byte) 0x8c, (byte) 0x7e, (byte) 0xc8, (byte) 0xee,
-            (byte) 0x99 };
-
-    /**
-     * The number of iterations for PBE.
-     */
-
-    private static final int PBE_ITERATIONS = 3;
-
-    /**
      * The user types for EPS users.
      */
 
@@ -142,27 +118,21 @@ public final class User
      */
 
     private static final String GET_LOGIN_ATTEMPTS_SQL =
-            "SELECT	  appusers.login_attempts "
-            + "  FROM application_users appusers "
-            + " WHERE appusers.user_id = ? ";
+            "SELECT	appusers.login_attempts FROM application_users appusers WHERE appusers.user_id = ? ";
 
     /**
      * The SQL to update the login password.
      */
 
     private static final String UPDATE_LOGIN_PASSWORD_SQL =
-        "UPDATE application_users "
-        + " SET user_pass_b = ?, pwd_last_changed_l = ?, akey = ? "
-        + " WHERE user_id = ?";
+        "UPDATE application_users SET user_pass_b = ?, pwd_last_changed_l = ?, akey = ? WHERE user_id = ?";
 
     /**
      * Set the number of failed login attempts.
      */
 
     private static final String SET_LOGIN_FAILURE_COUNT =
-        "UPDATE application_users "
-      + "   SET login_attempts = ?"
-      + " WHERE  user_id = ? ";
+        "UPDATE application_users SET login_attempts = ? WHERE user_id = ? ";
 
     /**
      * A cached value to store the user type.
@@ -388,94 +358,7 @@ public final class User
         if (data == null) {
             return null;
         }
-        return encrypt(data.getBytes());
-    }
-
-    /**
-     * Encodes some data using the users access key.
-     *
-     * @param data
-     *            The data to encrypt.
-     *
-     * @return The encrypted data.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem encyrpting the data.
-     */
-
-    public byte[] encrypt(final byte[] data)
-        throws GeneralSecurityException {
-        Cipher cipher = getEncryptionCipher();
-        cipher.init(Cipher.ENCRYPT_MODE, accessKey);
-        return cipher.doFinal(data);
-    }
-
-    /**
-     * Decrypts some data using the users access key.
-     *
-     * @param data
-     *            The data to decrypt.
-     *
-     * @return The decrypted data.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem during decryption.
-     */
-
-    @Override
-    public byte[] decrypt(final byte[] data)
-        throws GeneralSecurityException {
-        Cipher cipher = getEncryptionCipher();
-        cipher.init(Cipher.DECRYPT_MODE, accessKey);
-        return cipher.doFinal(data);
-    }
-
-    /**
-     * Encrypts the data using a given password.
-     *
-     * @param encryptionPassword
-     *            The password to encrypt the data with.
-     * @param data
-     *            The data to encrypt
-     *
-     * @return The encryption data.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem during the encryption
-     */
-
-    public byte[] encryptWithPassword(final String encryptionPassword, final byte[] data)
-            throws GeneralSecurityException {
-        PBEParameterSpec pbeParamSpec = new PBEParameterSpec(PBE_SALT, PBE_ITERATIONS);
-        PBEKeySpec pbeKeySpec = new PBEKeySpec(encryptionPassword.toCharArray());
-        SecretKeyFactory keyFac = SecretKeyFactory.getInstance(PBE_ALGORYTHM);
-        SecretKey pbeKey = keyFac.generateSecret(pbeKeySpec);
-        Cipher pbeCipher = Cipher.getInstance(PBE_ALGORYTHM);
-        pbeCipher.init(Cipher.ENCRYPT_MODE, pbeKey, pbeParamSpec);
-
-        return pbeCipher.doFinal(data);
-    }
-
-    /**
-     * Encrypts the data using a given password.
-     *
-     * @param decryptionPassword
-     *            The password to encrypt the data with.
-     * @param data
-     *            The data to encrypt
-     *
-     * @return The decrypted data.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem during decryption.
-     */
-
-    public byte[] decryptWithPassword(final String decryptionPassword, final byte[] data)
-            throws GeneralSecurityException {
-        PBEParameterSpec pbeParamSpec = new PBEParameterSpec(PBE_SALT, PBE_ITERATIONS);
-        PBEKeySpec pbeKeySpec = new PBEKeySpec(decryptionPassword.toCharArray());
-        SecretKeyFactory keyFac = SecretKeyFactory.getInstance(PBE_ALGORYTHM);
-        SecretKey pbeKey = keyFac.generateSecret(pbeKeySpec);
-        Cipher pbeCipher = Cipher.getInstance(PBE_ALGORYTHM);
-        pbeCipher.init(Cipher.DECRYPT_MODE, pbeKey, pbeParamSpec);
-
-        return pbeCipher.doFinal(data);
+        return getKeyEncrypter().encrypt(data.getBytes());
     }
 
     /**
@@ -668,13 +551,11 @@ public final class User
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         setLoginPassword(newPassword);
 
-        UserPasswordEncrypter upe = new UserPasswordEncrypter(newPassword);
+        UserPasswordEncryptionHandler upe = new UserPasswordEncryptionHandler(newPassword);
         byte[] encryptedKey = KeyUtils.encryptKey(accessKey, upe);
 
-        PreparedStatement ps = null;
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_LOGIN_PASSWORD_SQL)) {
             int idx = 1;
-            ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_LOGIN_PASSWORD_SQL);
             ps.setBytes(idx++, password);
 
         	Calendar now = Calendar.getInstance();
@@ -682,8 +563,6 @@ public final class User
             ps.setBytes(idx++, encryptedKey);
             ps.setString(idx, userId);
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -780,7 +659,7 @@ public final class User
      * @throws UnsupportedEncodingException
      */
     public void decryptAccessKey(final String decryptionPassword)
-        throws GeneralSecurityException, UnsupportedEncodingException {
+        throws GeneralSecurityException {
     	if( accessKey != null ) {
     		return;
     	}
@@ -789,7 +668,7 @@ public final class User
 			throw new RuntimeException("Encoded access key unavailable, access key not present.");
 		}
 
-		byte[] keyBytes = decryptWithPassword(decryptionPassword, encodedAccessKey);
+		byte[] keyBytes = new UserPasswordEncryptionHandler(decryptionPassword).decrypt(encodedAccessKey);
 		accessKey = new SecretKeySpec(keyBytes, USER_KEY_ALGORITHM);
     }
 
@@ -801,7 +680,7 @@ public final class User
      * @throws UnsupportedEncodingException
      */
     public void decryptAdminAccessKey(final Group adminGroup)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        throws GeneralSecurityException {
     	if( accessKey != null ) {
     		return;
     	}
@@ -847,24 +726,17 @@ public final class User
      */
     public int getLoginAttempts()
     	throws SQLException {
-    	int attempts = 0;
-
-    	PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_LOGIN_ATTEMPTS_SQL);
-    	ResultSet rs = null;
-    	try {
+    	try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_LOGIN_ATTEMPTS_SQL)) {
     		ps.setString(1, getUserId());
-    		rs = ps.executeQuery();
-    		if( rs.next() ) {
-    			int fetchedAttempts = rs.getInt(1);
-    			if(!rs.wasNull()) {
-    				attempts = fetchedAttempts;
-    			}
-    		}
-    	} finally {
-    		DatabaseConnectionUtils.close(rs);
-    		DatabaseConnectionUtils.close(ps);
+    		try(ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return 0;
+                }
+
+                int fetchedAttempts = rs.getInt(1);
+                return rs.wasNull() ? 0 : fetchedAttempts;
+            }
     	}
-        return attempts;
     }
 
     /**
@@ -949,14 +821,10 @@ public final class User
 
     public void setFailedLogins( int count )
     	throws SQLException {
-        Connection conn = BOMFactory.getCurrentConntection();
-    	PreparedStatement ps = conn.prepareStatement(SET_LOGIN_FAILURE_COUNT);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(SET_LOGIN_FAILURE_COUNT)) {
             ps.setInt(1, count);
             ps.setString(2, getUserId());
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -968,7 +836,7 @@ public final class User
 
     @Override
 	public Decrypter getKeyDecrypter() {
-    	return new UserAccessKeyDecrypter(getAccessKey());
+    	return new UserAccessKeyEncryptionHandler(getAccessKey());
     }
 
     /**
@@ -979,100 +847,7 @@ public final class User
 
     @Override
 	public Encrypter getKeyEncrypter() {
-    	return new UserAccessKeyEncrypter(getAccessKey());
+    	return new UserAccessKeyEncryptionHandler(getAccessKey());
     }
 
-	/**
-	 * Class which encrypts data using the key encryption algorithm
-	 * and the users password.
-	 */
-	private class UserPasswordEncrypter implements Encrypter {
-
-		/**
-		 * The password to encrypt with.
-		 */
-
-		private final SecretKey encryptionKey;
-
-		/**
-		 * Constructor. Stores password
-		 * @throws NoSuchAlgorithmException
-		 */
-
-		private UserPasswordEncrypter(final String password)
-			throws GeneralSecurityException {
-	        PBEKeySpec pbeKeySpec = new PBEKeySpec(password.toCharArray());
-	        SecretKeyFactory keyFac = SecretKeyFactory.getInstance(PBE_ALGORYTHM);
-	        encryptionKey = keyFac.generateSecret(pbeKeySpec);
-		}
-
-		/**
-		 * Method to perform the encryption.
-		 *
-		 * @param data The data to encrypt.
-		 *
-		 * @return The encrypted representation of the data.
-		 */
-
-		@Override
-		public byte[] encrypt(byte[] data)
-			throws GeneralSecurityException {
-	        PBEParameterSpec pbeParamSpec = new PBEParameterSpec(PBE_SALT, PBE_ITERATIONS);
-	        Cipher pbeCipher = Cipher.getInstance(PBE_ALGORYTHM);
-	        pbeCipher.init(Cipher.ENCRYPT_MODE, encryptionKey, pbeParamSpec);
-	        return pbeCipher.doFinal(data);
-		}
-	}
-
-
-	/**
-	 * Class which decrypts data using the users access key.
-	 */
-	private static class UserAccessKeyDecrypter implements Decrypter {
-
-		/**
-		 * The password to encrypt with.
-		 */
-
-		private final SecretKey decryptionKey;
-
-		/**
-		 * Constructor. Stores password
-		 */
-
-		private UserAccessKeyDecrypter(final SecretKey newKey) {
-			decryptionKey = newKey;
-		}
-
-		/**
-		 * Method to perform the encryption.
-		 *
-		 * @param data The data to encrypt.
-		 *
-		 * @return The encrypted representation of the data.
-		 */
-
-		@Override
-		public byte[] decrypt(byte[] data)
-			throws GeneralSecurityException {
-			Cipher pbeCipher = getCipher();
-	        pbeCipher.init(Cipher.DECRYPT_MODE, decryptionKey);
-	        return pbeCipher.doFinal(data);
-		}
-
-		/**
-		 * ThreadLocal storing cipher instance for version one decryption.
-		 */
-
-		private static ThreadLocal<Cipher> cipherThreadLocal = new ThreadLocal<Cipher>();
-
-		private Cipher getCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
-            Cipher result = cipherThreadLocal.get();
-			if( result == null ) {
-				result = Cipher.getInstance("AES");
-                cipherThreadLocal.set(result);
-			}
-			return result;
-		}
-	}
 }

@@ -148,7 +148,7 @@ public final class ExpandedTamperproofEventLogEntry
         	TamperproofEventLogDAO.
         		createTamperstampString(datetime, event, itemId, logUser.getUserId());
         byte[] stampHash = createHash(tamperStampData);
-        stampHash = logUser.encrypt(stampHash);
+        stampHash = logUser.getKeyEncrypter().encrypt(stampHash);
 
         if (Arrays.equals(tamperstamp, stampHash)) {
         	setTamperstampStatus( TAMPERSTAMP_STATUS_OK );

@@ -30,20 +30,6 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
 public interface AccessControlDecryptor extends ExternalInterface {
 
     /**
-     * Decrypt some data.
-     *
-     * @param data The encrypted data.
-     *
-     * @return The unencrypted data.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws UnsupportedEncodingException
-     */
-
-    byte[] decrypt(byte[] data)
-        throws GeneralSecurityException, UnsupportedEncodingException;
-
-    /**
      * Gets the key decrypter method for use with the keystore
      */
 

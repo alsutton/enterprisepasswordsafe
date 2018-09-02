@@ -255,7 +255,6 @@ public final class Group
      * @throws UnsupportedEncodingException
      */
 
-    @Override
 	public byte[] decrypt(final byte[] data)
         throws GeneralSecurityException {
         if (data == null) {
