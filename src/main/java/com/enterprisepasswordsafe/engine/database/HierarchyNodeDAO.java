@@ -30,6 +30,7 @@ import com.enterprisepasswordsafe.engine.database.actions.NodeObjectAction;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeSummary;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.Cache;
 import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
@@ -247,6 +248,8 @@ public final class HierarchyNodeDAO
 	 */
 
 	private Cache<String,Boolean> personalNodeCache;
+
+	private UserClassifier userClassifier = new UserClassifier();
 
 	/**
 	 * Private constructor to prevent instantiation
@@ -518,7 +521,7 @@ public final class HierarchyNodeDAO
                                                        Map<String,Password> results)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         StringBuffer sql = new StringBuffer(GET_CHILD_OBJECTS_VIA_UAC_SQL);
-        if( ! user.isAdministrator() && ! user.isSubadministrator() ) {
+        if(!userClassifier.isPriviledgedUser(user)) {
             sql.append("   AND (pass.enabled is null OR pass.enabled = 'Y')" );
         }
 
@@ -553,7 +556,7 @@ public final class HierarchyNodeDAO
                                                         Map<String,Password> results)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         StringBuffer sql = new StringBuffer(GET_CHILD_OBJECTS_VIA_GAC_SQL);
-        if( ! user.isAdministrator() && ! user.isSubadministrator() ) {
+        if(!userClassifier.isPriviledgedUser(user)) {
             sql.append("   AND (pass.enabled is null OR pass.enabled = 'Y')" );
         }
 
@@ -590,7 +593,7 @@ public final class HierarchyNodeDAO
             final User theUser, boolean includeEmpty, final Comparator<HierarchyNode> comparator)
         throws SQLException, GeneralSecurityException {
         List<HierarchyNode> children = getMultiple(GET_CHILD_CONTAINER_NODES_SQL, node.getNodeId());
-        if( theUser.isAdministrator() ) {
+        if( userClassifier.isAdministrator(theUser)) {
             return children;
         }
 
@@ -655,7 +658,7 @@ public final class HierarchyNodeDAO
             return false;
         }
 
-        if (theUser.isAdministrator() || theUser.isSubadministrator()) {
+        if (userClassifier.isPriviledgedUser(theUser)) {
             return true;
         }
 

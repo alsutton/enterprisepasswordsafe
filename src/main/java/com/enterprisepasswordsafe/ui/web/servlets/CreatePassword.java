@@ -36,6 +36,7 @@ import com.enterprisepasswordsafe.engine.database.Password;
 import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
 import com.enterprisepasswordsafe.engine.database.PasswordRestrictionDAO;
 import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -45,6 +46,8 @@ import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
  */
 
 public final class CreatePassword extends HttpServlet {
+
+	private final UserClassifier userClassifier = new UserClassifier();
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -63,8 +66,7 @@ public final class CreatePassword extends HttpServlet {
 	        User theUser = SecurityUtils.getRemoteUser(request);
 
 	        boolean accessApproved = true;
-	        if( theUser.isSubadministrator() == false
-	        &&	theUser.isAdministrator() == false ) {
+	        if( !userClassifier.isPriviledgedUser(theUser) ) {
 	        	if( node.getType() == HierarchyNode.USER_CONTAINER_NODE
 	        	&&  node.getNodeId().equals(theUser.getUserId()) == false ) {
 	        		accessApproved = true;

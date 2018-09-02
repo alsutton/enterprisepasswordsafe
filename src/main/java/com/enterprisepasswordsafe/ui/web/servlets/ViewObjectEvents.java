@@ -27,11 +27,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO.EventsForDay;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 public final class ViewObjectEvents extends HttpServlet {
+
+	private UserClassifier userClassifier = new UserClassifier();
 
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -44,16 +47,12 @@ public final class ViewObjectEvents extends HttpServlet {
 	        }
 
 	        boolean allowedAccess = false;
-			if	( AccessRoleDAO.getInstance().hasRole(
-								remoteUser.getUserId(),
-								passwordLimit,
-								AccessRole.HISTORYVIEWER_ROLE) ) {
+			if	( AccessRoleDAO.getInstance().hasRole(remoteUser.getUserId(), passwordLimit, AccessRole.HISTORYVIEWER_ROLE) ) {
 				allowedAccess = Boolean.TRUE;
-			} else if	( remoteUser.isAdministrator() ) {
+			} else if	( userClassifier.isAdministrator(remoteUser) ) {
 				allowedAccess = Boolean.TRUE;
-			} else if	( remoteUser.isSubadministrator() ) {
-				String showSubadminHistory =
-						ConfigurationDAO.getValue(ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS);
+			} else if	( userClassifier.isSubadministrator(remoteUser) ) {
+				String showSubadminHistory = ConfigurationDAO.getValue(ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS);
 				if( showSubadminHistory.charAt(0) == 'Y' ) {
 					allowedAccess = Boolean.TRUE;
 				}

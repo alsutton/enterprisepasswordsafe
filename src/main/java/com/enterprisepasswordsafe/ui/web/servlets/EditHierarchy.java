@@ -32,6 +32,7 @@ import javax.servlet.http.HttpSession;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
 import com.enterprisepasswordsafe.engine.nodes.NodeManipulator;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -90,10 +91,8 @@ public final class EditHierarchy extends HttpServlet {
 
     public static final String PASTE_ACTION = "p";
 
+    private UserClassifier userClassifier = new UserClassifier();
 
-    /**
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
     		throws ServletException, IOException {
@@ -128,7 +127,7 @@ public final class EditHierarchy extends HttpServlet {
 
 		    String hideEmpty = ConfigurationDAO.getValue(ConfigurationOption.HIDE_EMPTY_FOLDERS);
 		    boolean includeEmpty = (hideEmpty.equals(Configuration.HIDE_EMPTY_FOLDERS_OFF));
-		    if	( user.isSubadministrator() ){
+		    if	( userClassifier.isSubadministrator(user) ){
 		        String displayEdit = ConfigurationDAO.getValue(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
 		        if( displayEdit != null && 	displayEdit.equals("S") ) {
 		        	includeEmpty = true;
@@ -151,7 +150,7 @@ public final class EditHierarchy extends HttpServlet {
         HierarchyNode node = getValidNode(request, hnDAO);
         HierarchyNodeAccessRuleDAO hnarDAO = HierarchyNodeAccessRuleDAO.getInstance();
         List<HierarchyNode> parentage = hnDAO.getParentage(node);
-        if( !user.isAdministrator()
+        if( !userClassifier.isAdministrator(user)
                 &&	hnarDAO.getAccessibilityForUser(node, user) == HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
             for( HierarchyNode thisNode : parentage ) {
                 if(hnarDAO.getAccessibilityForUser(thisNode, user) == HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {

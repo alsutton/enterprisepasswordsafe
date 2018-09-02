@@ -39,6 +39,11 @@ import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
  */
 
 public final class UserServlet extends HttpServlet {
+
+    public static final String USER_TYPE_ADMIN = "A",
+                                USER_TYPE_SUBADMIN = "P",
+                                USER_TYPE_NORMAL = "N";
+
     /**
      * The prefix used for group membership parameters
      */
@@ -326,16 +331,15 @@ public final class UserServlet extends HttpServlet {
                                         final Group adminGroup,
                                         final User user)
             throws GeneralSecurityException, SQLException, IOException {
-        int updatedType = Integer.parseInt(request.getParameter("user_type"));
         UserPriviledgeTransitioner userPriviledgeTransitioner = new UserPriviledgeTransitioner();
-        switch(updatedType) {
-            case User.USER_TYPE_ADMIN:
+        switch(request.getParameter("user_type")) {
+            case USER_TYPE_ADMIN:
                 userPriviledgeTransitioner.makeAdmin(remoteUser, adminGroup, user);
                 break;
-            case User.USER_TYPE_SUBADMIN:
+            case USER_TYPE_SUBADMIN:
                 userPriviledgeTransitioner.makeSubadmin(remoteUser, adminGroup, user);
                 break;
-            case User.USER_TYPE_NORMAL:
+            case USER_TYPE_NORMAL:
                 userPriviledgeTransitioner.makeNormalUser(remoteUser, user);
                 break;
         }

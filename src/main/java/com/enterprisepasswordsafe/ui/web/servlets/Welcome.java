@@ -33,6 +33,7 @@ import com.enterprisepasswordsafe.engine.database.PasswordDAO;
 import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
 import com.enterprisepasswordsafe.engine.database.PasswordRestrictionDAO;
 import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
@@ -55,9 +56,8 @@ public final class Welcome extends PasswordSafeBaseServlet {
 
     private static final String FORCED_CHANGE_PASSWORD = "/nomenu/Profile";
 
-    /**
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
+    private UserClassifier userClassifier = new UserClassifier();
+
 	@Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -111,7 +111,7 @@ public final class Welcome extends PasswordSafeBaseServlet {
 			}
 
 			// Get the list of upgrades that need to be made.
-			if( thisUser.isAdministrator() ) {
+			if( userClassifier.isAdministrator(thisUser) ) {
 				List<String> upgrades = getUpgradeList();
 				if(upgrades != null ) {
 					request.setAttribute("upgrade_list", upgrades);

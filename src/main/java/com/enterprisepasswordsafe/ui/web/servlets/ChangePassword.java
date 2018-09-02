@@ -28,21 +28,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.EmailerThread;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-
-/**
- * Servlet to allow a user to change a password.
- */
-
 public final class ChangePassword extends HttpServlet {
 
-    /**
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
+	private UserClassifier userClassifier = new UserClassifier();
+
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
@@ -183,24 +178,18 @@ public final class ChangePassword extends HttpServlet {
         if( password != null ) {
         	thePassword.setPassword(password);
         }
-        if( thisUser.isSubadministrator() || thisUser.isAdministrator() ) {
-        	String enabled = request.getParameter("enabled");
-        	thePassword.setEnabled(enabled != null && enabled.equals("Y"));
-        }
         thePassword.setNotes( request.getParameter("notes") );
         thePassword.setUsername( extractUsername(request) );
         thePassword.setLocation( extractLocation(request) );
-
-        if( thisUser.isSubadministrator() || thisUser.isAdministrator() ) {
-        	thePassword.setRestrictionId(extractRestrictionID(request));
-        }
-
         setAuditing( request, thePassword);
         setHistoryRecording( request, thePassword );
         setExpiry( request, thePassword);
-        if( thisUser.isSubadministrator() || thisUser.isAdministrator() ) {
-        	setRestrictedAccess(request, thePassword);
-        }
+		if( userClassifier.isPriviledgedUser(thisUser)) {
+			String enabled = request.getParameter("enabled");
+			thePassword.setEnabled(enabled != null && enabled.equals("Y"));
+			thePassword.setRestrictionId(extractRestrictionID(request));
+			setRestrictedAccess(request, thePassword);
+		}
 
         return true;
 	}

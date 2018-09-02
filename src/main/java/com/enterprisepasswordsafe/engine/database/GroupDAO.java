@@ -16,15 +16,16 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
-import java.util.*;
-
-import com.enterprisepasswordsafe.engine.utils.Cache;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 import org.apache.commons.csv.CSVRecord;
+
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Data access object for the group objects.
@@ -98,11 +99,7 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
     private static final String GET_SUMMARY_BY_SEARCH =
     		"SELECT " + GROUP_FIELDS + " FROM groups WHERE group_name like ? ";
 
-	/**
-	 * Cache for groups.
-	 */
-
-	private final Cache<String, Group> groupCache = new Cache<String, Group>();
+	private UserClassifier userClassifier = new UserClassifier();
 
 	/**
 	 * Private constructor to prevent instantiation
@@ -148,16 +145,12 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
         MembershipDAO mDAO = MembershipDAO.getInstance();
         mDAO.create(theCreator, newGroup);
 
-        TamperproofEventLogDAO.getInstance().create(
-        		TamperproofEventLog.LOG_LEVEL_GROUP_MANIPULATION,
-        		theCreator,
-        		"Created the group {group:" + newGroup.getGroupId() + "}",
-        		true
-    		);
+        TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_GROUP_MANIPULATION,
+        		theCreator, "Created the group {group:" + newGroup.getGroupId() + "}", true);
 
         // Ensure the creating user is part of the group if they are not the
         // admin user.
-        if (!theCreator.getUserId().equals(User.ADMIN_USER_ID)) {
+        if (!userClassifier.isMasterAdmin(theCreator)) {
         	mDAO.create(theCreator, newGroup);
         }
 
@@ -174,10 +167,10 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
         // Get the admin group either directly (if the user is an admin),
         // or indirectly (if the user is only a sub-admin).
         Group adminGroup = getById(Group.ADMIN_GROUP_ID);
-        if (theUser.isAdministrator()) {
+        if (userClassifier.isAdministrator(theUser)) {
             Membership adminMembership = MembershipDAO.getInstance().getMembership(theUser, Group.ADMIN_GROUP_ID);
             adminGroup.updateAccessKey(adminMembership);
-        } else if (theUser.isSubadministrator()) {
+        } else if (userClassifier.isSubadministrator(theUser)) {
             Membership subAdminMembership =
             	MembershipDAO.getInstance().getMembership(theUser, Group.SUBADMIN_GROUP_ID);
             Group subAdminGroup = getById(Group.SUBADMIN_GROUP_ID);
@@ -192,12 +185,8 @@ public class GroupDAO extends GroupStoreManipulator implements ExternalInterface
 
     public Group getByIdDecrypted(final String groupId, final User user)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	Group theGroup;
-    	if( user.isAdministrator() ) {
-    		theGroup = UnfilteredGroupDAO.getInstance().getById(groupId);
-    	} else {
-    		theGroup = getById(groupId);
-    	}
+    	Group theGroup = userClassifier.isAdministrator(user) ?
+                UnfilteredGroupDAO.getInstance().getById(groupId) : getById(groupId);
     	if( theGroup == null || theGroup.getStatus() == Group.STATUS_DELETED) {
     		return null;
     	}

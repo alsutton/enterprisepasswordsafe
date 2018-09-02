@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -42,6 +43,8 @@ import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
  */
 
 public final class ViewPasswordImage extends HttpServlet {
+
+    private UserClassifier userClassifier = new UserClassifier();
 
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -54,12 +57,10 @@ public final class ViewPasswordImage extends HttpServlet {
         try {
 	        User user = SecurityUtils.getRemoteUser(request);
 
-	        AccessControl ac;
-	        if (user.isAdministrator() || user.isSubadministrator()) {
-	            ac = AccessControlDAO.getInstance().getAccessControlEvenIfDisabled(user, id);
-	        } else {
-	            ac = AccessControlDAO.getInstance().getAccessControl(user, id);
-	        }
+	        AccessControlDAO accessControlDAO = AccessControlDAO.getInstance();
+	        AccessControl ac = userClassifier.isPriviledgedUser(user) ?
+	            accessControlDAO.getAccessControlEvenIfDisabled(user, id) :
+	            accessControlDAO.getAccessControl(user, id);
 
 	        PasswordBase password;
 	        if (dt == null || dt.length() == 0) {

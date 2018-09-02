@@ -16,7 +16,6 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -27,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.AccessRole.ApproverSummary;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.ApprovalRequestMailer;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
@@ -36,15 +36,17 @@ public final class ViewRAPassword extends HttpServlet {
 
 	public static final String REASON_PARAMETER = "reason";
 
+	private final UserClassifier userClassifier = new UserClassifier();
+
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
-    		throws IOException, ServletException {
+    		throws ServletException {
     	try {
 	        User thisUser = SecurityUtils.getRemoteUser(request);
 
 	        String passwordId = ServletUtils.getInstance().getParameterValue(request, "id");
 	        AccessControl ac;
-	        if (thisUser.isAdministrator() || thisUser.isSubadministrator()) {
+	        if (userClassifier.isPriviledgedUser(thisUser)) {
 	            ac = AccessControlDAO.getInstance().getAccessControlEvenIfDisabled(thisUser, passwordId);
 	        } else {
 	            ac = AccessControlDAO.getInstance().getAccessControl(thisUser, passwordId);

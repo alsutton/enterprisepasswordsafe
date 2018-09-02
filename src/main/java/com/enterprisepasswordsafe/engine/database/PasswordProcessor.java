@@ -1,6 +1,7 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.database.actions.PasswordAction;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 
 import java.sql.PreparedStatement;
@@ -45,6 +46,8 @@ public class PasswordProcessor {
                     + " WHERE mem.user_id = ? AND mem.group_id    = gac.group_id AND gac.item_id = pass.password_id ";
 
 
+    private UserClassifier userClassifier = new UserClassifier();
+
     /**
      * Performs an action on all passwords stored in the database.
      *
@@ -56,7 +59,7 @@ public class PasswordProcessor {
 
     public void processAllPasswords(final User user, final PasswordAction action) throws Exception {
         List<String> processedIds = new ArrayList<>();
-        if (user.isAdministrator()) {
+        if (userClassifier.isAdministrator(user)) {
             processAllPasswordsWork(user, action, GET_ALL_PASSWORDS_FOR_ACTION_BY_USER_EVEN_IF_DISABLED_SQL, processedIds);
             processAllPasswordsWork(user, action, GET_ALL_PASSWORDS_FOR_ACTION_BY_GROUP_EVEN_IF_DISABLED_SQL, processedIds);
         } else {

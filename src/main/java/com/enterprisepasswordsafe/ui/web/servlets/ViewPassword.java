@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -125,7 +126,8 @@ public final class ViewPassword extends HttpServlet {
 
 	        User thisUser = SecurityUtils.getRemoteUser(request);
 
-            if(thisUser.isNonViewingUser()) {
+			UserClassifier userClassifier = new UserClassifier();
+            if(userClassifier.isNonViewingUser(thisUser)) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
@@ -134,7 +136,7 @@ public final class ViewPassword extends HttpServlet {
 	        String id = servletUtils.getParameterValue(request, SharedParameterNames.PASSWORD_ID_PARAMETER);
 
 	        AccessControl ac;
-	        if (thisUser.isAdministrator() || thisUser.isSubadministrator()) {
+	        if (userClassifier.isPriviledgedUser(thisUser)) {
 	            ac = AccessControlDAO.getInstance().getAccessControlEvenIfDisabled(thisUser, id);
 	        } else {
 	            ac = AccessControlDAO.getInstance().getAccessControl(thisUser, id);
@@ -343,12 +345,15 @@ public final class ViewPassword extends HttpServlet {
 		if	( AccessRoleDAO.getInstance().hasRole(thisUser.getUserId(), thisPassword.getId(),
 				AccessRole.HISTORYVIEWER_ROLE) ) {
 			return Boolean.TRUE;
-		} else if			( thisUser.isAdministrator() ) {
-			return Boolean.TRUE;
-		} else if	( thisUser.isSubadministrator() ) {
-			String showSubadminHistory = ConfigurationDAO.getValue(ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS);
-			if( showSubadminHistory.charAt(0) == 'Y' ) {
+		} else {
+			UserClassifier userClassifier = new UserClassifier();
+			if			( userClassifier.isAdministrator(thisUser) ) {
 				return Boolean.TRUE;
+			} else if	( userClassifier.isSubadministrator(thisUser)) {
+				String showSubadminHistory = ConfigurationDAO.getValue(ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS);
+				if( showSubadminHistory.charAt(0) == 'Y' ) {
+					return Boolean.TRUE;
+				}
 			}
 		}
 		return Boolean.FALSE;

@@ -19,6 +19,8 @@ import java.util.Properties;
 
 public class UserImporter {
 
+    public enum UserType { NORMAL, SUBADMIN, ADMIN }
+
     private final UserDAO userDAO;
     private final UserPriviledgeTransitioner userPriviledgeTransitioner;
 
@@ -27,25 +29,12 @@ public class UserImporter {
         this.userPriviledgeTransitioner = userPriviledgeTransitioner;
     }
 
-    /**
-     * Import a user line into the database. The format should be;<br/>
-     * username[,password[.full_name[,email]]]<br/> If no password is
-     * specified, one will be generated.
-     *
-     * @param theImporter The user performing the import.
-     * @param adminGroup The adminGroup used to set the users type.
-     * @param passwordGenerator The password generator to use if needed.
-     * @param record The CSV record to import.
-     *
-     * @return The password used for the user
-     */
-
-    public String importData(final User theImporter, final Group adminGroup,
+    public void importData(final User theImporter, final Group adminGroup,
                              final PasswordGenerator passwordGenerator, CSVRecord record)
             throws SQLException, GeneralSecurityException, IOException, MessagingException {
         Iterator<String> values = record.iterator();
         if (!values.hasNext()) {
-            return null;
+            return;
         }
 
         String username = values.next().trim();
@@ -57,7 +46,7 @@ public class UserImporter {
                 getNextValueFromCSVRecordIterator(
                         values,
                         "The user " + username + " does not have an email address specified.");
-        int userType = getUserTypeFromCSVRecord(values);
+        UserType userType = getUserTypeFromCSVRecord(values);
         boolean usePasswordGeneratorForLoginPassword = !values.hasNext();
         String password = usePasswordGeneratorForLoginPassword ? passwordGenerator.getRandomPassword() : values.next().trim();
 
@@ -66,8 +55,6 @@ public class UserImporter {
         performPostCreationActions(theImporter, adminGroup, createdUser, userType, usePasswordGeneratorForLoginPassword);
 
         sendUserCreationEmailToUserIfNeccessary(createdUser, password);
-
-        return password;
     }
 
     private String getNextValueFromCSVRecordIterator(final Iterator<String> iterator, final String error )
@@ -78,31 +65,31 @@ public class UserImporter {
         return iterator.next().trim();
     }
 
-    private int getUserTypeFromCSVRecord(Iterator<String> values)
+    private UserType getUserTypeFromCSVRecord(Iterator<String> values)
             throws GeneralSecurityException {
         if(!values.hasNext()) {
-            return User.USER_TYPE_NORMAL;
+            return UserType.NORMAL;
         }
 
         String userTypeString = values.next().trim();
         if(userTypeString.isEmpty()) {
-            return User.USER_TYPE_NORMAL;
+            return UserType.NORMAL;
         }
 
         switch(userTypeString.charAt(0)) {
             case 'E':
-                return User.USER_TYPE_ADMIN;
+                return UserType.ADMIN;
             case 'P':
-                return User.USER_TYPE_SUBADMIN;
+                return UserType.SUBADMIN;
             case 'N':
-                return User.USER_TYPE_NORMAL;
+                return UserType.NORMAL;
             default:
                 throw new GeneralSecurityException("User type unknown - "+userTypeString);
         }
     }
 
     private void performPostCreationActions(final User theImporter, final Group adminGroup,
-                                            final User createdUser, int userType, boolean hasGeneratedPassword)
+                                            final User createdUser, UserType userType, boolean hasGeneratedPassword)
             throws SQLException, IOException, GeneralSecurityException {
         if( hasGeneratedPassword ) {
             createdUser.forcePasswordChangeAtNextLogin();
@@ -110,10 +97,10 @@ public class UserImporter {
         }
 
         switch(userType) {
-            case User.USER_TYPE_ADMIN:
+            case ADMIN:
                 userPriviledgeTransitioner.makeAdmin(theImporter, adminGroup, createdUser);
                 break;
-            case User.USER_TYPE_SUBADMIN:
+            case SUBADMIN:
                 userPriviledgeTransitioner.makeSubadmin(theImporter, adminGroup, createdUser);
                 break;
         }

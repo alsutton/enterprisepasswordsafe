@@ -33,6 +33,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 import com.enterprisepasswordsafe.proguard.JavaBean;
 
@@ -63,6 +64,8 @@ public final class ExpandedTamperproofEventLogEntry
 	private String username;
 
 	private String item;
+
+	private final UserClassifier userClassifier = new UserClassifier();
 
 	public ExpandedTamperproofEventLogEntry( final ResultSet rs, final User validatingUser,
 			final Group adminGroup, boolean validateTamperstamp,
@@ -138,9 +141,7 @@ public final class ExpandedTamperproofEventLogEntry
 
     public final void testTamperstamp(final User logUser, final long datetime, final String itemId)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	if( logUser == null
-    	||	tamperstamp == null
-    	||  User.ADMIN_USER_ID.equals(logUser.getUserId())) {
+    	if( logUser == null || tamperstamp == null || userClassifier.isMasterAdmin(logUser)) {
     		setTamperstampStatus( TAMPERSTAMP_STATUS_UNKNOWN );
     		return;
     	}

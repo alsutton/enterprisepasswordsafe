@@ -32,6 +32,7 @@ import javax.servlet.http.HttpSession;
 
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -72,9 +73,10 @@ public final class Explorer extends HttpServlet {
 	        	node = hnDAO.getById(nodeId);
 	        }
 
+			UserClassifier userClassifier = new UserClassifier();
 	        List<HierarchyNode> parentage = hnDAO.getParentage(node);
 	        HierarchyNodeAccessRuleDAO hnarDAO = HierarchyNodeAccessRuleDAO.getInstance();
-	        if( !user.isAdministrator()
+	        if( !userClassifier.isAdministrator(user)
 	        &&	hnarDAO.getAccessibilityForUser(node, user)
 					== HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
 	        	for(HierarchyNode thisNode : parentage) {
@@ -100,10 +102,10 @@ public final class Explorer extends HttpServlet {
 							equals(Configuration.HIDE_EMPTY_FOLDERS_OFF);
 
 	        request.setAttribute("edithierarchy_allowed", "N");
-            if(!user.isNonViewingUser()) {
-                if			( user.isAdministrator() ) {
+            if(!userClassifier.isNonViewingUser(user)) {
+                if			( userClassifier.isAdministrator(user) ) {
                     request.setAttribute("edithierarchy_allowed", "Y");
-                } else if	( user.isSubadministrator() ){
+                } else if	( userClassifier.isSubadministrator(user) ){
                     String displayEdit = ConfigurationDAO.getValue(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
                     if( displayEdit != null && 	displayEdit.equals("S") ) {
                         request.setAttribute("edithierarchy_allowed", "Y");
@@ -125,7 +127,7 @@ public final class Explorer extends HttpServlet {
 	        }
 
 	        HierarchyNodeChildren children = hnDAO.getChildrenValidForUser(node, user, includeEmpty, null, objectComparator);
-            if(user.isNonViewingUser()) {
+            if(userClassifier.isNonViewingUser(user)) {
                 children.setObjects(null);
             }
 

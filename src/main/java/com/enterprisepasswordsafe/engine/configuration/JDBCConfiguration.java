@@ -16,6 +16,13 @@
 
 package com.enterprisepasswordsafe.engine.configuration;
 
+import com.enterprisepasswordsafe.engine.dbabstraction.SupportedDatabase;
+import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
+import com.enterprisepasswordsafe.proguard.ExternalInterface;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -26,17 +33,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.schema.SchemaVersion;
-import com.enterprisepasswordsafe.engine.dbabstraction.SupportedDatabase;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Object responsible for storing the JDBC connection details and creating
@@ -50,14 +46,6 @@ public class JDBCConfiguration implements ExternalInterface {
 
 	private static final byte[] PASSWORD_AES_KEY = { 84, -54, 102, -106, 30,
 			-63, 98, 125, 52, 22, 34, 44, -39, 86, 11, -120 };
-
-	/**
-	 * Command to test the validity of the database.
-	 */
-
-	public static final String TEST_SQL = "SELECT user_id "
-			+ "  FROM application_users " + " WHERE user_id= '"
-			+ User.ADMIN_USER_ID + "'";
 
 	/**
 	 * The list of database types.

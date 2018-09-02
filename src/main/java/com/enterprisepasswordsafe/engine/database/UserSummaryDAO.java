@@ -1,6 +1,7 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.Cache;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
@@ -38,7 +39,7 @@ public class UserSummaryDAO extends StoredObjectManipulator<UserSummary> impleme
     private static final String GET_SUMMARY_LIST_EXCLUDING_ADMIN =
             "SELECT user_id, user_name, full_name "
                     + "FROM application_users "
-                    + "WHERE user_id <>  '" + User.ADMIN_USER_ID +"' "
+                    + "WHERE user_id <>  '" + UserClassifier.ADMIN_USER_ID +"' "
                     + "  AND (disabled is null or disabled = 'N')"
                     + "ORDER BY user_name ASC";
 

@@ -29,6 +29,7 @@ import javax.servlet.http.HttpSession;
 
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.exceptions.DatabaseUnavailableException;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -55,6 +56,8 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
      */
 
     private static final String PASSWORD_SYNC_PAGE = "/passwordsync.jsp";
+
+    private UserClassifier userClassifier = new UserClassifier();
 
     /**
      * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -148,7 +151,7 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
 			// If the user has logged in using an external source we need to
 			// ensure the external and EPS password are synchronized.
 			if (!theUser.checkPassword(password)) {
-				if (!theUser.getUserId().equals(User.ADMIN_USER_ID)) {
+				if (!userClassifier.isMasterAdmin(theUser)) {
 					UserDAO.getInstance().increaseFailedLogins(theUser);
 				}
 				ServletUtils.getInstance().generateErrorMessage(request, "Your login details are incorrect.");
@@ -184,10 +187,8 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
 			response.sendRedirect(redirect);
 		} catch (DatabaseUnavailableException e) {
 			response.sendRedirect(request.getContextPath()+"/VerifyJDBCConfiguration");
-        } catch (SQLException sqle) {
-        	throw new ServletException("An error occurred trying to log you in. ", sqle);
-        } catch (GeneralSecurityException gse) {
-        	throw new ServletException("An error occurred trying to log you in. ", gse);
+        } catch (SQLException | GeneralSecurityException e) {
+        	throw new ServletException("An error occurred trying to log you in. ", e);
         }
     }
 

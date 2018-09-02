@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
 import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
 import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 
 /**
  * AccessApprover which determines access based on a configuration option.
@@ -28,6 +29,8 @@ import com.enterprisepasswordsafe.engine.database.User;
 public class UserLevelConditionalConfigurationAccessApprover implements AccessApprover {
 
 	private final ConfigurationOption mProperty;
+
+	private final UserClassifier userClassifier = new UserClassifier();
 
 	public UserLevelConditionalConfigurationAccessApprover(final ConfigurationOption property) {
 		mProperty = property;
@@ -37,10 +40,10 @@ public class UserLevelConditionalConfigurationAccessApprover implements AccessAp
 	public boolean isAuthorised(final User theUser) throws SQLException {
 		String requiredLevel = ConfigurationDAO.getValue(mProperty);
 		if(requiredLevel.equals("A")) {
-			return theUser.isAdministrator();
+			return userClassifier.isAdministrator(theUser);
 		}
 		if(requiredLevel.equals("S")) {
-			return theUser.isSubadministrator() || theUser.isAdministrator();
+			return userClassifier.isPriviledgedUser(theUser);
 		}
 		return requiredLevel.equals("U");
 	}

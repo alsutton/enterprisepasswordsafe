@@ -26,10 +26,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 public final class DeleteGroup extends HttpServlet {
+
+    private final UserClassifier userClassifier = new UserClassifier();
+
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
@@ -37,7 +41,7 @@ public final class DeleteGroup extends HttpServlet {
 
         try {
             User thisUser = SecurityUtils.getRemoteUser(request);
-            if(!thisUser.isAdministrator()) {
+            if(! userClassifier.isAdministrator(thisUser)) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }

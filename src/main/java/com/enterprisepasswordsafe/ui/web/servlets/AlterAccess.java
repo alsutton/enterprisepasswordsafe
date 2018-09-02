@@ -26,26 +26,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 
-/**
- * Servlet to direct the user to the page allowing them to alter access to a password.
- */
-
 public final class AlterAccess extends HttpServlet {
 
-    /**
-     * @see HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
+	private UserClassifier userClassifier = new UserClassifier();
+
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
         String passwordId = ServletUtils.getInstance().getParameterValue(request, "id");
         try {
 	        User thisUser = SecurityUtils.getRemoteUser(request);
-	        if (!thisUser.isAdministrator() && !thisUser.isSubadministrator()) {
+	        if (!userClassifier.isPriviledgedUser(thisUser)) {
 	            throw new ServletException("You can not modify access to this password");
 	        }
 
@@ -59,25 +55,19 @@ public final class AlterAccess extends HttpServlet {
 	        	request.setAttribute("egac", "N");
 	        } else if	( eGAC.getReadKey() != null && eGAC.getModifyKey() == null) {
 	        	request.setAttribute("egac", "R");
-	        } else if	( eGAC.getReadKey() != null && eGAC.getModifyKey() != null) {
+	        } else if	( eGAC.getReadKey() != null) {
 	        	request.setAttribute("egac", "RM");
 	        }
 
 	        request.setAttribute(SharedParameterNames.PASSWORD_ATTRIBUTE, thisPassword);
 	        request.setAttribute( "gac_summaries", GroupAccessControlDAO.getInstance().getSummaries(thisPassword));
 	        request.setAttribute( "uac_summaries", UserAccessControlDAO.getInstance().getSummaries(thisPassword));
-        } catch(SQLException sqle) {
-        	throw new ServletException("The access information could not be obtained due to an error", sqle);
-        } catch(GeneralSecurityException gse) {
-        	throw new ServletException("The access information could not be obtained due to an error", gse);
+        } catch(SQLException | GeneralSecurityException e) {
+        	throw new ServletException("The access information could not be obtained due to an error", e);
         }
 
         request.getRequestDispatcher("/subadmin/edit_access.jsp").forward(request, response);
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

@@ -29,17 +29,11 @@ import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
 import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
 import com.enterprisepasswordsafe.engine.database.User;
 import com.enterprisepasswordsafe.engine.database.UserDAO;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-/**
- * Deletes a user whose id has been passed in the ID parameter.
- */
-
 public final class DeleteUser extends HttpServlet {
-    /**
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
 
 	@Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -47,7 +41,7 @@ public final class DeleteUser extends HttpServlet {
 
         try {
             User thisUser = SecurityUtils.getRemoteUser(request);
-            if(!thisUser.isAdministrator()) {
+            if(!new UserClassifier().isAdministrator(thisUser)) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
@@ -67,26 +61,17 @@ public final class DeleteUser extends HttpServlet {
             } else {
                 UserDAO.getInstance().delete(theUser);
                 servletUtils.generateMessage(request, "The user " + theUser + " has been deleted");
-                TamperproofEventLogDAO.getInstance().create(
-                        TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                        thisUser,
-                        null,
-                        "Deleted the user {user:" + theUser.getUserId() + "}",
-                        true
-                );
+                TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
+                        thisUser, null, "Deleted the user {user:" + theUser.getUserId() + "}",
+                        true);
             }
-        } catch (GeneralSecurityException e) {
+        } catch (GeneralSecurityException | SQLException e) {
             throw new ServletException(e);
-        } catch (SQLException sqle) {
-            throw new ServletException(sqle);
         }
 
         response.sendRedirect(request.getContextPath()+"/admin/ViewUsers");
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Delete the specified user";

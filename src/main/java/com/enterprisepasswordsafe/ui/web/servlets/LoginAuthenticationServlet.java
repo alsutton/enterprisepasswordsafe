@@ -26,64 +26,34 @@ import javax.servlet.http.HttpSession;
 import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
 import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
 import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
 import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import org.apache.commons.codec.binary.Base64;
 
-
-/**
- * Servlet which authenticates a user and stores the users information for use
- * later.
- */
-
 public abstract class LoginAuthenticationServlet extends HttpServlet {
-
-	/**
-	 * The session parameter holding the user object.
-	 */
 
 	public static final String USER_OBJECT_SESSION_ATTRIBUTE = "UserObject";
 
-	/**
-     * Store the neccessary details about a user in the session.
-     *
-     * @param session
-     *            The session to store the data in.
-     * @param theUser
-     *            The user to be stored.
-     *
-     * @throws SQLException
-     *            Thrown if there is a problem accesing the database.
-     */
-    protected final void storeUserInformation(final HttpSession session, final User theUser)
+	private UserClassifier userClassifier = new UserClassifier();
+
+    final void storeUserInformation(final HttpSession session, final User theUser)
         throws SQLException, NoSuchAlgorithmException {
-        if (theUser.isAdministrator()) {
-            session.setAttribute(
-                    AuthenticationFilter.USER_TYPE_PARAMETER,
-                    AuthenticationFilter.FULL_ADMIN
-                );
+        if (userClassifier.isAdministrator(theUser)) {
+            session.setAttribute(AuthenticationFilter.USER_TYPE_PARAMETER, AuthenticationFilter.FULL_ADMIN);
             session.setAttribute(AuthenticationFilter.USER_IS_ADMIN, "X");
             session.setAttribute(AuthenticationFilter.USER_IS_SUBADMIN, "X");
-        } else if (theUser.isSubadministrator()) {
-            session.setAttribute(
-                    AuthenticationFilter.USER_TYPE_PARAMETER,
-                    AuthenticationFilter.SUB_ADMIN
-                );
+        } else if (userClassifier.isSubadministrator(theUser)) {
+            session.setAttribute(AuthenticationFilter.USER_TYPE_PARAMETER, AuthenticationFilter.SUB_ADMIN);
             session.removeAttribute(AuthenticationFilter.USER_IS_ADMIN);
             session.setAttribute(AuthenticationFilter.USER_IS_SUBADMIN, "X");
         } else {
-            session.setAttribute(
-                    AuthenticationFilter.USER_TYPE_PARAMETER,
-                    AuthenticationFilter.NORMAL_USER
-                );
+            session.setAttribute(AuthenticationFilter.USER_TYPE_PARAMETER, AuthenticationFilter.NORMAL_USER);
             session.removeAttribute(AuthenticationFilter.USER_IS_ADMIN);
             session.removeAttribute(AuthenticationFilter.USER_IS_SUBADMIN);
         }
-        session.setAttribute(
-                AuthenticationFilter.ACCESS_KEY_PARAMETER,
-                theUser.getAccessKey()
-            );
+        session.setAttribute(AuthenticationFilter.ACCESS_KEY_PARAMETER, theUser.getAccessKey());
 
         String name = theUser.getFullName();
         if (name == null) {
@@ -99,15 +69,7 @@ public abstract class LoginAuthenticationServlet extends HttpServlet {
         session.setAttribute("csrfToken", new Base64(0, null, true).encodeAsString(random));
     }
 
-    /**
-     * Stores the session timeout information.
-     *
-     * @param session The session to store the information.
-     *
-     * @throws SQLException Thrown if there is a problem getting the information from the database.
-     */
-
-    protected final void storeTimeoutInformation(final HttpSession session)
+    final void storeTimeoutInformation(final HttpSession session)
             throws SQLException {
         // Set the session invalidation timeout period
         String sessionTimeout = ConfigurationDAO.getValue(ConfigurationOption.SESSION_TIMEOUT);

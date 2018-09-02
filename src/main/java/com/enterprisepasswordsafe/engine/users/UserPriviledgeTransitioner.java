@@ -9,14 +9,7 @@ import java.sql.SQLException;
 
 public class UserPriviledgeTransitioner {
 
-    /**
-     * Make the user a password safe administrator.
-     *
-     * @param adminUser
-     *            The user making the changes
-     * @param theUser
-     *            The user to change.
-     */
+    private UserClassifier userClassifier = new UserClassifier();
 
     public void makeAdmin(final User adminUser, final User theUser)
             throws SQLException, IOException, GeneralSecurityException {
@@ -24,18 +17,10 @@ public class UserPriviledgeTransitioner {
         makeAdmin(adminUser, adminGroup, theUser);
     }
 
-    /**
-     * Make the user a password safe administrator.
-     *
-     * @param adminUser The user making the changes.
-     * @param adminGroup The administrator group.
-     * @param theUser The user to change.
-     */
-
     public void makeAdmin(final User adminUser, final Group adminGroup, final User theUser)
             throws SQLException, IOException, GeneralSecurityException {
         // Check the user is not already an admin
-        if (theUser.isAdministrator()) {
+        if (userClassifier.isAdministrator(theUser)) {
             return;
         }
 
@@ -54,24 +39,10 @@ public class UserPriviledgeTransitioner {
         // Add the user being updated to the password admin group.
         mDAO.create(theUser, subadminGroup);
 
-        TamperproofEventLogDAO.getInstance().create(
-                TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                adminUser,
-                null,
-                "{user:" + theUser.getUserId() +
-                        "} was given EPS administrator rights.",
-                true
-        );
+        TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
+                adminUser, null, "{user:" + theUser.getUserId() + "} was given EPS administrator rights.",
+                true);
     }
-
-    /**
-     * Make the user a password admin.
-     *
-     * @param adminUser
-     *            The user making the changes
-     * @param theUser
-     *            The user being modified
-     */
 
     public void makeSubadmin(final User adminUser, final User theUser)
             throws SQLException, IOException, GeneralSecurityException {
@@ -89,7 +60,7 @@ public class UserPriviledgeTransitioner {
     public void makeSubadmin(final User adminUser, final Group adminGroup, final User theUser)
             throws SQLException, IOException, GeneralSecurityException {
         // Check the user is not already a password admin
-        if (!theUser.isAdministrator() && theUser.isSubadministrator()) {
+        if (userClassifier.isSubadministrator(theUser)) {
             return;
         }
 
@@ -168,7 +139,7 @@ public class UserPriviledgeTransitioner {
                                final Group subadminGroup, final User theUser)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         // Check the user is not already a normal user
-        if (!theUser.isAdministrator() && !theUser.isSubadministrator()) {
+        if (!userClassifier.isPriviledgedUser(theUser)) {
             return;
         }
 
@@ -176,12 +147,8 @@ public class UserPriviledgeTransitioner {
         mDAO.delete(theUser, adminGroup);
         mDAO.delete(theUser, subadminGroup);
 
-        TamperproofEventLogDAO.getInstance().create(
-                TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                adminUser,
-                null,
-                "{user:" + theUser.getUserId() +
-                        "} has all administration rights removed.",
+        TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
+                adminUser, null, "{user:" + theUser.getUserId() + "} has all administration rights removed.",
                 true);
     }
 }

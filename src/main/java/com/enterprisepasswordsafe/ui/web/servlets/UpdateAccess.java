@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -79,7 +80,7 @@ public final class UpdateAccess extends HttpServlet {
     	try {
 	    	User currentUser = SecurityUtils.getRemoteUser(request);
 	        ServletUtils servletUtils = ServletUtils.getInstance();
-	        if (!currentUser.isAdministrator() &&  !currentUser.isSubadministrator()) {
+	        if (!new UserClassifier().isPriviledgedUser(currentUser)) {
 	        	servletUtils.generateErrorMessage(request, "You can not modify access to this password");
                 response.sendRedirect(request.getContextPath() + ERROR_PAGE);
 	        	return;

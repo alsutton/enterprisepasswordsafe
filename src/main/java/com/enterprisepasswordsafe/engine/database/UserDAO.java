@@ -33,6 +33,7 @@ import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
 import com.enterprisepasswordsafe.engine.jaas.WebLoginCallbackHandler;
 import com.enterprisepasswordsafe.engine.users.UserAccessKeyEncryptionHandler;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.users.UserPasswordEncryptionHandler;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
@@ -90,7 +91,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
 
     private static final String GET_ALL_USERS_SQL =
             "SELECT " + USER_FIELDS + " FROM application_users appusers "
-            + " WHERE appusers.user_id <> '"+User.ADMIN_USER_ID+"' AND appusers.disabled <> 'D'"
+            + " WHERE appusers.user_id <> '"+UserClassifier.ADMIN_USER_ID+"' AND appusers.disabled <> 'D'"
             + " ORDER BY appusers.user_name ASC";
 
     /**
@@ -154,6 +155,8 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
     private static final String[] DELETE_SQL_STATEMENTS = {
             DELETE_UACS, DELETE_UARS, DELETE_USER_MEMBERSHIPS, DELETE_USER_SQL
     };
+
+    private UserClassifier userClassifier = new UserClassifier();
 
 	/**
 	 * Private constructor to prevent instantiation
@@ -267,7 +270,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
     	connection.setAutoCommit(false);
     	try {
 
-	    	if( theUser.isMasterAdmin() ) {
+	    	if( userClassifier.isMasterAdmin(theUser) ) {
 	    		Group adminGroup = GroupDAO.getInstance().getAdminGroup(theUser);
 
 	            KeyGenerator kgen = KeyGenerator.getInstance(User.USER_KEY_ALGORITHM);
@@ -459,7 +462,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
 	                    new WebLoginCallbackHandler(theUser.getUserName(), loginPassword.toCharArray()));
 	            loginContext.login();
 	        } catch(LoginException ex) {
-	            if(!theUser.isMasterAdmin()) {
+	            if(!userClassifier.isMasterAdmin(theUser)) {
 	            	increaseFailedLogins(theUser);
 	            }
 	            throw ex;

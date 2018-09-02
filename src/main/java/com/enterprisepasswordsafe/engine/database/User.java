@@ -26,12 +26,12 @@ import java.util.Calendar;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.enterprisepasswordsafe.engine.UserAccessControlDecryptor;
 import com.enterprisepasswordsafe.engine.users.UserAccessKeyEncryptionHandler;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.users.UserPasswordEncryptionHandler;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
@@ -81,37 +81,13 @@ public final class User
     private static final String PASSWORD_HASH_ALGORITHM = "MD5";
 
     /**
-     * The user types for EPS users.
-     */
-
-    public static final int USER_TYPE_UNKNOWN = -1,
-                            USER_TYPE_ADMIN = 0,
-                            USER_TYPE_SUBADMIN   = 0x01,
-                            USER_TYPE_NORMAL     = 0x02,
-                            USER_TYPE_NONVIEWING = 0x10;
-    /**
-     * A mask which ensures only the user type details are returned.
-     */
-
-    private static final int ACTUAL_TYPE_MASK = 0x0F;
-
-    /**
-     * The ID for the admin user.
-     */
-
-    public static final String ADMIN_USER_ID = "0";
-
-    /**
      * The fields relating to the user.
      */
 
     public static final String USER_FIELDS = "appusers.user_id, "
-            + "appusers.user_name, appusers.user_pass_b, "
-            + "appusers.email, appusers.full_name, "
-            + "appusers.akey, appusers.aakey, "
-            + "appusers.last_login_l, "
-            + "appusers.auth_source, appusers.disabled, "
-            + "appusers.pwd_last_changed_l";
+            + "appusers.user_name, appusers.user_pass_b, appusers.email, appusers.full_name, "
+            + "appusers.akey, appusers.aakey, appusers.last_login_l, "
+            + "appusers.auth_source, appusers.disabled, appusers.pwd_last_changed_l";
 
     /**
      * The SQL to get the number of login attempts for a user.
@@ -133,12 +109,6 @@ public final class User
 
     private static final String SET_LOGIN_FAILURE_COUNT =
         "UPDATE application_users SET login_attempts = ? WHERE user_id = ? ";
-
-    /**
-     * A cached value to store the user type.
-     */
-
-    private int userType = User.USER_TYPE_UNKNOWN;
 
     /**
      * The ID of this user.
@@ -239,9 +209,9 @@ public final class User
 
         setLoginPassword(newPassword);
 
-        generateKey();
-
-        setUserType(USER_TYPE_NORMAL);
+        KeyGenerator kgen = KeyGenerator.getInstance(USER_KEY_ALGORITHM);
+        kgen.init(USER_KEY_SIZE);
+        accessKey = kgen.generateKey();
     }
 
     /**
@@ -274,91 +244,6 @@ public final class User
         if( rs.wasNull() ) {
         	passwordLastChanged = PASSWORD_LAST_CHANGED_DUMMY;
         }
-
-        getUserTypeFromDatabase();
-    }
-
-    private Cipher getEncryptionCipher()
-            throws NoSuchPaddingException, NoSuchAlgorithmException {
-        Cipher cipher = sEncryptionCipherThreadLocal.get();
-        if(cipher == null) {
-            cipher = Cipher.getInstance(USER_KEY_ALGORITHM);
-            sEncryptionCipherThreadLocal.set(cipher);
-        }
-        return cipher;
-    }
-
-    /**
-     * Get the type for this user.
-     *
-     * @return one of the user types which relates to this user.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
-    private int getUserTypeFromDatabase()
-        throws SQLException {
-        if (userType != User.USER_TYPE_UNKNOWN) {
-            return userType;
-        }
-
-        userType = User.USER_TYPE_NORMAL;
-        MembershipDAO mDAO = MembershipDAO.getInstance();
-        if (mDAO.isMemberOf(userId, Group.ADMIN_GROUP_ID)) {
-            userType = User.USER_TYPE_ADMIN;
-        } else if (mDAO.isMemberOf(userId, Group.SUBADMIN_GROUP_ID)) {
-            userType = User.USER_TYPE_SUBADMIN;
-        }
-
-        if(!getUserId().equals(User.ADMIN_USER_ID)
-        && mDAO.isMemberOf(userId, Group.NON_VIEWING_GROUP_ID)) {
-            userType |= USER_TYPE_NONVIEWING;
-        }
-
-        return userType;
-    }
-
-    /**
-     * Set the user type
-     *
-     * @param type type for the user.
-     */
-
-    private void setUserType(final int type) {
-        userType = userType & (~ACTUAL_TYPE_MASK);
-        userType |= type;
-    }
-
-    /**
-     * Generates the read and modify keys.
-     *
-     * @throws NoSuchAlgorithmException Thrown if the access key algorithm is not available.
-     */
-
-    public void generateKey() throws NoSuchAlgorithmException {
-        KeyGenerator kgen = KeyGenerator.getInstance(USER_KEY_ALGORITHM);
-        kgen.init(USER_KEY_SIZE);
-        accessKey = kgen.generateKey();
-    }
-
-    /**
-     * Encodes some data using the users access key.
-     *
-     * @param data
-     *            The data to encrypt.
-     *
-     * @return The encrypted data.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem encyrpting the data.
-     * @throws UnsupportedEncodingException
-     */
-
-    public byte[] encrypt(final String data)
-        throws GeneralSecurityException, UnsupportedEncodingException {
-        if (data == null) {
-            return null;
-        }
-        return getKeyEncrypter().encrypt(data.getBytes());
     }
 
     /**
@@ -432,53 +317,11 @@ public final class User
     public AuthenticationSource getAuthenticationSource()
             throws SQLException {
         String userAuthSource = getAuthSource();
-        if (!isMasterAdmin() && userAuthSource != null) {
+        if (!new UserClassifier().isMasterAdmin(this) && userAuthSource != null) {
             return AuthenticationSourceDAO.getInstance().getById(userAuthSource);
         } else {
             return AuthenticationSource.DEFAULT_SOURCE;
         }
-    }
-
-    public boolean isMasterAdmin() {
-        return ADMIN_USER_ID.equals(userId);
-    }
-
-
-    /**
-     * Returns whether or not this user is a administrator.
-     *
-     * @return true if the user is an administrator, false if not.
-     */
-
-    public boolean isAdministrator()
-        throws SQLException {
-    	return ((getUserTypeFromDatabase()&ACTUAL_TYPE_MASK) == User.USER_TYPE_ADMIN);
-    }
-
-    /**
-     * Checks to see if the user should be given subadministrator rights.
-     *
-     * @return true if the user is a subadministrator, false if not.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
-    public boolean isSubadministrator()
-        throws SQLException {
-        return ((getUserTypeFromDatabase()&ACTUAL_TYPE_MASK) == User.USER_TYPE_SUBADMIN);
-    }
-
-    /**
-     * Checks to see if the user should not be allowed to view passwords
-     *
-     * @return true if the user should not be allowed to view passwords, false if they should.
-     *
-     * @throws java.sql.SQLException
-     */
-
-    public boolean isNonViewingUser()
-        throws SQLException {
-        return (!getUserId().equals(ADMIN_USER_ID)) && ((getUserTypeFromDatabase() & USER_TYPE_NONVIEWING) != 0);
     }
 
     /**

@@ -16,35 +16,23 @@
 
 package com.enterprisepasswordsafe.engine.database.actions;
 
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
+import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.database.actions.search.SearchTest;
+import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeSummary;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.enterprisepasswordsafe.engine.database.AccessControledObject;
-import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.actions.search.SearchTest;
-import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeSummary;
 
 /**
  * PasswordAction to handle password search requests.
  */
 public class PasswordSearchAction implements NodeObjectAction {
-
-    /**
-     * The user decrypting the passwords.
-     */
-
-    private final User user;
 
     /**
      * The list of tests to be performed.
@@ -64,6 +52,8 @@ public class PasswordSearchAction implements NodeObjectAction {
 
     private int resultCount;
 
+    private boolean userIsAdministrator;
+
     /**
      * Constructor. Stores the user performing the search and the search chain
      * to be matched.
@@ -74,35 +64,22 @@ public class PasswordSearchAction implements NodeObjectAction {
      *            The list of tests to check.
      */
 
-    public PasswordSearchAction( final User theUser, final List<SearchTest> testList) {
-        user = theUser;
+    public PasswordSearchAction( final User theUser, final List<SearchTest> testList)
+            throws SQLException {
         tests = testList;
         results = new HashMap<>();
         resultCount = 0;
+        userIsAdministrator = new UserClassifier().isAdministrator(theUser);
     }
 
-    /**
-     * Process a specific password. Decrypts the passwords and then runs the
-     * tests on it.
-     *
-     * @param node The node the password has come from.
-     * @param aco The object to test if it matches the search criteria.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting data
-     *  from the database.
-     * @throws SQLException Thrown if there are problems accessing data in the database.
-     * @throws UnsupportedEncodingException
-     */
-
     @Override
-	public final void process(final HierarchyNode node, final AccessControledObject aco)
-        throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
+	public final void process(final HierarchyNode node, final AccessControledObject aco) {
         if (aco == null) {
             return;
         }
 
         Password password = (Password) aco;
-        if (!user.isAdministrator() && !password.isEnabled()) {
+        if (!userIsAdministrator && !password.isEnabled()) {
         	return;
         }
 
@@ -113,25 +90,14 @@ public class PasswordSearchAction implements NodeObjectAction {
         }
 
         String nodeId = node.getNodeId();
-        List<Password> theList = results.get(nodeId);
-        if( theList == null ) {
-        	theList = new ArrayList<>();
-        	results.put(nodeId, theList);
-        }
+        List<Password> theList = results.computeIfAbsent(nodeId, k -> new ArrayList<>());
         theList.add(password);
 
         resultCount++;
     }
 
-    /**
-     * Get the result list.
-     *
-     * @return The results accumulated so far.
-     */
-
     public final Map<HierarchyNodeSummary,List<Password>> getResults() {
-        Map<HierarchyNodeSummary,List<Password>> expandedResults
-                = new HashMap<HierarchyNodeSummary, List<Password>>();
+        Map<HierarchyNodeSummary,List<Password>> expandedResults = new HashMap<>();
 
         HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
         for(Map.Entry<String, List<Password>> entry : results.entrySet()) {
@@ -145,12 +111,6 @@ public class PasswordSearchAction implements NodeObjectAction {
 
         return expandedResults;
     }
-
-    /**
-     * Get the result count.
-     *
-     * @return The number of matches
-     */
 
     public final int getResultCount() {
     	return resultCount;
