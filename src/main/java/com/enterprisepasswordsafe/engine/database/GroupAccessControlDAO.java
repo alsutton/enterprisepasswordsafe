@@ -16,6 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
+import com.enterprisepasswordsafe.engine.utils.KeyUtils;
+import com.enterprisepasswordsafe.proguard.ExternalInterface;
+
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
@@ -25,14 +29,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
-import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
-import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Data access object for GroupAccessControl objects.
@@ -58,72 +54,48 @@ public class GroupAccessControlDAO
      */
 
     private static final String DELETE_SQL =
-            "DELETE FROM group_access_control "
-            + " WHERE group_id = ? "
-            + "   AND item_id = ?";
+            "DELETE FROM group_access_control WHERE group_id = ? AND item_id = ?";
 
     /**
      * The SQL to delete all GACs for an item.
      */
 
     private static final String DELETE_ALL_FOR_ITEM_SQL =
-            "DELETE FROM group_access_control "
-            + " WHERE item_id = ? AND group_id <> '"+Group.ADMIN_GROUP_ID+"'";
+            "DELETE FROM group_access_control WHERE item_id = ? AND group_id <> '"+Group.ADMIN_GROUP_ID+"'";
 
     /**
      * SQL To get the GAC allowing a user full access to a item.
      */
 
     private static final String GET_GROUP_FOR_FULL_GAC_SQL =
-            "SELECT " + GAC_FIELDS
-            + " FROM group_access_control gac, "
-            + "      membership mem "
-            + "WHERE mem.user_id = ? "
-            + "  AND gac.item_id = ? "
-            + "  AND gac.group_id = mem.group_id "
-            + "  AND gac.rkey IS NOT NULL "
-            + "  AND gac.mkey IS NOT NULL "
-    		+ " ORDER BY gac.group_id";
+            "SELECT " + GAC_FIELDS + " FROM group_access_control gac, membership mem "
+            + "WHERE mem.user_id = ? AND gac.item_id = ?  AND gac.group_id = mem.group_id "
+            + "  AND gac.rkey IS NOT NULL AND gac.mkey IS NOT NULL ORDER BY gac.group_id";
 
     /**
      * SQL To get the GAC allowing a user full access to a item.
      */
 
     private static final String GET_GROUP_FOR_FULL_GAC_INCLUDING_DISABLED_SQL =
-            "SELECT " + GAC_FIELDS
-            + " FROM group_access_control gac, "
-            + "      membership mem "
-            + "WHERE mem.user_id = ? "
-            + "  AND gac.item_id = ? "
-            + "  AND gac.group_id = mem.group_id "
-            + "  AND gac.rkey IS NOT NULL "
-            + "  AND gac.mkey IS NOT NULL ";
+            "SELECT " + GAC_FIELDS + " FROM group_access_control gac, membership mem "
+            + "WHERE mem.user_id = ? AND gac.item_id = ? AND gac.group_id = mem.group_id "
+            + "  AND gac.rkey IS NOT NULL AND gac.mkey IS NOT NULL ";
 
     /**
      * SQL To get the GAC allowing a user read access to a item.
      */
 
     private static final String GET_GROUP_FOR_GAC_SQL =
-            "SELECT " + GAC_FIELDS
-            + "  FROM group_access_control gac, "
-            + "       membership mem "
-            + " WHERE mem.user_id = ? "
-            + "   AND mem.group_id = gac.group_id "
-            + "   AND gac.item_id = ? "
-            + "   AND gac.rkey IS NOT NULL ";
+            "SELECT " + GAC_FIELDS + "  FROM group_access_control gac, membership mem "
+            + " WHERE mem.user_id = ? AND mem.group_id = gac.group_id AND gac.item_id = ? AND gac.rkey IS NOT NULL ";
 
     /**
      * SQL To get the GAC allowing users access to a item.
      */
 
     private static final String GET_GROUP_FOR_GAC_INCLUDING_DISABLED_SQL =
-    		"SELECT "+ GAC_FIELDS
-            + "  FROM group_access_control gac, "
-            + "       membership mem "
-            + "WHERE mem.user_id = ? "
-            + "  AND gac.item_id = ? "
-            + "  AND gac.group_id = mem.group_id "
-            + "  AND gac.rkey IS NOT NULL "
+    		"SELECT "+ GAC_FIELDS + "  FROM group_access_control gac, membership mem "
+            + "WHERE mem.user_id = ? AND gac.item_id = ? AND gac.group_id = mem.group_id AND gac.rkey IS NOT NULL "
             + "  AND gac.mkey IS NULL ";
 
     /**
@@ -131,12 +103,8 @@ public class GroupAccessControlDAO
      */
 
     private static final String GET_GAC_FOR_GROUP_SQL =
-    		"SELECT "+ GAC_FIELDS
-            + "  FROM group_access_control gac "
-            + " WHERE gac.group_id = ? "
-            + "   AND gac.item_id = ? "
-            + "   AND gac.rkey IS NOT NULL ";
-
+    		"SELECT "+ GAC_FIELDS + " FROM group_access_control gac "
+            + " WHERE gac.group_id = ? AND gac.item_id = ? AND gac.rkey IS NOT NULL ";
 
     /**
      * The SQL to get all group access controls for all groups with access to
@@ -144,10 +112,7 @@ public class GroupAccessControlDAO
      */
 
     private static final String GET_GAC_SUMMARIES_GAR_SQL =
-              "SELECT gar.role"
-            + "  FROM group_access_roles gar "
-            + " WHERE gar.item_id = ? "
-    		+ "   AND gar.actor_id = ?";
+              "SELECT gar.role" + "  FROM group_access_roles gar WHERE gar.item_id = ? AND gar.actor_id = ?";
 
     /**
      * The SQL to get all group access controls for all groups with access to
@@ -155,11 +120,8 @@ public class GroupAccessControlDAO
      */
 
     private static final String GET_GAC_SUMMARIES_GAC_SQL =
-              "SELECT gac.rkey, gac.mkey"
-            + "  FROM group_access_control gac "
-            + " WHERE gac.item_id = ? "
-            + "   AND gac.group_id = ? "
-            + "	  AND gac.rkey IS NOT NULL ";
+              "SELECT gac.rkey, gac.mkey FROM group_access_control gac "
+            +  "WHERE gac.item_id = ? AND gac.group_id = ? AND gac.rkey IS NOT NULL ";
 
 
     /**
@@ -167,8 +129,8 @@ public class GroupAccessControlDAO
      */
 
     private static final String WRITE_GAC_SQL =
-            "INSERT INTO group_access_control(group_id, item_id, rkey, mkey) "
-            + "                       VALUES (       ?,       ?,    ?,    ?)";
+            "INSERT INTO group_access_control(group_id, item_id, rkey, mkey) VALUES ( ?, ?, ?, ?)";
+
 	/**
 	 * Private constructor to prevent instantiation
 	 */
@@ -178,296 +140,94 @@ public class GroupAccessControlDAO
 	}
 
 
-    /**
-     * Gets a read group access control for a specific user and item.
-     *
-     * @param theUser The user to get the GAC for.
-     * @param itemId The ID of the item to get the GAC for.
-     *
-     * @return The GAC for the user to access the item.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the GAC.
-     * @throws UnsupportedEncodingException
-     */
-
     public GroupAccessControl getReadGac(final User theUser, final String itemId)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_GROUP_FOR_GAC_SQL);
-        try {
-            ps.setString(1, theUser.getUserId());
-            ps.setString(2, itemId);
-            ps.setMaxRows(1);
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (!rs.next()) {
-	            	return null;
-	            }
-
-            	String groupId = rs.getString(4);
-            	try {
-	            	Group group = GroupDAO.getInstance().getByIdDecrypted(groupId, theUser);
-	                return new GroupAccessControl(rs, 1, group);
-            	} catch(GeneralSecurityException gse) {
-            		Logger.getAnonymousLogger().log(Level.SEVERE, "Error accessing "+itemId+" for "+theUser.getUserId()+" via "+groupId);
-            		return null;
-            	}
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
-        }
+	    return getGac(GET_GROUP_FOR_GAC_SQL, theUser, itemId);
     }
-
-    /**
-     * Gets the group access control for a specific user and item.
-     *
-     * @param theUser The user to get the GAC for.
-     * @param item The item to get the GAC for.
-     *
-     * @return The GAC for the user to access the item.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the GAC.
-     * @throws UnsupportedEncodingException
-     */
 
     public GroupAccessControl getGac(final User theUser, final AccessControledObject item)
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         return getGac(theUser, item.getId());
     }
 
-    /**
-     * Gets the group access control for a specific user and item.
-     *
-     * @param theUser The user to get the GAC for.
-     * @param itemId The ID of the item to get the GAC for.
-     *
-     * @return The GAC for the user to access the item.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the GAC.
-     * @throws UnsupportedEncodingException
-     */
-
     public GroupAccessControl getGac(final User theUser, final String itemId)
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         return getGacWork(theUser, itemId, GET_GROUP_FOR_FULL_GAC_SQL, GET_GROUP_FOR_GAC_SQL);
     }
 
-    /**
-     * Gets the group access control for a specific user and item even if the
-     * group involved has been disabled.
-     *
-     * @param theUser The user to get the GAC for.
-     * @param item The item to get the GAC for.
-     *
-     * @return The GAC for the user to access the item.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the GAC.
-     * @throws UnsupportedEncodingException
-     */
+    public GroupAccessControl getGac(final User user, final Group group, final AccessControledObject item)
+            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        if(item == null) {
+            return null;
+        }
 
-    public GroupAccessControl getGacEvenIfDisabled(final User theUser,
-    		final AccessControledObject item)
+        return getGac(user, group, item.getId());
+    }
+
+    public GroupAccessControl getGac(final Group group, final Password password)
+            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        if(password == null) {
+            return null;
+        }
+
+        return getGac(group, password.getId());
+    }
+
+    public GroupAccessControl getGac(final User user, final Group group, final String itemId)
+            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        if(user == null || group == null || itemId == null) {
+            return null;
+        }
+
+        if( group.getAccessKey() == null ) {
+            Membership membership = MembershipDAO.getInstance().getMembership(user, group.getGroupId());
+            group.updateAccessKey(membership);
+        }
+
+        return getGroupAccessControlForGroup(group, itemId);
+    }
+
+
+    public GroupAccessControl getGacEvenIfDisabled(final User theUser, final AccessControledObject item)
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         return getGacEvenIfDisabled(theUser, item.getId());
     }
 
-    /**
-     * Gets the group access control for a specific user and item even if the
-     * group involved has been disabled.
-     *
-     * @param theUser The user to get the GAC for.
-     * @param itemId The ID of the item to get the GAC for.
-     *
-     * @return The GAC for the user to access the item.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the GAC.
-     * @throws UnsupportedEncodingException
-     */
-
     public GroupAccessControl getGacEvenIfDisabled(final User theUser,
     		final String itemId)
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        return getGacWork(theUser, itemId,
-                GET_GROUP_FOR_FULL_GAC_INCLUDING_DISABLED_SQL,
-                GET_GROUP_FOR_GAC_INCLUDING_DISABLED_SQL);
+        return getGacWork(theUser, itemId, GET_GROUP_FOR_FULL_GAC_INCLUDING_DISABLED_SQL, GET_GROUP_FOR_GAC_INCLUDING_DISABLED_SQL);
     }
 
-    /**
-     * Gets the group access control for a specific user and item.
-     *
-     * @param theUser The user to get the GAC for.
-     * @param itemId The ID of the item to get the GAC for.
-     * @param fullSql The SQL to get read and write GACs.
-     * @param readOnlySql The SQL to get read only GACs.
-     *
-     * @return The GAC for the user to access the item.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the GAC.
-     * @throws UnsupportedEncodingException
-     */
-
-    private GroupAccessControl getGacWork(final User theUser,
-    		final String itemId, final String fullSql,
-    		final String readOnlySql)
+    private GroupAccessControl getGacWork(final User theUser, final String itemId, final String fullSql, final String readOnlySql)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         // Check for invalid parameters
         if (theUser == null || itemId == null) {
             return null;
         }
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(fullSql);
-        try {
-            ps.setString(1, theUser.getUserId());
-            ps.setString(2, itemId);
-            ps.setMaxRows(1);
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	            	String groupId = rs.getString(4);
-	            	Group group = GroupDAO.getInstance().getByIdDecrypted(groupId, theUser);
-	                return new GroupAccessControl(rs, 1, group);
-	            }
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
-        }
+        GroupAccessControl fullAccessControl = getGac(fullSql, theUser, itemId);
+        return fullAccessControl == null ? getGac(readOnlySql, theUser, itemId) : fullAccessControl;
+    }
 
-        ps = BOMFactory.getCurrentConntection().prepareStatement(readOnlySql);
-        try {
+    private GroupAccessControl getGac(final String sql, final User theUser, final String itemId)
+            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
             ps.setString(1, theUser.getUserId());
             ps.setString(2, itemId);
             ps.setMaxRows(1);
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	            	String groupId = rs.getString(4);
-	            	Group group = GroupDAO.getInstance().getByIdDecrypted(groupId, theUser);
-	                return new GroupAccessControl(rs, 1, group);
-	            }
-            } finally {
-                DatabaseConnectionUtils.close(rs);
+            try(ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String groupId = rs.getString(4);
+                    Group group = GroupDAO.getInstance().getByIdDecrypted(groupId, theUser);
+                    return new GroupAccessControl(rs, 1, group);
+                }
             }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
 
         return null;
     }
 
-    /**
-     * Gets the group access control for a specific user and group.
-     *
-     * @param user The user to get the GAC for.
-     * @param group The group to get the GAC for.
-     * @param item The item to get the GAC for.
-     *
-     * @return The GAC for the user to access the item.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the GAC.
-     * @throws UnsupportedEncodingException
-     */
-
-    public GroupAccessControl getGac(final User user,
-    		final Group group, final AccessControledObject item)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	if(item == null) {
-    		return null;
-    	}
-
-    	return getGac(user, group, item.getId());
-    }
-
-    /**
-     * Gets the group access control for a specific user and group.
-     *
-     * @param user The user to get the GAC for.
-     * @param group The group to get the GAC for.
-     * @param itemId The ID of the item to get the GAC for.
-     *
-     * @return The GAC for the user to access the item.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the GAC.
-     * @throws UnsupportedEncodingException
-     */
-
-    public GroupAccessControl getGac(final User user,
-    		final Group group, final String itemId)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	if(user == null || group == null || itemId == null) {
-    		return null;
-    	}
-
-    	if( group.getAccessKey() == null ) {
-    		Membership membership = MembershipDAO.getInstance().getMembership(user, group.getGroupId());
-            group.updateAccessKey(membership);
-    	}
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_GAC_FOR_GROUP_SQL);
-        try {
-            ps.setString(1, group.getGroupId());
-            ps.setString(2, itemId);
-            ps.setMaxRows(1);
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	                return new GroupAccessControl(rs, 1, group);
-	            }
-
-	            return null;
-            } finally {
-                DatabaseConnectionUtils.close(rs);
-            }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
-        }
-    }
-
-
-    /**
-     * Gets the group access control for a group. The group must already have the access key set.
-     *
-     * @param group The group to get the AC for.
-     * @param password The password to get the AC for.
-     *
-     * @return The GAC for the user to access the item.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the GAC.
-     * @throws UnsupportedEncodingException
-     */
-
-    public GroupAccessControl getGac(final Group group, final Password password)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	if(password == null) {
-    		return null;
-    	}
-
-    	return getGac(group, password.getId());
-    }
-
-    /**
-     * Gets the group access control for a group. The group must already have the access key set.
-     *
-     * @param group The group to get the AC for.
-     * @param passwordId The ID of the password to get the AC for.
-     *
-     * @return The GAC for the user to access the item.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the GAC.
-     * @throws UnsupportedEncodingException
-     */
 
     public GroupAccessControl getGac(final Group group, final String passwordId)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -479,72 +239,36 @@ public class GroupAccessControlDAO
     		throw new GeneralSecurityException("Attempt to decrypt group with encoded group");
     	}
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_GAC_FOR_GROUP_SQL);
-        try {
+        return getGroupAccessControlForGroup(group, passwordId);
+    }
+
+    private GroupAccessControl getGroupAccessControlForGroup(Group group, String passwordId)
+            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_GAC_FOR_GROUP_SQL)) {
             ps.setString(1, group.getGroupId());
             ps.setString(2, passwordId);
             ps.setMaxRows(1);
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if (rs.next()) {
-	                return new GroupAccessControl(rs, 1, group);
-	            }
-            } finally {
-                DatabaseConnectionUtils.close(rs);
+            try(ResultSet rs = ps.executeQuery()) {
+	            return rs.next() ? new GroupAccessControl(rs, 1, group) : null;
             }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
-
-        return null;
     }
 
-    /**
-     * Delete this access control.
-     *
-     * @param gac The GroupAccessControl to delete.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the data.
-     */
-
     public void delete(final GroupAccessControl gac) throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL)) {
             ps.setString(1, gac.getGroupId());
             ps.setString(2, gac.getItemId());
             ps.executeUpdate();
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
-
-    /**
-     * Delete this access control.
-     *
-     * @param aco The AccessControledObject to delete the GACs for.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
 
     public void deleteAllForItem(AccessControledObject aco)
         throws SQLException {
-    	PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_ALL_FOR_ITEM_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_ALL_FOR_ITEM_SQL)) {
             ps.setString(1, aco.getId());
             ps.executeUpdate();
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
-
-    /**
-     * Create a group access control from an accessible object and a group.
-     *
-     * @param group The group to create the GAC for.
-     * @param item The item to create the GAC for.
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
-     */
 
     public GroupAccessControl create(Group group, AccessControledObject item,
     		boolean allowRead, boolean allowModify)
@@ -553,23 +277,10 @@ public class GroupAccessControlDAO
     }
 
 
-    /**
-     * Create a group access control from an accessible object and a group.
-     *
-     * @param group The group to create the GAC for.
-     * @param item The item to create the GAC for.
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
-     */
-
     public GroupAccessControl create(Group group, AccessControledObject item,
     		boolean allowRead, boolean allowModify, boolean writeToDatabase)
     	throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-    	PrivateKey modifyKey = null;
-    	if( allowModify ) {
-    		modifyKey = item.getModifyKey();
-    	}
-
+    	PrivateKey modifyKey = allowModify ? item.getModifyKey() : null;
     	GroupAccessControl gac =
     			new GroupAccessControl( group.getGroupId(), item.getId(), modifyKey, item.getReadKey() );
     	if(writeToDatabase) {
@@ -578,52 +289,24 @@ public class GroupAccessControlDAO
     	return gac;
     }
 
-    /**
-     * Store the GAC for a particular group.
-     *
-     * @param group The group to store the GAC for.
-     * @param gac The GAC to store.
-     *
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
-     */
-
     public void write(final Group group, final GroupAccessControl gac)
     	throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_GAC_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_GAC_SQL)) {
             ps.setString(1,	gac.getGroupId());
             ps.setString(2,	gac.getItemId());
             ps.setBytes(3,	KeyUtils.encryptKey(gac.getReadKey(), group.getKeyEncrypter()));
             ps.setBytes(4, 	KeyUtils.encryptKey(gac.getModifyKey(), group.getKeyEncrypter()));
             ps.executeUpdate();
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
 
-    /**
-     * Get a sorted set of group access summaries for this password.
-     *
-     * @param item The AccessControledObject to get the AccessSummarys for.
-     *
-     * @return The Set of access summaries
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException
-     *             Thrown if there is a problem with the access credentials.
-     * @throws UnsupportedEncodingException
-     */
     public Set<AccessSummary> getSummaries(final AccessControledObject item)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         Set<AccessSummary> summaries = new TreeSet<AccessSummary>();
 
         Connection conn = BOMFactory.getCurrentConntection();
-    	PreparedStatement gacPS = conn.prepareStatement(GET_GAC_SUMMARIES_GAC_SQL);
-    	try {
-        	PreparedStatement garPS = conn.prepareStatement(GET_GAC_SUMMARIES_GAR_SQL);
-        	try {
+    	try(PreparedStatement gacPS = conn.prepareStatement(GET_GAC_SUMMARIES_GAC_SQL)) {
+        	try(PreparedStatement garPS = conn.prepareStatement(GET_GAC_SUMMARIES_GAR_SQL)) {
 	    		gacPS.setString(1, item.getId());
 	    		garPS.setString(1, item.getId());
 
@@ -631,23 +314,19 @@ public class GroupAccessControlDAO
 		    		boolean canRead = false;
 		    		boolean canModify = false;
 		    		gacPS.setString(2, thisGroup.getGroupId());
-		    		ResultSet rs = gacPS.executeQuery();
-		    		try {
+		    		try(ResultSet rs = gacPS.executeQuery()) {
 		    			if( rs.next() ) {
 		    				rs.getString(1);	// Read the read key
 		    				canRead = (rs.wasNull() == false);
 		    				rs.getString(2);	// Read the modify key
 		    				canModify = (rs.wasNull() == false);
 		    			}
-		    		} finally {
-		    			DatabaseConnectionUtils.close(rs);
 		    		}
 
 		    		boolean canApproveRARequest = false;
 		    		boolean canViewHistory = false;
 		    		garPS.setString(2, thisGroup.getGroupId());
-		    		rs = garPS.executeQuery();
-		    		try {
+		    		try(ResultSet rs = garPS.executeQuery()) {
 		    			while( rs.next() ) {
 		    				String role = rs.getString(1);
 		    				if( rs.wasNull() ) {
@@ -660,42 +339,17 @@ public class GroupAccessControlDAO
 		    					canViewHistory = true;
 		    				}
 		    			}
-		    		} finally {
-		    			DatabaseConnectionUtils.close(rs);
 		    		}
 
-	            	AccessSummary gas =
-	            		new AccessSummary(
-	            				thisGroup.getGroupId(),
-	            				thisGroup.getGroupName(),
-	            				canRead,
-	            				canModify,
-	            				canApproveRARequest,
-	            				canViewHistory
-	        				);
+	            	AccessSummary gas = new AccessSummary( thisGroup.getGroupId(), thisGroup.getGroupName(),
+                            canRead, canModify, canApproveRARequest, canViewHistory);
 	            	summaries.add(gas);
 		    	}
 
 	    		return summaries;
-        	} finally {
-        		DatabaseConnectionUtils.close(garPS);
         	}
-    	} finally {
-    		DatabaseConnectionUtils.close(gacPS);
     	}
     }
-
-    /**
-     * Updates a GAC in the database.
-     *
-     * @param group The group the GroupAccessControl is being updated for.
-     * @param gac The group access control to store.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem during encryption.
-     * @throws UnsupportedEncodingException
-     * @throws InvalidLicenceException Thrown if the EPS licence is not valid.
-     */
 
     public void update(final Group group, final GroupAccessControl gac)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
