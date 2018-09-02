@@ -16,25 +16,20 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.database.actions.password.ExpiringAccessiblePasswordsAction;
+import com.enterprisepasswordsafe.engine.database.derived.ExpiringAccessiblePasswords;
+import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
+import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
+import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
+import com.enterprisepasswordsafe.proguard.ExternalInterface;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.enterprisepasswordsafe.engine.database.actions.PasswordAction;
-import com.enterprisepasswordsafe.engine.database.actions.password.ExpiringAccessiblePasswordsAction;
-import com.enterprisepasswordsafe.engine.database.derived.ExpiringAccessiblePasswords;
-import com.enterprisepasswordsafe.engine.database.derived.PasswordSummary;
-import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
-import com.enterprisepasswordsafe.engine.utils.*;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-import org.apache.commons.csv.CSVRecord;
 
 /**
  * Data access object for passwords.
@@ -177,18 +172,6 @@ public final class PasswordDAO
 		super(GET_BY_ID_SQL, null, null);
 	}
 
-	/**
-	 * Store a new password creating an AccessControl for the admin group and the user.
-	 *
-	 * @param thePassword The password to store.
-	 * @param creator The user creating the password.
-	 *
-	 * @throws GeneralSecurityException
-	 * @throws SQLException
-	 * @throws IOException
-	 *
-	 */
-
 	public UserAccessControl storeNewPassword( final Password thePassword, final User creator )
 		throws SQLException, GeneralSecurityException, IOException {
         Group adminGroup = GroupDAO.getInstance().getAdminGroup(creator);
@@ -205,41 +188,6 @@ public final class PasswordDAO
         return UserAccessControlDAO.getInstance().create(creator, thePassword, true, true);
 	}
 
-    /**
-     * Gets the data about an individual password and decrypts it for
-     * the user.
-     *
-     * @param id
-     *            The ID of the password to get.
-     *
-     * @return The Password object, or null if the user does not exist.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem getting the password.
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
-     */
-
-    public String getSummaryById(User user, final String id)
-            throws SQLException, IOException, GeneralSecurityException {
-        return getSummaryById( AccessControlDAO.getInstance().getReadAccessControl(user, id), id );
-    }
-
-    /**
-     * Gets the data about an individual password and decrypts it for
-     * the user.
-     *
-     * @param id
-     *            The ID of the password to get.
-     *
-     * @return The Password object, or null if the user does not exist.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem getting the password.
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
-     */
-
     public String getSummaryById(AccessControl ac, final String id)
             throws SQLException, IOException, GeneralSecurityException {
         if( ac == null )
@@ -253,21 +201,6 @@ public final class PasswordDAO
         return EMPTY_STRING;
     }
 
-    /**
-     * Gets the data about an individual password and decrypts it for
-     * the user.
-     *
-     * @param id
-     *            The ID of the password to get.
-     *
-     * @return The Password object, or null if the user does not exist.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem getting the password.
-     * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
-     */
-
 	public Password getById(final User user, final String id)
             throws SQLException, IOException, GeneralSecurityException {
         AccessControl ac = AccessControlDAO.getInstance().getReadAccessControl(user, id);
@@ -275,31 +208,6 @@ public final class PasswordDAO
         	return null;
 
         return getById(id, ac);
-    }
-
-    /**
-     * Gets the data about an individual password and decrypts it using the user
-     * details supplied.
-     *
-     * @param user The user attempting to get the password.
-     * @param id The ID of the password to get.
-     *
-     * @return The Password object, or null if the user does not exist.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem with the access credentials.
-     * @throws UnsupportedEncodingException
-     */
-
-	public Password getByIdForUser(final User user, final String id)
-            throws SQLException, GeneralSecurityException, IOException {
-    	Password thePassword;
-    	if( user.isAdministrator() || user.isSubadministrator()) {
-    		thePassword = UnfilteredPasswordDAO.getInstance().getById(user, id);
-    	} else {
-    		thePassword = getById(user, id);
-    	}
-        return thePassword;
     }
 
     /**
@@ -359,13 +267,8 @@ public final class PasswordDAO
         	setDefaultPermissions(newPassword, parentNode, adminGroup);
 
 	    	boolean sendEmail = ((newPassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-	        TamperproofEventLogDAO.getInstance().create(
-					TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-	        				theCreator,
-	        				newPassword,
-	        				"Created the password.",
-	        				sendEmail
-					);
+	        TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+                theCreator, newPassword, "Created the password.", sendEmail);
         }
 
         return newPassword;
@@ -444,13 +347,7 @@ public final class PasswordDAO
             int idx = 1;
             ps.setString(idx++, password.getId());
             ps.setString(idx++, password.isEnabled() ? "Y" : "N");
-            if (password.getAuditLevel() == Password.AUDITING_FULL) {
-                ps.setString(idx++, "Y");
-            } else if (password.getAuditLevel() == Password.AUDITING_LOG_ONLY) {
-                ps.setString(idx++, "L");
-            } else {
-                ps.setString(idx++, "N");
-            }
+            ps.setString(idx++, getAuditingLevelRepresentation(password));
             ps.setString(idx++, password.isHistoryStored() ? "Y" : "N");
             ps.setString(idx++, password.getRestrictionId());
             ps.setString(idx++, password.isRaEnabled() ? "Y" : "N");
@@ -470,19 +367,6 @@ public final class PasswordDAO
     }
 
     /**
-     * Import a password from a CSVRecord.
-     *
-     * @param theImporter The user who is importing the password.
-     * @param adminGroup The administrators group, used to speed-up creation.
-     * @param parentNode The node under which the password is created.
-     * @param record The CSVRecord holding the data to import.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws IOException Thrown if there is an IOException
-     */
-
-    /**
      * Get a list of passwords a restriction applies to.
      *
      * @param user The user getting the restriction.
@@ -495,7 +379,7 @@ public final class PasswordDAO
      */
 
     public List<Password> getPasswordsRestrictionAppliesTo(final User user, final String restrictionId)
-            throws SQLException, GeneralSecurityException, IOException {
+            throws SQLException {
         return getMultiple(USE_CHECK_SQL, restrictionId);
     }
 
@@ -586,63 +470,17 @@ public final class PasswordDAO
     private void getEmailAddressesWork(final Password password, final String sql,
             final Set<String> emailAddresses)
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
             ps.setString(1, password.getId());
-            ResultSet rs = ps.executeQuery();
-            try {
+            try(ResultSet rs = ps.executeQuery()) {
 	            while (rs.next()) {
 	                String emailAddress = rs.getString(1);
 	                if (emailAddress != null) {
 	                    emailAddresses.add(emailAddress);
 	                }
 	            }
-            } finally {
-                DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
-    }
-
-    /**
-     * Gets the id and X@Y form of the all passwords available via
-     * the admnin group GAC.
-     *
-     * @param adminGroup The admin group.
-     *
-     * @return A List of PasswordBase.Summary objects.
-     * @throws UnsupportedEncodingException
-     */
-
-    public final Set<PasswordSummary> getSummaryForAll(final Group adminGroup)
-    	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	TreeSet<PasswordSummary> summaryList = new TreeSet<>();
-
-    	Statement stmt = BOMFactory.getCurrentConntection().createStatement();
-    	try {
-    		ResultSet rs = stmt.executeQuery(GET_ALL_SUMMARY_DETAILS);
-    		try {
-	    		while( rs.next() ) {
-	    			GroupAccessControl gac = new GroupAccessControl(rs, 3, adminGroup);
-
-	    			final String id = rs.getString(1);
-
-	    			try {
-		    			PasswordBase password = PasswordUtils.decrypt(gac, rs.getBytes(2));
-		    			summaryList.add( new PasswordSummary(id, password.getUsername()+"@"+password.getLocation()));
-	    			} catch(Exception ex) {
-	    				Logger.getAnonymousLogger().log(Level.SEVERE, "Problem decrypting password "+id, ex);
-	    			}
-	    		}
-        	} finally {
-        		DatabaseConnectionUtils.close(rs);
-        	}
-    	} finally {
-    		DatabaseConnectionUtils.close(stmt);
-    	}
-
-    	return summaryList;
     }
 
     /**
@@ -662,11 +500,6 @@ public final class PasswordDAO
 		performRawAPIUserSearch(user, searchUsername, locationId, ids);
 		performRawAPIGroupSearch(user, searchUsername, locationId, ids);
 		return ids;
-	}
-
-	public void getAllForLocation(final User user, final String locationId, final Set<Password> passwords)
-			throws SQLException, GeneralSecurityException, IOException {
-	    passwords.addAll(getMultiple(user, GET_ALL_FOR_LOCATION_SQL, locationId));
 	}
 
     /**

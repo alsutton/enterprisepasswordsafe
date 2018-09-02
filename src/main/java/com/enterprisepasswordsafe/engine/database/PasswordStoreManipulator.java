@@ -163,24 +163,10 @@ public abstract class PasswordStoreManipulator
             } else {
                 ps.setString(idx++, "N");
             }
-            if (password.getAuditLevel() == Password.AUDITING_FULL) {
-                ps.setString(idx++, "Y");
-            } else if (password.getAuditLevel() == Password.AUDITING_LOG_ONLY) {
-                ps.setString(idx++, "L");
-            } else {
-                ps.setString(idx++, "N");
-            }
-            if (password.isHistoryStored()) {
-                ps.setString(idx++, "Y");
-            } else {
-                ps.setString(idx++, "N");
-            }
+            ps.setString(idx++, getAuditingLevelRepresentation(password));
+            ps.setString(idx++, password.isHistoryStored() ? "Y" : "N");
             ps.setString(idx++, password.getRestrictionId());
-            if(password.isRaEnabled()) {
-                ps.setString(idx++, "Y");
-            } else {
-                ps.setString(idx++, "N");
-            }
+            ps.setString(idx++, password.isRaEnabled() ? "Y" : "N");
             ps.setInt(idx++, password.getRaApprovers());
             ps.setInt(idx++, password.getRaBlockers());
             ps.setInt(idx++, password.getPasswordType());
@@ -214,5 +200,15 @@ public abstract class PasswordStoreManipulator
         }
     }
 
+
+    String getAuditingLevelRepresentation(Password password) {
+        if (password.getAuditLevel() == Password.AUDITING_FULL) {
+            return "Y";
+        }
+        if (password.getAuditLevel() == Password.AUDITING_LOG_ONLY) {
+            return "L";
+        }
+        return "N";
+    }
 
 }
