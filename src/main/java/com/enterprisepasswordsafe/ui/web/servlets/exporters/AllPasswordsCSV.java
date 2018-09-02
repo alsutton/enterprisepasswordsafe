@@ -23,31 +23,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.actions.PasswordAction;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
-
-/**
- * Servlet to generate the All Passwords report.
- */
-
 public final class AllPasswordsCSV extends BaseExporter {
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 5974067697902098091L;
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.BaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
-	@Override
+ 	@Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
     	throws ServletException {
         response.setContentType("text/csv");
@@ -75,59 +57,27 @@ public final class AllPasswordsCSV extends BaseExporter {
 	        pw.print(separator);
 	        pw.println("Status");
 	        PasswordDumper dumper = new PasswordDumper(pw);
-	        PasswordDAO.getInstance().processAllPasswords(user, dumper);
+	        new PasswordProcessor().processAllPasswords(user, dumper);
         } catch(Exception e) {
         	throw new ServletException("The passwords could not be exported due to an error.", e);
         }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return The servlet description
-     */
     @Override
 	public String getServletInfo() {
         return "Exports all of the passwords in a system.";
     }
 
-    /**
-     * Summary of a user on the system.
-     */
-
     private final class PasswordDumper implements PasswordAction {
-        /**
-         * The OutputStream to which the data should be sent.
-         */
 
         private final PrintWriter outputStream;
 
-        /**
-         * The separator for each report element.
-         */
-
         private final String separator;
-
-        /**
-         * Constructor. Stores the relevant information.
-         *
-         * @param newConn The connection to the database.
-         * @param newOutputStream The stream to send the output to.
-         * @param newAdminGroup The admin group to use to decrypt data.
-         */
 
         private PasswordDumper(final PrintWriter newOutputStream) throws SQLException {
             outputStream = newOutputStream;
             separator = getSeparator();
         }
-
-        /**
-         * Process a particular password.
-         *
-         * @param password The password to process.
-         *
-         * @throws Exception Thrown if there is a problem during the export.
-         */
 
         @Override
 		public void process(final HierarchyNode node, final Password password) throws Exception {
