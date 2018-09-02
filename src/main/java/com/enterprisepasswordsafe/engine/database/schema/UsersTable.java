@@ -108,46 +108,55 @@ public final class UsersTable
 			return;
 
 		if(schemaID < SchemaVersion.SCHEMA_201112) {
-			createIfNotPresent(ACCESS_KEY_COLUMN);
-			createIfNotPresent(ADMIN_ACCESS_KEY_COLUMN);
-			createIfNotPresent(LAST_LOGIN_COLUMN);
-			createIfNotPresent(PWD_LAST_CHANGED_COLUMN);
-			createIfNotPresent(FULL_NAME_COLUMN);
-			createIfNotPresent(EMAIL_COLUMN);
-			createIfNotPresent(AUTH_SOURCE_COLUMN);
+		    schemaUpdateTo201112();
 		}
 
         if(schemaID < SchemaVersion.SCHEMA_201212) {
-            createIfNotPresent(USER_PASSWORD_COLUMN);
-            try {
-                convertPasswordStorage();
-            } catch(SQLException e) {
-                // Ignore, can be thrown if the old storage column does not exist.
-            }
-
-            createIfNotPresent(ACCESS_KEY_COLUMN);
-            try {
-                convertAccessKeyStorage();
-            } catch(SQLException e) {
-                // Ignore, can be thrown if the old storage column does not exist.
-            }
-
-            createIfNotPresent(ADMIN_ACCESS_KEY_COLUMN);
-            try {
-                convertAdminAccessKeyStorage();
-            } catch(SQLException e) {
-                // Ignore, can be thrown if the old storage column does not exist.
-            }
-
-            createIfNotPresent(LAST_LOGIN_COLUMN);
-            createIfNotPresent(PWD_LAST_CHANGED_COLUMN);
-            try {
-                convertPasswordLastChangedStorage();
-            } catch(SQLException e) {
-                // Ignore, can be thrown if the old storage column does not exist.
-            }
+            schemaUpdateTo201212();
         }
 	}
+
+	private void schemaUpdateTo201112()
+            throws SQLException {
+        createIfNotPresent(ACCESS_KEY_COLUMN);
+        createIfNotPresent(ADMIN_ACCESS_KEY_COLUMN);
+        createIfNotPresent(LAST_LOGIN_COLUMN);
+        createIfNotPresent(PWD_LAST_CHANGED_COLUMN);
+        createIfNotPresent(FULL_NAME_COLUMN);
+        createIfNotPresent(EMAIL_COLUMN);
+        createIfNotPresent(AUTH_SOURCE_COLUMN);
+    }
+
+    private void schemaUpdateTo201212() throws SQLException {
+        createIfNotPresent(USER_PASSWORD_COLUMN);
+        try {
+            convertPasswordStorage();
+        } catch(SQLException e) {
+            // Ignore, can be thrown if the old storage column does not exist.
+        }
+
+        createIfNotPresent(ACCESS_KEY_COLUMN);
+        try {
+            convertAccessKeyStorage();
+        } catch(SQLException e) {
+            // Ignore, can be thrown if the old storage column does not exist.
+        }
+
+        createIfNotPresent(ADMIN_ACCESS_KEY_COLUMN);
+        try {
+            convertAdminAccessKeyStorage();
+        } catch(SQLException e) {
+            // Ignore, can be thrown if the old storage column does not exist.
+        }
+
+        createIfNotPresent(LAST_LOGIN_COLUMN);
+        createIfNotPresent(PWD_LAST_CHANGED_COLUMN);
+        try {
+            convertPasswordLastChangedStorage();
+        } catch(SQLException e) {
+            // Ignore, can be thrown if the old storage column does not exist.
+        }
+    }
 
     /**
      * Converts the password storage from the old style into the new one.
@@ -156,183 +165,111 @@ public final class UsersTable
     private void convertPasswordStorage()
         throws SQLException {
         Connection conn = BOMFactory.getCurrentConntection();
-        Map<String, byte[]> updatedPasswords = new HashMap<String, byte[]>();
+        Map<String, byte[]> updatedPasswords = new HashMap<>();
 
-        Statement statement = conn.createStatement();
-        try {
-            ResultSet rs = statement.executeQuery("SELECT user_id, user_pass FROM application_users WHERE user_pass <> '!'");
-            try {
+        try(Statement statement = conn.createStatement()) {
+            try(ResultSet rs = statement.executeQuery("SELECT user_id, user_pass FROM application_users WHERE user_pass <> '!'")) {
                 while(rs.next()) {
-                    String id = rs.getString(1);
-                    String password = rs.getString(2);
-
-                    byte[] converted;
-                    int saltSeparator = password.indexOf('*');
-                    if(saltSeparator == -1) {
-                        byte[] passwordBytes = HexConverter.toBytes(password);
-                        converted = new byte[passwordBytes.length+1];
-                        converted[0] = 1;
-                        System.arraycopy(passwordBytes, 0, converted, 1, passwordBytes.length);
-                    } else {
-                        String salt = password.substring(0, saltSeparator);
-                        byte[] saltBytes = HexConverter.toBytes(salt);
-
-                        String hash = password.substring(saltSeparator+1);
-                        byte[] hashBytes = HexConverter.toBytes(hash);
-
-                        converted = new byte[2+saltBytes.length+hashBytes.length];
-                        converted[0] = 2;
-                        converted[1] = (byte) saltBytes.length;
-                        System.arraycopy(converted, 2, saltBytes, 0, saltBytes.length);
-                        System.arraycopy(converted, 2+saltBytes.length, hashBytes, 0, hashBytes.length);
-                    }
-                    updatedPasswords.put(id, converted);
+                    updatedPasswords.put(rs.getString(1), convertPassword(rs.getString(2)));
                 }
-            } finally {
-                rs.close();
             }
-        } finally {
-            statement.close();
         }
 
-        PreparedStatement ps = conn.prepareStatement("UPDATE application_users SET user_pass = '!', user_pass_b = ? WHERE user_id = ?");
-        try {
-            for(Map.Entry<String, byte[]> thisEntry : updatedPasswords.entrySet()) {
-                ps.setBytes(1, thisEntry.getValue());
-                ps.setString(2, thisEntry.getKey());
-                ps.executeUpdate();
-            }
-        } finally {
-            ps.close();
-        }
+        updateFromMap(conn, "UPDATE application_users SET user_pass = '!', user_pass_b = ? WHERE user_id = ?",
+                updatedPasswords);
     }
 
-    /**
-     * Convert access key storage to the new format
-     */
+    private byte[] convertPassword(String password) {
+        byte[] converted;
+        int saltSeparator = password.indexOf('*');
+        if(saltSeparator == -1) {
+            byte[] passwordBytes = HexConverter.toBytes(password);
+            converted = new byte[passwordBytes.length+1];
+            converted[0] = 1;
+            System.arraycopy(passwordBytes, 0, converted, 1, passwordBytes.length);
+        } else {
+            String salt = password.substring(0, saltSeparator);
+            byte[] saltBytes = HexConverter.toBytes(salt);
+
+            String hash = password.substring(saltSeparator+1);
+            byte[] hashBytes = HexConverter.toBytes(hash);
+
+            converted = new byte[2+saltBytes.length+hashBytes.length];
+            converted[0] = 2;
+            converted[1] = (byte) saltBytes.length;
+            System.arraycopy(converted, 2, saltBytes, 0, saltBytes.length);
+            System.arraycopy(converted, 2+saltBytes.length, hashBytes, 0, hashBytes.length);
+        }
+        return converted;
+    }
 
     private void convertAccessKeyStorage()
         throws SQLException{
         Connection conn = BOMFactory.getCurrentConntection();
-        Map<String, byte[]> updatedPasswords = new HashMap<String, byte[]>();
-
-        Statement statement = conn.createStatement();
-        try {
-            ResultSet rs = statement.executeQuery("SELECT user_id, access_key FROM application_users WHERE access_key <> '!'");
-            try {
-                while(rs.next()) {
-                    String id = rs.getString(1);
-                    String key = rs.getString(2);
-
-                    byte[] converted;
-                    if( key.startsWith("refid") ) {
-                        converted = getKeyById(conn, key.substring(6));
-                    } else {
-                        converted = HexConverter.toBytes(key);
-                    }
-
-                    updatedPasswords.put(id, converted);
-                }
-            } finally {
-                rs.close();
-            }
-        } finally {
-            statement.close();
-        }
-
-        PreparedStatement ps = conn.prepareStatement("UPDATE application_users SET access_key = '!', akey = ? WHERE user_id = ?");
-        try {
-            for(Map.Entry<String, byte[]> thisEntry : updatedPasswords.entrySet()) {
-                ps.setBytes(1, thisEntry.getValue());
-                ps.setString(2, thisEntry.getKey());
-                ps.executeUpdate();
-            }
-        } finally {
-            ps.close();
-        }
+        Map<String, byte[]> updatedPasswords = new HashMap<>();
+        findAffectedUsers(conn,
+                "SELECT user_id, access_key FROM application_users WHERE access_key <> '!'",
+                updatedPasswords);
+        updateFromMap(conn,
+                "UPDATE application_users SET access_key = '!', akey = ? WHERE user_id = ?",
+                updatedPasswords);
     }
-
-    /**
-     * Convert admin access key storage to the new format
-     */
 
     private void convertAdminAccessKeyStorage()
             throws SQLException {
         Connection conn = BOMFactory.getCurrentConntection();
-        Map<String, byte[]> updatedPasswords = new HashMap<String, byte[]>();
-
-        Statement statement = conn.createStatement();
-        try {
-            ResultSet rs = statement.executeQuery("SELECT user_id, admin_access_key FROM application_users WHERE admin_access_key <> '!'");
-            try {
-                while(rs.next()) {
-                    String id = rs.getString(1);
-                    String key = rs.getString(2);
-
-                    byte[] converted;
-                    if( key.startsWith("refid") ) {
-                        converted = getKeyById(conn, key.substring(6));
-                    } else {
-                        converted = HexConverter.toBytes(key);
-                    }
-
-                    updatedPasswords.put(id, converted);
-                }
-            } finally {
-                rs.close();
-            }
-        } finally {
-            statement.close();
-        }
-
-        PreparedStatement ps = conn.prepareStatement("UPDATE application_users SET admin_access_key = '!', aakey = ? WHERE user_id = ?");
-        try {
-            for(Map.Entry<String, byte[]> thisEntry : updatedPasswords.entrySet()) {
-                ps.setBytes(1, thisEntry.getValue());
-                ps.setString(2, thisEntry.getKey());
-                ps.executeUpdate();
-            }
-        } finally {
-            ps.close();
-        }
+        Map<String, byte[]> updatedPasswords = new HashMap<>();
+        findAffectedUsers(conn,
+                "SELECT user_id, admin_access_key FROM application_users WHERE admin_access_key <> '!'",
+                updatedPasswords);
+        updateFromMap(conn,
+                "UPDATE application_users SET admin_access_key = '!', aakey = ? WHERE user_id = ?",
+                updatedPasswords);
     }
 
-    /**
-     * Get the byte array for a particular key.
-     *
-     * @param keyId The ID of the key to get.
-     *
-     * @return The byte[] for the key, or null if it does not exist.
-     */
+
+    private void findAffectedUsers(final Connection conn, final String sql, Map<String, byte[]> updatedPasswords)
+            throws SQLException {
+        try (Statement statement = conn.createStatement()) {
+            try (ResultSet rs = statement.executeQuery(sql)) {
+                while (rs.next()) {
+                    String id = rs.getString(1);
+                    String key = rs.getString(2);
+                    updatedPasswords.put(id,
+                            key.startsWith("refid") ? getKeyById(conn, key.substring(6)) : HexConverter.toBytes(key));
+                }
+            }
+        }
+    }
 
     private byte[] getKeyById(final Connection conn, final String keyId)
             throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT key_data FROM keystore WHERE key_id = ?");
-        ps.setMaxRows(1);
-        try {
+        try(PreparedStatement ps = conn.prepareStatement("SELECT key_data FROM keystore WHERE key_id = ?")) {
             ps.setString(1, keyId);
-            ResultSet rs = ps.executeQuery();
-            try {
-                if( rs.next() ) {
-                    return rs.getBytes(1);
-                }
-                return null;
-            } finally {
-                rs.close();
+            ps.setMaxRows(1);
+            try(ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getBytes(1) : null;
             }
-        } finally {
-            ps.close();
         }
     }
-
-    /**
-     * Convert admin access key storage to the new format
-     */
 
     private void convertPasswordLastChangedStorage()
             throws SQLException {
         Connection conn = BOMFactory.getCurrentConntection();
-        Map<String, Long> updatedPasswords = new HashMap<String, Long>();
+        Map<String, Long> updatedPasswords = getPasswordsToUpdate(conn);
+
+        try(PreparedStatement ps = conn.prepareStatement("UPDATE application_users SET pwd_last_changed = '!', pwd_last_changed_l = ? WHERE user_id = ?")) {
+            for(Map.Entry<String, Long> thisEntry : updatedPasswords.entrySet()) {
+                ps.setLong(1, thisEntry.getValue());
+                ps.setString(2, thisEntry.getKey());
+                ps.executeUpdate();
+            }
+        }
+    }
+
+    private Map<String, Long> getPasswordsToUpdate(final Connection conn)
+            throws SQLException {
+        Map<String, Long> updatedPasswords = new HashMap<>();
 
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -340,10 +277,8 @@ public final class UsersTable
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
 
-        Statement statement = conn.createStatement();
-        try {
-            ResultSet rs = statement.executeQuery("SELECT user_id, pwd_last_changed FROM application_users WHERE pwd_last_changed <> '!'");
-            try {
+        try(Statement statement = conn.createStatement()) {
+            try(ResultSet rs = statement.executeQuery("SELECT user_id, pwd_last_changed FROM application_users WHERE pwd_last_changed <> '!'")) {
                 while(rs.next()) {
                     String id = rs.getString(1);
                     String date = rs.getString(2);
@@ -358,22 +293,21 @@ public final class UsersTable
 
                     updatedPasswords.put(id, cal.getTimeInMillis());
                 }
-            } finally {
-                rs.close();
             }
-        } finally {
-            statement.close();
         }
 
-        PreparedStatement ps = conn.prepareStatement("UPDATE application_users SET pwd_last_changed = '!', pwd_last_changed_l = ? WHERE user_id = ?");
-        try {
-            for(Map.Entry<String, Long> thisEntry : updatedPasswords.entrySet()) {
-                ps.setLong(1, thisEntry.getValue());
+        return updatedPasswords;
+    }
+
+
+    private void updateFromMap(final Connection conn, final String sql, Map<String, byte[]> updatedPasswords)
+            throws SQLException {
+        try(PreparedStatement ps = conn.prepareStatement(sql)) {
+            for(Map.Entry<String, byte[]> thisEntry : updatedPasswords.entrySet()) {
+                ps.setBytes(1, thisEntry.getValue());
                 ps.setString(2, thisEntry.getKey());
                 ps.executeUpdate();
             }
-        } finally {
-            ps.close();
         }
     }
 
