@@ -51,6 +51,7 @@ import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
  * JAAS module for handling logging in a user.
  */
 public final class ActiveDirectoryNonAnonymousLoginModule
+    extends BaseActiveDirectoryLoginModule
 	implements LoginModule, AuthenticationSourceModule {
 
     /**
@@ -102,12 +103,6 @@ public final class ActiveDirectoryNonAnonymousLoginModule
     public static final String DOMAIN_PARAMETERNAME = "ad.domain";
 
     /**
-     * The subject being authenticated.
-     */
-
-    private Subject subject;
-
-    /**
      * The options passed to this module.
      */
 
@@ -118,64 +113,6 @@ public final class ActiveDirectoryNonAnonymousLoginModule
      */
 
     private CallbackHandler callbackHandler;
-
-    /**
-     * Whether or not the login has succeeded.
-     */
-
-    private boolean loginOK;
-
-    /**
-     * Whether or not the login commited.
-     */
-
-    private boolean commitOK;
-
-    /**
-     * Abort the login attempt.
-     *
-     * @return true if this module performed some work, false if not.
-     */
-    @Override
-	public boolean abort() {
-        // If we didn't log in ignore this module
-        if (!loginOK) {
-            return false;
-        }
-
-        if (!commitOK) {
-            // If the commit hasn't happened clear out any stored info
-            loginOK = false;
-        } else {
-            // If the login was OK, and the commit was OK we need to log out
-            // again.
-            logout();
-        }
-
-        return true;
-    }
-
-    /**
-     * Commit the authentication attempt.
-     *
-     * @return true if the commit was OK, false if not.
-     */
-    @Override
-	public boolean commit() {
-        commitOK = false;
-        if (!loginOK) {
-            return false;
-        }
-
-        DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
-        Set<Principal> principals = subject.getPrincipals();
-        if (!principals.contains(principal)) {
-            principals.add(principal);
-        }
-
-        commitOK = true;
-        return true;
-    }
 
     /**
      * Attempt to log the user in.
@@ -196,26 +133,17 @@ public final class ActiveDirectoryNonAnonymousLoginModule
         Callback[] callbacks = new Callback[2];
         NameCallback nameCallback = new NameCallback("Username");
         callbacks[0] = nameCallback;
-        PasswordCallback passwordCallback = new PasswordCallback("Password",
-                false);
+        PasswordCallback passwordCallback = new PasswordCallback("Password",false);
         callbacks[1] = passwordCallback;
         try {
             callbackHandler.handle(callbacks);
-        } catch (IOException ioe) {
-            throw new LoginException(ioe.toString());
-        } catch (UnsupportedCallbackException uce) {
-            throw new LoginException(uce.toString());
+        } catch (IOException | UnsupportedCallbackException e) {
+            throw new LoginException(e.toString());
         }
 
         String sslFlag = (String) options.get(LDAPS_PARAMETERNAME);
         boolean sslOff = sslFlag == null || sslFlag.charAt(0) == 'N';
-        String ldapProtocol;
-        if(sslOff) {
-        	ldapProtocol="ldap://";
-        } else {
-        	ldapProtocol="ldaps://";
-        }
-
+        String ldapProtocol = sslOff ? "ldap://" : "ldaps://";
         StringBuffer providerUrlBuffer = new StringBuffer();
         providerUrlBuffer.append(ldapProtocol);
         providerUrlBuffer.append(options.get(DOMAIN_CONTROLLER_PARAMETERNAME));
@@ -246,7 +174,6 @@ public final class ActiveDirectoryNonAnonymousLoginModule
 			List<String> userCNs = new ArrayList<String>();
             DirContext context = new InitialDirContext(env);
             try {
-
                 SearchControls searchControls = new SearchControls();
                 searchControls.setReturningAttributes(NEEDED_ATTRIBUTES);
                 searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -256,11 +183,8 @@ public final class ActiveDirectoryNonAnonymousLoginModule
                 searchFilter.append(nameCallback.getName());
                 searchFilter.append("))");
 
-				NamingEnumeration<SearchResult> matches = context.search(
-							constructLDAPSearchBase(),
-	                        searchFilter.toString(),
-	                        searchControls
-	                     );
+				NamingEnumeration<SearchResult> matches =
+                        context.search(constructLDAPSearchBase(), searchFilter.toString(), searchControls);
 
 	            while (matches.hasMore() && !loginOK) {
                 	SearchResult thisResult = matches.next();
@@ -291,23 +215,17 @@ public final class ActiveDirectoryNonAnonymousLoginModule
                         loginOK = true;
                         return true;
                     } catch (Exception ex) {
-                        Logger.
-                            getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
+                        Logger.getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
                                 log(Level.WARNING, "Failed to bind with " + bindDN, ex);
                     }
                 }
             } else {
-                Logger.
-                getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
-                    log(Level.WARNING,
-                    		"No matches for " +
-                    		nameCallback.getName() +
-                    		" in " +
+                Logger.getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
+                    log(Level.WARNING, "No matches for " + nameCallback.getName() + " in " +
                     		constructLDAPSearchBase());
             }
         } catch (Exception ex) {
-            Logger.
-                getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
+            Logger.getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
                     log(Level.WARNING, "Problem during authentication ", ex);
         }
 
@@ -379,33 +297,6 @@ public final class ActiveDirectoryNonAnonymousLoginModule
         ctx.close();
     }
 
-    /**
-     * Log the user out.
-     *
-     * @return true if the user was logged out without any problems.
-     */
-    @Override
-	public boolean logout() {
-        DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
-        subject.getPrincipals().remove(principal);
-        loginOK = false;
-        commitOK = false;
-
-        return true;
-    }
-
-    /**
-     * Initialise the login module.
-     *
-     * @param newSubject
-     *            The subject being authorised.
-     * @param newCallbackHandler
-     *            The calklback handler which will obtain the login information.
-     * @param newSharedState
-     *            The shared state between LoginModules
-     * @param newOptions
-     *            The options for this LoginModule.
-     */
     @Override
 	public void initialize(final Subject newSubject,
             final CallbackHandler newCallbackHandler,
@@ -417,90 +308,39 @@ public final class ActiveDirectoryNonAnonymousLoginModule
         options = newOptions;
     }
 
-    /**
-     * Get the configuration options for this module.
-     *
-     * @return The set of configuration options
-     */
-
 	@Override
 	public Set<AuthenticationSourceConfigurationOption> getConfigurationOptions() {
-    	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions =
-    		new TreeSet<AuthenticationSourceConfigurationOption>();
+    	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions = new TreeSet<AuthenticationSourceConfigurationOption>();
 
     	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					1,
-    					"Domain Controller Server Name",
-    					"ad.domaincontroller",
-    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
-    					null,
-    					"pdc01"
-    				)
-    		);
-
+    			new AuthenticationSourceConfigurationOption(1, "Domain Controller Server Name",
+    					"ad.domaincontroller", AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
+    					null, "pdc01"));
     	newConfigurationOptions.add(
     			new AuthenticationSourceConfigurationOption(
-    					2,
-    					"Location of users branch relative\nto the domain",
-    					"ad.useroulocation",
-    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
-    					null,
-    					"cn=Users"
-    				)
-    		);
-
+    					2, "Location of users branch relative\nto the domain",
+    					"ad.useroulocation", AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
+    					null, "cn=Users"));
     	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					3,
-    					"Domain to authenticate",
-    					"ad.domain",
-    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
-    					null,
-    					"mydomain.mycompany.com"
-    				)
-    		);
-
+    			new AuthenticationSourceConfigurationOption( 3, "Domain to authenticate",
+    					"ad.domain", AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
+    					null, "mydomain.mycompany.com"));
     	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					4,
-    					"Name or LDAP FQDN of user to connect as",
-    					"ad.user",
-    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
-    					null,
-    					"EPS User"
-    				)
-    		);
-
+    			new AuthenticationSourceConfigurationOption(4, "Name or LDAP FQDN of user to connect as",
+    					"ad.user", AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
+    					null, "EPS User"));
     	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					5,
-    					"Password to connect with",
-    					"ad.userpass",
-    					AuthenticationSourceConfigurationOption.PASSWORD_INPUT_BOX,
-    					null,
-    					"null"
-    				)
-    		);
+    			new AuthenticationSourceConfigurationOption( 5, "Password to connect with",
+    					"ad.userpass", AuthenticationSourceConfigurationOption.PASSWORD_INPUT_BOX,
+    					null, "null"));
 
-    	Set<AuthenticationSourceConfigurationOptionValue> yesNoOptions =
-    		new TreeSet<AuthenticationSourceConfigurationOptionValue>();
-    	yesNoOptions.add(
-    				new AuthenticationSourceConfigurationOptionValue("Yes", "Y")
-    			);
-    	yesNoOptions.add(
-				new AuthenticationSourceConfigurationOptionValue("No", "N")
-			);
+    	Set<AuthenticationSourceConfigurationOptionValue> yesNoOptions = new TreeSet<AuthenticationSourceConfigurationOptionValue>();
+    	yesNoOptions.add(new AuthenticationSourceConfigurationOptionValue("Yes", "Y"));
+    	yesNoOptions.add(new AuthenticationSourceConfigurationOptionValue("No", "N"));
     	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					6,
-    					"Connect using SSL",
-    					"ad.ldaps",
-    					AuthenticationSourceConfigurationOption.RADIO_BOX,
-    					yesNoOptions,
-    					"N"
-    				)
-    		);
+    			new AuthenticationSourceConfigurationOption( 6, "Connect using SSL",
+    					"ad.ldaps", AuthenticationSourceConfigurationOption.RADIO_BOX,
+    					yesNoOptions, "N"));
 
     	return newConfigurationOptions;
 	}

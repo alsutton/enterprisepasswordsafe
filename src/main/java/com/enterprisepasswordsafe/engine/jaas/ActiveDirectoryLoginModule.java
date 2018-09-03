@@ -49,6 +49,7 @@ import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
  * JAAS module for handling logging in a user.
  */
 public final class ActiveDirectoryLoginModule
+    extends BaseActiveDirectoryLoginModule
 	implements LoginModule, AuthenticationSourceModule {
 
     /**
@@ -82,12 +83,6 @@ public final class ActiveDirectoryLoginModule
     public static final String DOMAIN_PARAMETERNAME = "ad.domain";
 
     /**
-     * The subject being authenticated.
-     */
-
-    private Subject subject;
-
-    /**
      * The options passed to this module.
      */
 
@@ -98,64 +93,6 @@ public final class ActiveDirectoryLoginModule
      */
 
     private CallbackHandler callbackHandler;
-
-    /**
-     * Whether or not the login has succeeded.
-     */
-
-    private boolean loginOK;
-
-    /**
-     * Whether or not the login commited.
-     */
-
-    private boolean commitOK;
-
-    /**
-     * Abort the login attempt.
-     *
-     * @return true if this module performed some work, false if not.
-     */
-    @Override
-	public boolean abort() {
-        // If we didn't log in ignore this module
-        if (!loginOK) {
-            return false;
-        }
-
-        if (!commitOK) {
-            // If the commit hasn't happened clear out any stored info
-            loginOK = false;
-        } else {
-            // If the login was OK, and the commit was OK we need to log out
-            // again.
-            logout();
-        }
-
-        return true;
-    }
-
-    /**
-     * Commit the authentication attempt.
-     *
-     * @return true if the commit was OK, false if not.
-     */
-    @Override
-	public boolean commit() {
-        commitOK = false;
-        if (!loginOK) {
-            return false;
-        }
-
-        DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
-        Set<Principal> principals = subject.getPrincipals();
-        if (!principals.contains(principal)) {
-            principals.add(principal);
-        }
-
-        commitOK = true;
-        return true;
-    }
 
     /**
      * Attempt to log the user in.
@@ -295,21 +232,6 @@ public final class ActiveDirectoryLoginModule
         env.put(Context.SECURITY_CREDENTIALS, password);
         DirContext ctx = new InitialDirContext(env);
         ctx.close();
-    }
-
-    /**
-     * Log the user out.
-     *
-     * @return true if the user was logged out without any problems.
-     */
-    @Override
-	public boolean logout() {
-        DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
-        subject.getPrincipals().remove(principal);
-        loginOK = false;
-        commitOK = false;
-
-        return true;
     }
 
     /**
