@@ -33,6 +33,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
+import com.enterprisepasswordsafe.engine.logging.LogEventHasher;
+import com.enterprisepasswordsafe.engine.logging.LogEventParser;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 import com.enterprisepasswordsafe.proguard.JavaBean;
@@ -80,7 +82,7 @@ public final class ExpandedTamperproofEventLogEntry
 		event = rs.getString(4);
 		tamperstamp = rs.getBytes(5);
 		username = rs.getString(6);
-		humanReadableMessage = TamperproofEventLogDAO.getInstance().getParsedMessage(event);
+		humanReadableMessage = new LogEventParser().getParsedMessage(event);
 
 		if( validateTamperstamp ) {
 			if( userId != null ) {
@@ -140,30 +142,19 @@ public final class ExpandedTamperproofEventLogEntry
 	}
 
     public final void testTamperstamp(final User logUser, final long datetime, final String itemId)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws GeneralSecurityException {
     	if( logUser == null || tamperstamp == null || userClassifier.isMasterAdmin(logUser)) {
     		setTamperstampStatus( TAMPERSTAMP_STATUS_UNKNOWN );
     		return;
     	}
-        String tamperStampData =
-        	TamperproofEventLogDAO.
-        		createTamperstampString(datetime, event, itemId, logUser.getUserId());
-        byte[] stampHash = createHash(tamperStampData);
-        stampHash = logUser.getKeyEncrypter().encrypt(stampHash);
 
+		byte[] stampHash = new LogEventHasher().createTamperstamp(logUser,
+				datetime, event, itemId, logUser.getUserId());
         if (Arrays.equals(tamperstamp, stampHash)) {
         	setTamperstampStatus( TAMPERSTAMP_STATUS_OK );
         } else {
         	setTamperstampStatus( TAMPERSTAMP_STATUS_INVALID );
         }
-    }
-
-    private byte[] createHash(final String value)
-        throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        MessageDigest digester = MessageDigest
-                .getInstance(TamperproofEventLog.TAMPERSTAMP_HASH_ALGORITHM);
-        digester.update(value.getBytes());
-        return digester.digest();
     }
 
 	public long getDateTime() {

@@ -21,19 +21,10 @@ import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
-import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
+import com.enterprisepasswordsafe.engine.logging.LogEventHasher;
+import com.enterprisepasswordsafe.engine.logging.LogEventMailer;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 import com.enterprisepasswordsafe.proguard.JavaBean;
@@ -46,12 +37,6 @@ import com.enterprisepasswordsafe.proguard.JavaBean;
 
 public class TamperproofEventLogDAO
 	implements ExternalInterface {
-
-	/**
-	 * The human readable date format.
-	 */
-
-	private static final String DATE_FORMAT = "dd MMM yyyy '-' HH:mm:ss";
 
     /**
      * SQL Statement to get all the log entries for a given date.
@@ -144,200 +129,6 @@ public class TamperproofEventLogDAO
 		create(theUser, null, message, true, logLevel, true);
 	}
 
-    private String valueOfToken(final String variable)
-            throws SQLException {
-        int colonIdx = variable.indexOf(':');
-        if (colonIdx == -1) {
-            return variable;
-        }
-
-        String variableType = variable.substring(0, colonIdx);
-        String variableId = variable.substring(colonIdx + 1);
-
-        if (variableType.equals("user")) {
-            UserSummary theUser = UserSummaryDAO.getInstance().getById(variableId);
-            if (theUser != null) {
-                return theUser.getName();
-            }
-
-            return "user with the id " + variableId;
-        }
-
-        if (variableType.equals("group")) {
-            Group theGroup = GroupDAO.getInstance().getById(variableId);
-            if( theGroup != null ) {
-            	return theGroup.getGroupName();
-            }
-
-            return "group with the id " + variableId;
-        }
-
-        if (variableType.equals("node")) {
-        	HierarchyNode theNode = HierarchyNodeDAO.getInstance().getById(variableId);
-            if (theNode != null) {
-                return theNode.getName();
-            }
-
-            return "node with the id " + variableId;
-        }
-
-        return "<< UNKNOWN >>";
-    }
-
-    public String getParsedMessage(final String event)
-        throws SQLException {
-        if (event == null) {
-            return null;
-        }
-
-        StringBuilder parsedValue = new StringBuilder();
-        StringTokenizer tokenizer = new StringTokenizer(event, "{");
-        while (tokenizer.hasMoreTokens()) {
-            String thisToken = tokenizer.nextToken();
-
-            // Check to see the data is closed.
-            int closeBracketIdx = thisToken.indexOf('}');
-            if (closeBracketIdx == -1) {
-                parsedValue.append(thisToken);
-                continue;
-            }
-
-            // Get the variable name and the
-            parsedValue.append(valueOfToken(thisToken.substring(0,closeBracketIdx)));
-            parsedValue.append(thisToken.substring(closeBracketIdx + 1));
-        }
-
-        return parsedValue.toString();
-    }
-
-    /**
-     * Returns a textual discription of this event
-     *
-     * @param eventLogEntry The event log entry to be expanded.
-     * @param item The item the entry refers to.
-     *
-     * @return A textual description of the event.
-     *
-     * @throws SQLException Thrown if there is a storing retrieving the information.
-     */
-
-    public String getFullMessage(TamperproofEventLog eventLogEntry, final AccessControledObject item)
-    	throws SQLException {
-        StringBuilder details = new StringBuilder(1024);
-
-        // Format the date
-        details.append("Date : ");
-        long datetime = eventLogEntry.getDateTime();
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(datetime);
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-        details.append(sdf.format(cal.getTime()));
-        details.append("\n");
-
-        // Add the user informtion
-        String userId = eventLogEntry.getUserId();
-        User theUser = UserDAO.getInstance().getById(userId);
-        details.append("User : ");
-        if (theUser != null) {
-            details.append(theUser.getUserName());
-        } else {
-            details.append("with the ID ");
-            details.append(userId);
-        }
-
-        if( item != null ) {
-            details.append("\n");
-            details.append("Object involved: ");
-            details.append(item.toString());
-        }
-
-        details.append("\n\n");
-
-        // Add the event
-        details.append(getParsedMessage(eventLogEntry.getEvent()));
-
-        return details.toString();
-    }
-
-    /**
-     * Sends an Email to to register an event.
-     *
-     * @param logLevel The log level for the event.
-     * @param eventLogEntry The log entry to email a message for.
-     * @param item The item relating to the event log entry.
-     *
-     * @throws SQLException Thrown if there is a storing retrieving the information.
-     * @throws AddressException Thrown if there is a problem sending the event Email.
-     * @throws MessagingException Thrown if there is a problem sending the event Email.
-     */
-
-    private void sendEmail(final String logLevel, final TamperproofEventLog eventLogEntry,
-    		final AccessControledObject item)
-    	throws SQLException, MessagingException {
-        // Check email has been enabled
-    	StringBuilder emailProperty = new StringBuilder(ConfigurationOption.SMTP_ENABLED.getPropertyName());
-    	if( logLevel != null ) {
-    		emailProperty.append('.');
-    		emailProperty.append(logLevel);
-    	}
-        String smtpEnabled = ConfigurationDAO.getValue(emailProperty.toString(), null);
-        if (smtpEnabled == null) {
-        	smtpEnabled = ConfigurationDAO.getValue(ConfigurationOption.SMTP_ENABLED);
-        	if( smtpEnabled.charAt(0) == 'N') {
-        		return;
-        	}
-        }
-
-        Transport.send(constructMessage(eventLogEntry, item));
-    }
-
-    private MimeMessage constructMessage(final TamperproofEventLog eventLogEntry,
-                                         final AccessControledObject item)
-            throws SQLException, MessagingException {
-        Properties props = new Properties();
-        props.put("mail.smtp.host", ConfigurationDAO.getValue(ConfigurationOption.SMTP_HOST));
-        Session s = Session.getInstance(props, null);
-
-        MimeMessage message = new MimeMessage(s);
-
-        InternetAddress from = new InternetAddress(ConfigurationDAO.getValue(ConfigurationOption.SMTP_FROM));
-        message.setFrom(from);
-
-        String recipient = determineRecipients(eventLogEntry);
-        StringTokenizer recipientTokenizer = new StringTokenizer(recipient, ";");
-        while (recipientTokenizer.hasMoreTokens()) {
-            InternetAddress to = new InternetAddress(recipientTokenizer.nextToken());
-            message.addRecipient(Message.RecipientType.TO, to);
-        }
-
-        message.setSubject(getParsedMessage(eventLogEntry.getEvent()));
-        message.setText(getFullMessage(eventLogEntry, item));
-
-        return message;
-    }
-
-    private String determineRecipients(final TamperproofEventLog eventLogEntry)
-            throws SQLException {
-        String recipient = ConfigurationDAO.getValue(ConfigurationOption.SMTP_TO_PROPERTY);
-        String includeUser = ConfigurationDAO.getValue(ConfigurationOption.INCLUDE_USER_ON_AUDIT_EMAIL);
-        if (includeUser != null && includeUser.equalsIgnoreCase("Y")) {
-            User theUser = UserDAO.getInstance().getById(eventLogEntry.getUserId());
-            if (theUser != null ) {
-                String userEmail = theUser.getEmail();
-                if( userEmail != null && userEmail.length() > 0) {
-                    StringBuilder newRecipient = new StringBuilder(recipient);
-                    if (recipient.length() > 0) {
-                        newRecipient.append("; ");
-                    }
-                    newRecipient.append(userEmail);
-                    recipient = newRecipient.toString();
-                }
-            }
-        }
-
-        return recipient;
-    }
-
     /**
      * Write a log entry to the log.
      *
@@ -357,45 +148,35 @@ public class TamperproofEventLogDAO
         	userId = TamperproofEventLog.DUMMY_USER_ID;
         }
 
-        PreparedStatement ps = null;
-        try {
-            ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_SQL);
-
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_SQL)) {
             if (sendEmail) {
             	String sendEmails = ConfigurationDAO.getValue(ConfigurationOption.SMTP_ENABLED + "." + logLevel, null);
             	if(sendEmails == null || sendEmails.charAt(0) != 'N') {
 	                try {
-	                    sendEmail(logLevel, eventLogEntry, item);
+	                    new LogEventMailer().sendEmail(logLevel, eventLogEntry, item);
 	                } catch (Exception ex) {
-	                    TamperproofEventLog log = new TamperproofEventLog(
-	            				null,
-	            				null,
+	                    TamperproofEventLog log = new TamperproofEventLog(null,null,
 	                            "Unable to send audit Email (Reason:"+ex.getMessage()+")",
-	                            false
-	                        );
-	                    int idx = 1;
-	                    ps.setLong(idx++, log.getDateTime());
-	                    ps.setString(idx++, log.getItemId());
-	                    ps.setString(idx++, log.getEvent());
-	                    ps.setString(idx++, TamperproofEventLog.DUMMY_USER_ID);
-	                    ps.setBytes(idx, log.getTamperStamp());
-
-	                    ps.executeUpdate();
+                                false);
+                        writeEntry(ps, TamperproofEventLog.DUMMY_USER_ID, log);
 	                }
             	}
             }
-
-            int idx = 1;
-            ps.setLong(idx++, eventLogEntry.getDateTime());
-            ps.setString(idx++, eventLogEntry.getItemId());
-            ps.setString(idx++, eventLogEntry.getEvent());
-            ps.setString(idx++, userId);
-            ps.setBytes(idx, eventLogEntry.getTamperStamp());
-            ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
+            writeEntry(ps, userId, eventLogEntry);
         }
     }
+
+    private void writeEntry(PreparedStatement ps, String userId, TamperproofEventLog eventLogEntry)
+            throws SQLException {
+        int idx = 1;
+        ps.setLong(idx++, eventLogEntry.getDateTime());
+        ps.setString(idx++, eventLogEntry.getItemId());
+        ps.setString(idx++, eventLogEntry.getEvent());
+        ps.setString(idx++, userId);
+        ps.setBytes(idx, eventLogEntry.getTamperStamp());
+        ps.executeUpdate();
+    }
+
 
     public boolean validateTamperstamp(TamperproofEventLog eventLogEntry, final User validatingUser)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -407,33 +188,9 @@ public class TamperproofEventLogDAO
             eventUser.decryptAdminAccessKey(adminGroup);
         }
 
-        byte[] calculatedTamperstamp = eventLogEntry.createTamperstamp(eventUser);
+        byte[] calculatedTamperstamp = new LogEventHasher().createTamperstamp(eventUser, eventLogEntry);
         byte[] tamperStamp = eventLogEntry.getTamperStamp();
         return Arrays.equals(tamperStamp, calculatedTamperstamp);
-    }
-
-    /**
-     * Create a tamperstamp.
-     *
-     * @param datetime The timestamp for the event.
-     * @param event The test for the event.
-     * @param itemId The ID of the item involved in the event.
-     * @param userId The ID of the user involved in the event.
-     */
-
-    public static String createTamperstampString(final long datetime, final String event,
-    		final String itemId, final String userId) {
-        StringBuilder dataToCheck = new StringBuilder();
-        dataToCheck.append(datetime);
-        dataToCheck.append(event);
-        if (itemId != null) {
-            dataToCheck.append(itemId);
-        }
-        if (userId != null) {
-            dataToCheck.append(userId);
-        }
-
-        return dataToCheck.toString();
     }
 
     /**

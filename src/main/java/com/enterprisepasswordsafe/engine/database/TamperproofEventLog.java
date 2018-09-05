@@ -23,12 +23,11 @@
 package com.enterprisepasswordsafe.engine.database;
 
 
+import com.enterprisepasswordsafe.engine.logging.LogEventHasher;
 import com.enterprisepasswordsafe.proguard.JavaBean;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
@@ -44,12 +43,6 @@ public final class TamperproofEventLog
 	 */
 
 	public static final String DUMMY_USER_ID = "-1";
-
-    /**
-     * The hashing algorithm used to create the tamperstamp.
-     */
-
-    public static final String TAMPERSTAMP_HASH_ALGORITHM = "SHA-256";
 
     /**
      * The various log levels available.
@@ -124,25 +117,11 @@ public final class TamperproofEventLog
         }
 
         if (createTamperstamp) {
-            tamperStamp = createTamperstamp(newUser);
+            tamperStamp = new LogEventHasher().createTamperstamp(newUser, this);
         } else {
             tamperStamp = null;
         }
     }
-
-    /**
-     * Creates a new instance of EventLog.
-     *
-     * @param conn
-     *            The connection to the database.
-     * @param rs
-     *            The ResultSet containing the event details.
-     * @param startIdx
-     *            The index of the start of the event log information
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem extracting the data.
-     */
 
     public TamperproofEventLog(final ResultSet rs, final int startIdx)
             throws SQLException {
@@ -151,54 +130,11 @@ public final class TamperproofEventLog
         userId = rs.getString(currentIdx++);
         itemId = rs.getString(currentIdx++);
         event = rs.getString(currentIdx++);
-        tamperStamp = rs.getBytes(currentIdx++);
+        tamperStamp = rs.getBytes(currentIdx);
 
         if (userId.equals(DUMMY_USER_ID)) {
         	userId = null;
         }
-    }
-
-
-    /**
-     * Creates the hash used to calculate the tamperstamp.
-     *
-     * @param value
-     *            The value to create the hash for.
-     *
-     * @return the hash value for the string.
-     *
-     * @throws NoSuchAlgorithmException Thrown if the tamperstamp algorithm is unavailable.
-     * @throws UnsupportedEncodingException
-     */
-
-    private byte[] createHash(final String value)
-        throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        MessageDigest digester = MessageDigest
-                .getInstance(TAMPERSTAMP_HASH_ALGORITHM);
-        digester.update(value.getBytes());
-        return digester.digest();
-    }
-
-    /**
-     * Create the tamperstamp for this entry.
-     *
-     * @return The tamperstamp.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem creating the tamperstamp.
-     * @throws UnsupportedEncodingException
-     */
-
-    public byte[] createTamperstamp(User theUser)
-        throws GeneralSecurityException, UnsupportedEncodingException {
-        String tamperStampData =
-        	TamperproofEventLogDAO.
-        		createTamperstampString(datetime,event, itemId, userId);
-
-        byte[] stampHash = createHash(tamperStampData);
-        if (theUser != null) {
-            stampHash = theUser.getKeyEncrypter().encrypt(stampHash);
-        }
-        return stampHash;
     }
 
     /**
