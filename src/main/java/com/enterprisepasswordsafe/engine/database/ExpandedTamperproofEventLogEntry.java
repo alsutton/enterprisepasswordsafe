@@ -22,22 +22,19 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-
 import com.enterprisepasswordsafe.engine.logging.LogEventHasher;
 import com.enterprisepasswordsafe.engine.logging.LogEventParser;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 import com.enterprisepasswordsafe.proguard.JavaBean;
+
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Object representing an entry in the event log.
@@ -70,8 +67,7 @@ public final class ExpandedTamperproofEventLogEntry
 	private final UserClassifier userClassifier = new UserClassifier();
 
 	public ExpandedTamperproofEventLogEntry( final ResultSet rs, final User validatingUser,
-			final Group adminGroup, boolean validateTamperstamp,
-			final Map<String, User> userCache)
+			final Group adminGroup, boolean validateTamperstamp)
 		throws SQLException, UnsupportedEncodingException, GeneralSecurityException
 	{
 		long dateTime = rs.getLong(1);
@@ -84,17 +80,8 @@ public final class ExpandedTamperproofEventLogEntry
 		username = rs.getString(6);
 		humanReadableMessage = new LogEventParser().getParsedMessage(event);
 
-		if( validateTamperstamp ) {
-			if( userId != null ) {
-				User logUser = userCache.get(userId);
-				if(logUser == null) {
-					logUser = UserDAO.getInstance().getByIdDecrypted(userId, adminGroup);
-					if( logUser != null) {
-						userCache.put(userId, logUser);
-					}
-				}
-				testTamperstamp(logUser, dateTime, itemId);
-			}
+		if( validateTamperstamp && userId != null ) {
+			testTamperstamp(UserDAO.getInstance().getByIdDecrypted(userId, adminGroup), dateTime, itemId);
 		}
 
 		if(itemId != null ) {
