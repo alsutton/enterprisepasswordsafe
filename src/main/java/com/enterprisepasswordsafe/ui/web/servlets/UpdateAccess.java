@@ -100,7 +100,8 @@ public final class UpdateAccess extends HttpServlet {
 	        Password password = UnfilteredPasswordDAO.getInstance().getById(passwordId, ac);
 	        User adminUser = UserDAO.getInstance().getAdminUser(adminGroup);
 
-	        processRoleChanges(request, password, adminUser, adminGroup, currentUser, ac);
+	        RoleChangeContext context = new RoleChangeContext(currentUser, adminUser, adminGroup, password);
+	        processRoleChanges(request, context, ac);
 
 	    	servletUtils.generateMessage(request, "The password access rights were updated.");
 	    	response.sendRedirect(request.getContextPath()+"/subadmin/AlterAccess?id="+password.getId());
@@ -109,8 +110,7 @@ public final class UpdateAccess extends HttpServlet {
     	}
     }
 
-    private void processRoleChanges(HttpServletRequest request, Password password, User adminUser,
-                                    Group adminGroup, User currentUser, AccessControl ac)
+    private void processRoleChanges(HttpServletRequest request, RoleChangeContext context, AccessControl ac)
             throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
         Enumeration<String> params = request.getParameterNames();
         while( params.hasMoreElements() ) {
@@ -119,20 +119,19 @@ public final class UpdateAccess extends HttpServlet {
             String value = request.getParameter(thisParameter);
 
             if			( thisParameter.startsWith(USER_PARAMETER_PREFIX) ) {
-                handleUserParameter(adminGroup, currentUser, password, ac, thisParameter, value);
+                handleUserParameter(context, ac, thisParameter, value);
             } else if	( thisParameter.startsWith(GROUP_PARAMETER_PREFIX) ) {
-                handleGroupParameter(adminUser, currentUser, password, ac, thisParameter, value);
+                handleGroupParameter(context, ac, thisParameter, value);
             }
         }
 
-		processUserRoles(currentUser, password, request, AccessRolesPresentation.USER_HISTORY);
-        processGroupRoles(currentUser, password, request, AccessRolesPresentation.GROUP_HISTORY);
-        processUserRoles(currentUser, password, request, AccessRolesPresentation.USER_RA_APPROVER);
-        processGroupRoles(currentUser, password, request, AccessRolesPresentation.GROUP_RA_APPROVER);
+		processUserRoles(request, context, AccessRolesPresentation.USER_HISTORY);
+        processGroupRoles(request, context, AccessRolesPresentation.GROUP_HISTORY);
+        processUserRoles(request, context, AccessRolesPresentation.USER_RA_APPROVER);
+        processGroupRoles(request, context, AccessRolesPresentation.GROUP_RA_APPROVER);
     }
 
-    private void handleUserParameter(final Group adminGroup, final User adminUser,
-    		final Password password, final AccessControl ac,
+    private void handleUserParameter(final RoleChangeContext context, final AccessControl ac,
     		final String thisParameter, final String value )
     	throws UnsupportedEncodingException, SQLException, GeneralSecurityException
     {
@@ -144,16 +143,14 @@ public final class UpdateAccess extends HttpServlet {
 			return;
 		}
 
-		User theUser = UserDAO.getInstance().getByIdDecrypted(userId, adminGroup);
+		User theUser = UserDAO.getInstance().getByIdDecrypted(userId, context.adminGroup);
 		if			( parameterType == 'a' ) {
-			changeAccess(adminUser, ac, password, theUser, value);
+			changeAccess(context, ac, theUser, value);
 		}
     }
 
-    private void handleGroupParameter(final User theAdmin,
-    		final User adminUser, final Password password,
-		    final AccessControl ac, final String thisParameter,
-		  	final String value )
+    private void handleGroupParameter(final RoleChangeContext context, final AccessControl ac,
+                                      final String thisParameter, final String value )
     	throws UnsupportedEncodingException, SQLException, GeneralSecurityException
     {
 		int endOfId = thisParameter.indexOf('_', GROUP_PARAMETER_PREFIX_LENGTH);
@@ -168,7 +165,7 @@ public final class UpdateAccess extends HttpServlet {
 		if (theGroup == null) {
 			throw new RuntimeException("One of the specified groups does not exist anymore.");
 		}
-    	Membership membership = MembershipDAO.getInstance().getMembership(theAdmin, theGroup);
+    	Membership membership = MembershipDAO.getInstance().getMembership(context.adminUser, theGroup);
     	if (membership == null) {
     		throw new GeneralSecurityException("You are not allow to alter the rights on the group "+theGroup.getGroupName()+".");
     	}
@@ -177,11 +174,11 @@ public final class UpdateAccess extends HttpServlet {
 		char parameterType = thisParameter.charAt(endOfId+1);
 
 		if			( parameterType == 'a' ) {
-			changeAccess(adminUser, ac, password, theGroup, value);
+			changeAccess(context, ac, theGroup, value);
 		}
     }
 
-    private void processUserRoles(final User remoteUser, final Password password, final HttpServletRequest request,
+    private void processUserRoles(final HttpServletRequest request, final RoleChangeContext context,
                                   final AccessRolesPresentation accessRolesPresentation)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
         List<String> onNow = new ArrayList<>();
@@ -189,24 +186,26 @@ public final class UpdateAccess extends HttpServlet {
 		determineOldAndNewStates(request, accessRolesPresentation, previouslyOn, onNow);
 
 		UserAccessRoleDAO uarDEO = UserAccessRoleDAO.getInstance();
+		String remoteUserId = context.currentUser.getUserId();
     	for(String id : onNow) {
     		if(previouslyOn.contains(id)) {
     			previouslyOn.remove(id);
     			continue;
     		}
-            uarDEO.create(password.getId(), remoteUser.getId(), accessRolesPresentation.internalRoleIdentifier );
-            logAndEmailIfNeeded(password, remoteUser,
-            "Gave the user {user:"+remoteUser.getId()+"} the right to "+accessRolesPresentation.description);
+            uarDEO.create(context.password.getId(), remoteUserId, accessRolesPresentation.internalRoleIdentifier );
+            logAndEmailIfNeeded(context.password, context.currentUser,
+            "Gave the user {user:"+remoteUserId+"} the right to "+accessRolesPresentation.description);
     	}
 
     	for(String id: previouslyOn) {
-            logAndEmailIfNeeded(password, remoteUser,
+            logAndEmailIfNeeded(context.password, context.currentUser,
                     "Removed the right to "+accessRolesPresentation.description+" from the user {user:"+id+"}" );
-            UserAccessRoleDAO.getInstance().delete( password.getId(), id, accessRolesPresentation.internalRoleIdentifier );
+            UserAccessRoleDAO.getInstance().delete( context.password.getId(), id,
+                    accessRolesPresentation.internalRoleIdentifier );
     	}
     }
 
-    private void processGroupRoles(final User remoteUser, final Password password, final HttpServletRequest request,
+    private void processGroupRoles(final HttpServletRequest request, final RoleChangeContext context,
                                    final AccessRolesPresentation accessRolesPresentation)
     throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
         List<String> onNow = new ArrayList<>();
@@ -218,15 +217,17 @@ public final class UpdateAccess extends HttpServlet {
     			previouslyOn.remove(id);
     			continue;
     		}
-            logAndEmailIfNeeded(password, remoteUser,
+            logAndEmailIfNeeded(context.password, context.currentUser,
                     "Gave the group {group:"+id+"} the right to "+accessRolesPresentation.description);
-            GroupAccessRoleDAO.getInstance().create( password.getId(), id, accessRolesPresentation.internalRoleIdentifier );
+            GroupAccessRoleDAO.getInstance().create( context.password.getId(), id,
+                    accessRolesPresentation.internalRoleIdentifier );
     	}
 
     	for(String id: previouslyOn) {
-            logAndEmailIfNeeded(password, remoteUser,
+            logAndEmailIfNeeded(context.password, context.currentUser,
                     "Removed the right to "+accessRolesPresentation.description+" from the group {group:"+id+"}");
-            GroupAccessRoleDAO.getInstance().delete(password.getId(), id, accessRolesPresentation.internalRoleIdentifier);
+            GroupAccessRoleDAO.getInstance().delete(context.password.getId(), id,
+                    accessRolesPresentation.internalRoleIdentifier);
     	}
     }
 
@@ -244,36 +245,36 @@ public final class UpdateAccess extends HttpServlet {
 		}
 	}
 
-    private void changeAccess(final User adminUser, final AccessControl adminAc, final Password thePassword,
-    		final User theUser, final String access )
+    private void changeAccess(RoleChangeContext context, final AccessControl adminAc, final User theUser,
+                              final String access )
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
 		// Get the existing UAC (if it exists);
 		UserAccessControlDAO uacDAO = UserAccessControlDAO.getInstance();
-		UserAccessControl currentUac = uacDAO.getUac(theUser, thePassword);
+		UserAccessControl currentUac = uacDAO.getUac(theUser, context.password);
 		if (access.equals("N")) {
 			if (currentUac != null) {
 				uacDAO.delete(currentUac);
-				logAndEmailIfNeeded(thePassword, adminUser, "Removed all permissions for " + theUser.getUserName());
+				logAndEmailIfNeeded(context.password, context.adminUser, "Removed all permissions for " + theUser.getUserName());
 			}
-		} else if(modifyOrCreateAccessControl(adminAc, currentUac, uacDAO, theUser, thePassword, access)) {
-			logAndEmailIfNeeded(thePassword, adminUser, "Changed the access permissions on the user {user:"
+		} else if(modifyOrCreateAccessControl(adminAc, currentUac, uacDAO, theUser, context.password, access)) {
+			logAndEmailIfNeeded(context.password, context.adminUser, "Changed the access permissions on the user {user:"
 					+ theUser.getUserId() + "} to be " + access);
 		}
     }
 
-    private void changeAccess(final User adminUser, final AccessControl adminAc, final Password thePassword,
-    		final Group theGroup, final String access )
+    private void changeAccess(final RoleChangeContext context, final AccessControl adminAc, final Group theGroup,
+                              final String access )
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
     	GroupAccessControlDAO gacDAO = GroupAccessControlDAO.getInstance();
-    	GroupAccessControl currentGac = gacDAO.getGac( adminUser, theGroup, thePassword );
+    	GroupAccessControl currentGac = gacDAO.getGac( context.adminUser, theGroup, context.password );
 	    if (access.equals("N")) {
 	    	if( currentGac != null ) {
 	    		gacDAO.delete(currentGac);
-				logAndEmailIfNeeded(thePassword, adminUser, "Removed all permissions for the group {group:" +
+				logAndEmailIfNeeded(context.password, context.adminUser, "Removed all permissions for the group {group:" +
 						theGroup.getGroupId()+"}");
 	    	}
-	    } else if (modifyOrCreateAccessControl(adminAc, currentGac, gacDAO, theGroup, thePassword, access)) {
-	    	logAndEmailIfNeeded(thePassword, adminUser, "Changed the access permissions on the group {group:"
+	    } else if (modifyOrCreateAccessControl(adminAc, currentGac, gacDAO, theGroup, context.password, access)) {
+	    	logAndEmailIfNeeded(context.password, context.adminUser, "Changed the access permissions on the group {group:"
 					+ theGroup.getGroupId() + "} to be " + access);
 		}
     }
@@ -321,5 +322,20 @@ public final class UpdateAccess extends HttpServlet {
     @Override
 	public String getServletInfo() {
         return "Updates the access a user has to a password";
+    }
+
+    private class RoleChangeContext {
+        final User currentUser;
+        final User adminUser;
+        final Group adminGroup;
+        final Password password;
+
+
+        private RoleChangeContext(User currentUser, User adminUser, Group adminGroup, Password password) {
+            this.currentUser = currentUser;
+            this.adminUser = adminUser;
+            this.adminGroup = adminGroup;
+            this.password = password;
+        }
     }
 }
