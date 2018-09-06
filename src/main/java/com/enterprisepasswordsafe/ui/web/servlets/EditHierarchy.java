@@ -22,7 +22,6 @@ import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +30,7 @@ import javax.servlet.http.HttpSession;
 
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
-import com.enterprisepasswordsafe.engine.nodes.NodeManipulator;
+import com.enterprisepasswordsafe.engine.nodes.HierarchyManipulator;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
@@ -365,22 +364,22 @@ public final class EditHierarchy extends HttpServlet {
 
     private void pasteCutNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode newParent, final String[] nodes)
             throws SQLException, GeneralSecurityException {
-        runManipulatorOnNodes(hnDAO, newParent, nodes, new NodeManipulator.MoveNodeManipulator(hnDAO));
+        runManipulatorOnNodes(hnDAO, newParent, nodes, new HierarchyManipulator.MoveNodeManipulator(hnDAO));
     }
 
     private void pasteCopiedNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode newParent, final String[] nodes)
         throws SQLException, GeneralSecurityException {
-        runManipulatorOnNodes(hnDAO, newParent, nodes, new NodeManipulator.CopyNodeManipulator(hnDAO));
+        runManipulatorOnNodes(hnDAO, newParent, nodes, new HierarchyManipulator.CopyNodeManipulator(hnDAO));
     }
 
     private void pasteDeepCopiedNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode newParent,
                                       final String[] nodes)
         throws SQLException, GeneralSecurityException {
-        runManipulatorOnNodes(hnDAO, newParent, nodes, new NodeManipulator.DeepCopyNodeManipulator(hnDAO));
+        runManipulatorOnNodes(hnDAO, newParent, nodes, new HierarchyManipulator.DeepCopyNodeManipulator(hnDAO));
     }
 
     private void runManipulatorOnNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode node, final String[] nodes,
-                                       NodeManipulator nodeManipulator)
+                                       HierarchyManipulator nodeManipulator)
             throws GeneralSecurityException, SQLException {
         for(String nodeId : nodes) {
             if (nodeId == null) {

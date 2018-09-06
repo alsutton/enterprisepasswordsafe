@@ -16,23 +16,22 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
+import com.enterprisepasswordsafe.engine.database.HierarchyNodePermissionDAO;
+import com.enterprisepasswordsafe.engine.database.UserSummaryDAO;
+import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
+import com.enterprisepasswordsafe.engine.nodes.UserNodeDefaultPermission;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO.UserNodeDefaultPermission;
-import com.enterprisepasswordsafe.engine.database.HierarchyNodePermissionDAO;
-import com.enterprisepasswordsafe.engine.database.UserSummaryDAO;
-import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 /**
  * Servlet implementation class UserQuery

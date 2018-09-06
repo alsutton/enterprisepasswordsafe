@@ -84,22 +84,7 @@ public final class HierarchyNodeDAO
      */
 
     private static final String GET_NODE_ID_FOR_CHILD_OBJECT_ID_SQL =
-            "SELECT node_id "
-            + "  FROM hierarchy "
-            + " WHERE parent_id = ? "
-            + "   AND name = ? "
-            + "   AND type = " + HierarchyNode.OBJECT_NODE;
-
-    /**
-     * The SQL statement to get the all child object node ids.
-     */
-
-    private static final String GET_CHILD_OBJECTS_SQL =
-            "SELECT   " + PasswordDAO.PASSWORD_FIELDS
-            + "  FROM hierarchy h, passwords pass"
-            + " WHERE h.parent_id = ? "
-            + "   AND h.type = " + HierarchyNode.OBJECT_NODE
-            + "   AND h.name = pass.password_id";
+            "SELECT node_id FROM hierarchy WHERE parent_id = ? AND name = ? AND type = " + HierarchyNode.OBJECT_NODE;
 
     /**
      * The SQL statement to get the valid object node children for a given
@@ -107,14 +92,9 @@ public final class HierarchyNodeDAO
      */
 
     private static final String GET_VALID_CHILD_OBJECT_IDS_VIA_UAC_SQL =
-            "SELECT   h.name "
-            + "  FROM hierarchy h, "
-            + "       user_access_control uac "
-            + " WHERE h.parent_id = ? "
-            + "  AND h.type = " + HierarchyNode.OBJECT_NODE
-            + "  AND uac.item_id = h.name "
-            + "  AND uac.rkey is not null "
-            + "  AND uac.user_id = ? ";
+            "SELECT   h.name FROM hierarchy h, user_access_control uac "
+            + " WHERE h.parent_id = ? AND h.type = " + HierarchyNode.OBJECT_NODE + " AND uac.item_id = h.name "
+            + "  AND uac.rkey is not null AND uac.user_id = ? ";
 
     /**
      * The SQL statement to get the valid object node children for a given
@@ -123,18 +103,10 @@ public final class HierarchyNodeDAO
 
     private static final String GET_VALID_CHILD_OBJECT_IDS_VIA_GAC_SQL =
             "SELECT   h.name "
-            + "  FROM hierarchy h, "
-            + "       group_access_control gac, "
-            + "       membership m, "
-            + "       groups g "
-            + " WHERE h.parent_id = ? "
-            + "   AND h.type = "+ HierarchyNode.OBJECT_NODE+ " "
-            + "   AND gac.item_id = h.name "
-            + "   AND gac.rkey is not null "
-            + "   AND m.group_id = gac.group_id "
-            + "   AND m.user_id = ? "
-            + "   AND g.group_id = gac.group_id "
-            + "   AND g.status = " + Group.STATUS_ENABLED;
+            + "  FROM hierarchy h, group_access_control gac, membership m, groups g "
+            + " WHERE h.parent_id = ? AND h.type = "+ HierarchyNode.OBJECT_NODE+ " AND gac.item_id = h.name "
+            + "   AND gac.rkey is not null AND m.group_id = gac.group_id AND m.user_id = ? "
+            + "   AND g.group_id = gac.group_id AND g.status = " + Group.STATUS_ENABLED;
 
     /**
      * The SQL statement to get the all child object node ids.
@@ -142,15 +114,9 @@ public final class HierarchyNodeDAO
 
     private static final String GET_CHILD_OBJECTS_VIA_UAC_SQL =
             "SELECT   " + UserAccessControlDAO.UAC_FIELDS+", "+PasswordDAO.PASSWORD_FIELDS
-            + "  FROM hierarchy h, "
-            + "       passwords pass, "
-            + "       user_access_control uac "
-            + " WHERE h.parent_id = ? "
-            + "  AND h.type = " + HierarchyNode.OBJECT_NODE
-            + "  AND uac.item_id = h.name "
-            + "  AND uac.rkey is not null "
-            + "  AND uac.user_id = ? "
-            + "  AND pass.password_id = h.name";
+            + "  FROM hierarchy h, passwords pass, user_access_control uac "
+            + " WHERE h.parent_id = ? AND h.type = " + HierarchyNode.OBJECT_NODE + " AND uac.item_id = h.name "
+            + "  AND uac.rkey is not null AND uac.user_id = ? AND pass.password_id = h.name";
 
     /**
      * The SQL statement to get the valid object node children for a given
@@ -159,20 +125,10 @@ public final class HierarchyNodeDAO
 
     private static final String GET_CHILD_OBJECTS_VIA_GAC_SQL =
             "SELECT   " + GroupAccessControlDAO.GAC_FIELDS +", "+PasswordDAO.PASSWORD_FIELDS
-            + "  FROM hierarchy h, "
-            + "       passwords pass, "
-            + "       group_access_control gac, "
-            + "       membership m, "
-            + "       groups g "
-            + " WHERE h.parent_id = ? "
-            + "   AND h.type = "+ HierarchyNode.OBJECT_NODE+ " "
-            + "   AND pass.password_id = h.name"
-            + "   AND gac.item_id = h.name "
-            + "   AND gac.rkey is not null "
-            + "   AND m.group_id = gac.group_id "
-            + "   AND m.user_id = ? "
-            + "   AND g.group_id = gac.group_id "
-            + "   AND g.status = " + Group.STATUS_ENABLED;
+            + "  FROM hierarchy h, passwords pass, group_access_control gac, membership m, groups g "
+            + " WHERE h.parent_id = ? AND h.type = "+ HierarchyNode.OBJECT_NODE+ " AND pass.password_id = h.name"
+            + "   AND gac.item_id = h.name AND gac.rkey is not null AND m.group_id = gac.group_id "
+            + "   AND m.user_id = ? AND g.group_id = gac.group_id AND g.status = " + Group.STATUS_ENABLED;
 
 
     /**
@@ -187,19 +143,14 @@ public final class HierarchyNodeDAO
      */
 
     private static final String GET_CHILDREN_NODE_IDS_SQL =
-            "SELECT   node_id"
-            + "  FROM hierarchy"
-            + " WHERE parent_id = ? "
-            + "   AND type=" + HierarchyNode.CONTAINER_NODE;
+            "SELECT   node_id FROM hierarchy WHERE parent_id = ? AND type=" + HierarchyNode.CONTAINER_NODE;
 
     /**
      * The SQL statement to get the user node for a user
      */
 
     private static final String GET_USER_CONTAINER_NODE_SQL =
-            "SELECT   node_id, name, parent_id, type "
-            + "  FROM hierarchy"
-            + " WHERE name = ? "
+            "SELECT   node_id, name, parent_id, type FROM hierarchy WHERE name = ? "
             + "   AND type = " + HierarchyNode.USER_CONTAINER_NODE;
 
     /**
@@ -214,8 +165,7 @@ public final class HierarchyNodeDAO
      */
 
     private static final String INSERT_NODE_SQL =
-            "INSERT INTO hierarchy( name, parent_id, type, node_id ) "
-            + "            VALUES (    ?,         ?,    ?,       ? ) ";
+            "INSERT INTO hierarchy( name, parent_id, type, node_id ) VALUES ( ?, ?, ?, ? ) ";
 
     /**
      * The SQL statement to update a node in the hierarchy.
@@ -242,12 +192,6 @@ public final class HierarchyNodeDAO
      */
 
     private final Cache<String,HierarchyNodeSummary> summaryCache = new Cache<String,HierarchyNodeSummary>();
-
-	/**
-	 * The cache of personal and non-personal nodes.
-	 */
-
-	private Cache<String,Boolean> personalNodeCache;
 
 	private UserClassifier userClassifier = new UserClassifier();
 
@@ -289,22 +233,13 @@ public final class HierarchyNodeDAO
 
     public void store(final HierarchyNode node)
         throws SQLException {
-        String statementSQL = INSERT_NODE_SQL;
-
-        if (getById(node.getNodeId()) != null) {
-            statementSQL = UPDATE_NODE_SQL;
-        }
-
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(statementSQL);
-        try {
+        String statementSQL = getById(node.getNodeId()) == null ? INSERT_NODE_SQL : UPDATE_NODE_SQL;
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(statementSQL)) {
             ps.setString(1, node.getName());
             ps.setString(2, node.getParentId());
             ps.setInt   (3, node.getType());
             ps.setString(4, node.getNodeId());
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -375,25 +310,35 @@ public final class HierarchyNodeDAO
     public void deleteNode(final HierarchyNode node, final User deletingUser)
             throws SQLException, GeneralSecurityException, IOException {
         if (node.getType() == HierarchyNode.CONTAINER_NODE) {
-            for(HierarchyNode thisNode : getMultiple(GET_ALL_CHILDREN_NODES_SQL, node.getNodeId())) {
-                deleteNode(thisNode, deletingUser);
-            }
-
-            TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_HIERARCHY_MANIPULATION,
-                    deletingUser, null, "Deleted Node " + node.getName() +
-                        " from {node:"+ node.getNodeId()+ "}",true);
+            deleteAllChildren(node, deletingUser);
         }
 
         runResultlessParameterisedSQL(DELETE_SQL, node.getNodeId());
 
         if (node.getType()== HierarchyNode.OBJECT_NODE) {
-            HierarchyNode referringNode = fetchObjectIfExists(TEST_NODES_REFERRING_TO_OBJECT_NODE_SQL, node.getName());
-            if (referringNode == null) {
-                PasswordDAO pDAO = PasswordDAO.getInstance();
-                Password password = pDAO.getById(deletingUser, node.getName());
-                if (password != null) {
-                    pDAO.delete(deletingUser, password);
-                }
+            deleteOrphanedPasswords(node, deletingUser);
+        }
+    }
+
+    private void deleteAllChildren(HierarchyNode node, User deletingUser)
+            throws SQLException, GeneralSecurityException, IOException {
+        for(HierarchyNode thisNode : getMultiple(GET_ALL_CHILDREN_NODES_SQL, node.getNodeId())) {
+            deleteNode(thisNode, deletingUser);
+        }
+
+        TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_HIERARCHY_MANIPULATION,
+                deletingUser, null, "Deleted Node " + node.getName() +
+                        " from {node:"+ node.getNodeId()+ "}",true);
+    }
+
+    private void deleteOrphanedPasswords(HierarchyNode node, User deletingUser)
+            throws SQLException, IOException, GeneralSecurityException {
+        HierarchyNode referringNode = fetchObjectIfExists(TEST_NODES_REFERRING_TO_OBJECT_NODE_SQL, node.getName());
+        if (referringNode == null) {
+            PasswordDAO pDAO = PasswordDAO.getInstance();
+            Password password = pDAO.getById(deletingUser, node.getName());
+            if (password != null) {
+                pDAO.delete(deletingUser, password);
             }
         }
     }
@@ -474,35 +419,11 @@ public final class HierarchyNodeDAO
         return getSummary(getById(nodeId));
     }
 
-    /**
-     * Gets the Node ID for a specific object.
-     *
-     * @param testParentId The ID of the parent for the object node.
-     * @param id The ID of the object.
-     *
-     * @return The ID of the first matching node.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
     public String getNodeIDForObject(final String testParentId, final String id)
         throws SQLException {
         HierarchyNode node = fetchObjectIfExists(GET_NODE_ID_FOR_CHILD_OBJECT_ID_SQL, testParentId, id);
         return node == null ? null : node.getNodeId();
     }
-
-    /**
-     * Gets all of the Password children of a given node.
-     *
-     * @param node The node to get the Passwords under.
-     * @param user The user requesting the information.
-
-     * @return A Set of Passwords which exist under the specified node.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws UnsupportedEncodingException
-     */
 
     public Set<Password> getAllChildrenObjects(final HierarchyNode node, final User user, final Comparator<Password> comparator)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -525,30 +446,26 @@ public final class HierarchyNodeDAO
             sql.append("   AND (pass.enabled is null OR pass.enabled = 'Y')" );
         }
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql.toString());
-        ResultSet rs = null;
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql.toString())) {
             ps.setString(1, node.getNodeId());
             ps.setString(2, user.getUserId());
 
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                String passwordId = rs.getString(UserAccessControlDAO.UAC_FIELD_COUNT+1);
-                if(results.containsKey(passwordId)) {
-                    continue;
-                }
+            try(ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String passwordId = rs.getString(UserAccessControlDAO.UAC_FIELD_COUNT + 1);
+                    if (results.containsKey(passwordId)) {
+                        continue;
+                    }
 
-                UserAccessControl ac = new UserAccessControl(rs, 1, user);
-                try {
-                    Password password = new Password(passwordId, rs.getBytes(UserAccessControlDAO.UAC_FIELD_COUNT + 2), ac);
-                    results.put(passwordId, password);
-                } catch(IOException e) {
-                    Logger.getAnonymousLogger().log(Level.SEVERE, "Unable to decrypt password "+passwordId, e);
+                    UserAccessControl ac = new UserAccessControl(rs, 1, user);
+                    try {
+                        Password password = new Password(passwordId, rs.getBytes(UserAccessControlDAO.UAC_FIELD_COUNT + 2), ac);
+                        results.put(passwordId, password);
+                    } catch (IOException e) {
+                        Logger.getAnonymousLogger().log(Level.SEVERE, "Unable to decrypt password " + passwordId, e);
+                    }
                 }
             }
-        } finally {
-            DatabaseConnectionUtils.close(rs);
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -560,32 +477,32 @@ public final class HierarchyNodeDAO
             sql.append("   AND (pass.enabled is null OR pass.enabled = 'Y')" );
         }
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql.toString());
-        ResultSet rs = null;
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql.toString())) {
             ps.setString(1, node.getNodeId());
             ps.setString(2, user.getUserId());
 
-            GroupDAO gDAO = GroupDAO.getInstance();
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                String passwordId = rs.getString(GroupAccessControlDAO.GAC_FIELD_COUNT+1);
-                if(results.containsKey(passwordId)) {
-                    continue;
-                }
-
-                Group group = gDAO.getByIdDecrypted(rs.getString(4), user);
-                GroupAccessControl ac = new GroupAccessControl(rs, 1, group);
-                try {
-                    Password password = new Password(passwordId, rs.getBytes(GroupAccessControlDAO.GAC_FIELD_COUNT + 2), ac);
-                    results.put(passwordId, password);
-                } catch(IOException e) {
-                    Logger.getAnonymousLogger().log(Level.SEVERE, "Unable to decrypt password "+passwordId, e);
+            try(ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    processGroupAccessControlResult(results, user, rs);
                 }
             }
-        } finally {
-            DatabaseConnectionUtils.close(rs);
-            DatabaseConnectionUtils.close(ps);
+        }
+    }
+
+    private void processGroupAccessControlResult(Map<String,Password> results, User user, ResultSet rs)
+            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        String passwordId = rs.getString(GroupAccessControlDAO.GAC_FIELD_COUNT + 1);
+        if (results.containsKey(passwordId)) {
+            return;
+        }
+
+        Group group =  GroupDAO.getInstance().getByIdDecrypted(rs.getString(4), user);
+        GroupAccessControl ac = new GroupAccessControl(rs, 1, group);
+        try {
+            Password password = new Password(passwordId, rs.getBytes(GroupAccessControlDAO.GAC_FIELD_COUNT + 2), ac);
+            results.put(passwordId, password);
+        } catch (IOException e) {
+            Logger.getAnonymousLogger().log(Level.SEVERE, "Unable to decrypt password " + passwordId, e);
         }
     }
 
@@ -597,22 +514,26 @@ public final class HierarchyNodeDAO
             return children;
         }
 
-        HierarchyNodeAccessRuleDAO hnarDAO = HierarchyNodeAccessRuleDAO.getInstance();
-        List<HierarchyNode> blockedNodes= new ArrayList<>();
-        for(HierarchyNode thisNode : children) {
-            if (hnarDAO.getAccessibilityForUser(thisNode.getNodeId(), theUser, false) ==
-                    HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED
-            ||  (!includeEmpty && !hasChildrenValidForUser(thisNode.getNodeId(), theUser) )) {
-                blockedNodes.add(thisNode);
-            }
-        }
+        children.removeAll(getNodesBlockedForUser(theUser, includeEmpty, children));
 
-        children.removeAll(blockedNodes);
         if (comparator != null) {
             children.sort(comparator);
         }
 
         return children;
+    }
+
+    private List<HierarchyNode> getNodesBlockedForUser(User theUser, boolean includeEmpty, List<HierarchyNode> children)
+            throws GeneralSecurityException, SQLException {
+        HierarchyNodeAccessRuleDAO hnarDAO = HierarchyNodeAccessRuleDAO.getInstance();
+        List<HierarchyNode> blockedNodes= new ArrayList<>();
+        for(HierarchyNode thisNode : children) {
+            if (hnarDAO.getAccessibilityForUser(thisNode.getNodeId(), theUser, false) == HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED
+            ||  (!includeEmpty && !hasChildrenValidForUser(thisNode.getNodeId(), theUser) )) {
+                blockedNodes.add(thisNode);
+            }
+        }
+        return blockedNodes;
     }
 
     /**
@@ -753,16 +674,6 @@ public final class HierarchyNodeDAO
      */
 
     public boolean isPersonalById(final String id) throws SQLException {
-    	synchronized(this) {
-	    	if( personalNodeCache == null ) {
-	    		personalNodeCache = new Cache<String,Boolean>();
-	    	}
-	    	Boolean cachedValue = personalNodeCache.get(id);
-	    	if(cachedValue != null) {
-	    		return cachedValue;
-	    	}
-    	}
-
     	HierarchyNode node = getById(id);
     	boolean result;
     	if( node.getParentId() != null ) {
@@ -770,58 +681,8 @@ public final class HierarchyNodeDAO
     	} else {
     		result = (!node.getNodeId().equals(HierarchyNode.ROOT_NODE_ID));
     	}
-    	personalNodeCache.put(id, result);
 
     	return result;
-    }
-
-    /**
-     * Class holding the details of the default permissions a user has for a node
-     */
-
-    public static class UserNodeDefaultPermission
-        implements JavaBean {
-    	private final UserSummary user;
-    	private final String permission;
-
-
-    	public UserNodeDefaultPermission(final UserSummary user, final String permission) {
-    		this.user = user;
-    		this.permission = permission;
-    	}
-
-
-		public UserSummary getUser() {
-			return user;
-		}
-		public String getPermission() {
-			return permission;
-		}
-    }
-
-
-    /**
-     * Class holding the details of the default permissions a group has for a node
-     */
-
-    public static class GroupNodeDefaultPermission
-        implements JavaBean {
-    	private final Group group;
-    	private final String permission;
-
-
-    	public GroupNodeDefaultPermission(final Group group, final String permission) {
-    		this.group = group;
-    		this.permission = permission;
-    	}
-
-
-		public Group getGroup() {
-			return group;
-		}
-		public String getPermission() {
-			return permission;
-		}
     }
 
     //------------------------

@@ -30,8 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.Group;
 import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO.GroupNodeDefaultPermission;
 import com.enterprisepasswordsafe.engine.database.HierarchyNodePermissionDAO;
+import com.enterprisepasswordsafe.engine.nodes.GroupNodeDefaultPermission;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 /**

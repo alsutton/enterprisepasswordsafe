@@ -6,15 +6,15 @@ import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
-public abstract class NodeManipulator {
+public abstract class HierarchyManipulator {
 
     HierarchyNodeDAO hierarchyNodeDAO;
 
-    public NodeManipulator() {
+    public HierarchyManipulator() {
         this(HierarchyNodeDAO.getInstance());
     }
 
-    public NodeManipulator(HierarchyNodeDAO hierarchyNodeDAO) {
+    public HierarchyManipulator(HierarchyNodeDAO hierarchyNodeDAO) {
         this.hierarchyNodeDAO = hierarchyNodeDAO;
     }
 
@@ -61,7 +61,7 @@ public abstract class NodeManipulator {
 
 
     // Move a node to another target
-    public static class MoveNodeManipulator extends NodeManipulator {
+    public static class MoveNodeManipulator extends HierarchyManipulator {
         public MoveNodeManipulator(HierarchyNodeDAO hierarchyNodeDAO) {
             super(hierarchyNodeDAO);
         }
@@ -77,7 +77,7 @@ public abstract class NodeManipulator {
     }
 
     // Copy the node to another parent
-    public static class CopyNodeManipulator extends NodeManipulator {
+    public static class CopyNodeManipulator extends HierarchyManipulator {
         public CopyNodeManipulator(HierarchyNodeDAO hierarchyNodeDAO) {
             super(hierarchyNodeDAO);
         }

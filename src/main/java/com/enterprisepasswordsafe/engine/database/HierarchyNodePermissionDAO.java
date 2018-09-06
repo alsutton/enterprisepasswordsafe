@@ -1,6 +1,8 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
+import com.enterprisepasswordsafe.engine.nodes.GroupNodeDefaultPermission;
+import com.enterprisepasswordsafe.engine.nodes.UserNodeDefaultPermission;
 import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -114,7 +116,7 @@ public class HierarchyNodePermissionDAO
      * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
-    public HierarchyNodeDAO.UserNodeDefaultPermission getDefaultPermissionForUser(final UserSummary user, String nodeId)
+    public UserNodeDefaultPermission getDefaultPermissionForUser(final UserSummary user, String nodeId)
             throws SQLException {
         synchronized( this ) {
             PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_PERMISSION_SUMMARY_FOR_USER);
@@ -126,10 +128,10 @@ public class HierarchyNodePermissionDAO
                 ResultSet rs = ps.executeQuery();
                 try {
                     if(rs.next()) {
-                        return new HierarchyNodeDAO.UserNodeDefaultPermission(user, rs.getString(1));
+                        return new UserNodeDefaultPermission(user, rs.getString(1));
                     }
 
-                    return new HierarchyNodeDAO.UserNodeDefaultPermission(user, "0");
+                    return new UserNodeDefaultPermission(user, "0");
                 } finally {
                     DatabaseConnectionUtils.close(rs);
                 }
@@ -149,7 +151,7 @@ public class HierarchyNodePermissionDAO
      *             Thrown if there is a problem accessing the database.
      */
 
-    public HierarchyNodeDAO.GroupNodeDefaultPermission getDefaultPermissionForGroup(final Group group, String nodeId)
+    public GroupNodeDefaultPermission getDefaultPermissionForGroup(final Group group, String nodeId)
             throws SQLException {
         synchronized( this ) {
             PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_PERMISSION_SUMMARY_FOR_GROUP);
@@ -161,10 +163,10 @@ public class HierarchyNodePermissionDAO
                 ResultSet rs = ps.executeQuery();
                 try {
                     if(rs.next()) {
-                        return new HierarchyNodeDAO.GroupNodeDefaultPermission(group, rs.getString(1));
+                        return new GroupNodeDefaultPermission(group, rs.getString(1));
                     }
 
-                    return new HierarchyNodeDAO.GroupNodeDefaultPermission(group, "0");
+                    return new GroupNodeDefaultPermission(group, "0");
                 } finally {
                     DatabaseConnectionUtils.close(rs);
                 }
