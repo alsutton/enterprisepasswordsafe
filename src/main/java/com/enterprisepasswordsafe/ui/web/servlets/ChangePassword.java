@@ -17,6 +17,10 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -44,49 +48,21 @@ public final class ChangePassword extends HttpServlet {
             throw new ServletException("Permission Denied");
         }
 
-        Map<String,String> customFields = new CustomPasswordFields().extractCustomFieldsFromRequest(request);
-    	String newCf = request.getParameter("newCF");
-    	if( newCf != null && newCf.length() > 0 ) {
-    		customFields.put("New Field "+customFields.size(), "");
-    		request.setAttribute("cfields", customFields);
-    		request.getRequestDispatcher("/system/EditPassword").forward(request, response);
-    		return;
-    	}
-
-        PasswordDAO pDAO = PasswordDAO.getInstance();
-
         String passwordId = request.getParameter("id");
-    	Password password;
-    	try {
+        try {
+            Map<String,String> customFields = new CustomPasswordFields().extractCustomFieldsFromRequest(request);
+            addNewCustomFieldIfRequested(request, customFields);
+
+            PasswordDAO pDAO = PasswordDAO.getInstance();
+
 			request.setAttribute("error_page", "/system/EditPassword?id=" + passwordId);
 
 			User thisUser = SecurityUtils.getRemoteUser(request);
-			AccessControl ac = null;
-			if (passwordId != null && passwordId.length() > 0) {
-				ac = AccessControlDAO.getInstance().getAccessControlEvenIfDisabled(thisUser, passwordId);
-				if (ac == null || ac.getModifyKey() == null) {
-					throw new ServletException("You can not update the passsword.");
-				}
-				password = UnfilteredPasswordDAO.getInstance().getById(passwordId, ac);
-			} else {
-				password = new Password();
-			}
-
-			password.setCustomFields(customFields);
-			updatePassword(request, thisUser, password);
-			boolean sendEmail = ((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY) != 0);
-
-			if (passwordId != null && passwordId.length() > 0) {
-				pDAO.update(password, thisUser, ac);
-			} else {
-				pDAO.storeNewPassword(password, thisUser);
-				if (password.getAuditLevel() != Password.AUDITING_NONE) {
-					TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-							thisUser, password, "Created the password.", sendEmail);
-				}
-			}
-
-			sendChangeNotifications(pDAO, password);
+            Context passwordContext = getPasswordContext(thisUser, passwordId);
+            passwordContext.password.setCustomFields(customFields);
+			updatePassword(request, thisUser, passwordContext.password);
+            storeUpdate(thisUser, pDAO, passwordContext);
+			sendChangeNotifications(pDAO, passwordContext.password);
 
 			ServletUtils.getInstance().generateMessage(request, "The password was successfully changed.");
 		} catch (RedirectException e) {
@@ -115,6 +91,45 @@ public final class ChangePassword extends HttpServlet {
 			}
 		}
 	}
+
+	private void addNewCustomFieldIfRequested(HttpServletRequest request, Map<String, String> customFields)
+            throws RedirectException {
+        String newCf = request.getParameter("newCF");
+        if( newCf != null && newCf.length() > 0 ) {
+            customFields.put("New Field "+customFields.size(), "");
+            request.setAttribute("cfields", customFields);
+            throw new RedirectException("/system/EditPassword");
+        }
+    }
+
+    private Context getPasswordContext(User user, String passwordId)
+            throws GeneralSecurityException, ServletException, SQLException, IOException {
+        if (passwordId == null && passwordId.length() == 0) {
+            return new Context(new Password(), null);
+        }
+
+        AccessControl ac = AccessControlDAO.getInstance().getAccessControlEvenIfDisabled(user, passwordId);
+        if (ac == null || ac.getModifyKey() == null) {
+            throw new ServletException("You can not update the passsword.");
+        }
+        return new Context(UnfilteredPasswordDAO.getInstance().getById(passwordId, ac), ac);
+    }
+
+    private void storeUpdate(User user, PasswordDAO pDAO, Context passwordContext)
+            throws GeneralSecurityException, SQLException, IOException {
+        if (passwordContext.accessControl != null) {
+            pDAO.update(passwordContext.password, user, passwordContext.accessControl);
+            return;
+        }
+
+        pDAO.storeNewPassword(passwordContext.password, user);
+        if (passwordContext.password.getAuditLevel() != Password.AUDITING_NONE) {
+            boolean sendEmail = ((passwordContext.password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY) != 0);
+            TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+                    user, passwordContext.password, "Created the password.", sendEmail);
+        }
+    }
+
 
     /**
      * Checks to see if a date is in the past.
@@ -315,8 +330,7 @@ public final class ChangePassword extends HttpServlet {
 	 * @param request The request being processed.
 	 * @param password The password to set the value in.
 	 */
-	private void setRestrictedAccess(final HttpServletRequest request, final Password password )
-		throws SQLException {
+	private void setRestrictedAccess(final HttpServletRequest request, final Password password ) {
         String raEnabled = request.getParameter("ra_enabled");
         if( raEnabled != null && raEnabled.equals("Y") ) {
             password.setRaEnabled(true);
@@ -332,4 +346,15 @@ public final class ChangePassword extends HttpServlet {
             password.setRaEnabled(false);
         }
 	}
+
+	private static class Context {
+	    private Password password;
+	    private AccessControl accessControl;
+
+        Context(Password password, AccessControl accessControl) {
+	        this.password = password;
+	        this.accessControl = accessControl;
+        }
+
+    }
 }
