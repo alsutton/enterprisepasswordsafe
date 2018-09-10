@@ -29,10 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
-import com.enterprisepasswordsafe.ui.web.utils.EmailerThread;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import com.enterprisepasswordsafe.ui.web.utils.*;
 
 public final class ChangePassword extends HttpServlet {
 
@@ -47,34 +44,10 @@ public final class ChangePassword extends HttpServlet {
             throw new ServletException("Permission Denied");
         }
 
-        Map<String,String> customFields = new TreeMap<>();
-		int cfCount = -1;
-		int fieldCount = 1;
-
-		while( true ) {
-			cfCount++;
-			String checkFieldName = "cfok_"+cfCount;
-			String checkValue = request.getParameter(checkFieldName);
-			if( checkValue == null || checkValue.length() == 0 ) {
-				break;
-			}
-
-			String deleteCheckFieldName = "cfd_"+cfCount;
-			String deleteValue = request.getParameter(deleteCheckFieldName);
-			if( deleteValue != null && deleteValue.length() > 0 ) {
-				continue;
-			}
-
-			customFields.put(
-					request.getParameter("cfn_"+cfCount),
-					request.getParameter("cfv_"+cfCount)
-				);
-			fieldCount++;
-		}
-
+        Map<String,String> customFields = new CustomPasswordFields().extractCustomFieldsFromRequest(request);
     	String newCf = request.getParameter("newCF");
     	if( newCf != null && newCf.length() > 0 ) {
-    		customFields.put("New Field "+fieldCount, "");
+    		customFields.put("New Field "+customFields.size(), "");
     		request.setAttribute("cfields", customFields);
     		request.getRequestDispatcher("/system/EditPassword").forward(request, response);
     		return;
@@ -84,60 +57,41 @@ public final class ChangePassword extends HttpServlet {
 
         String passwordId = request.getParameter("id");
     	Password password;
-    	try
-    	{
-    		request.setAttribute("error_page", "/system/EditPassword?id="+passwordId);
+    	try {
+			request.setAttribute("error_page", "/system/EditPassword?id=" + passwordId);
 
-	        User thisUser = SecurityUtils.getRemoteUser(request);
-        	AccessControl ac = null;
-        	if( passwordId != null && passwordId.length() > 0 ) {
-    	        ac = AccessControlDAO.getInstance().getAccessControlEvenIfDisabled(thisUser, passwordId);
-    	        if( ac == null || ac.getModifyKey() == null ) {
-    	        	throw new ServletException("You can not update the passsword.");
-    	        }
-    	        password = UnfilteredPasswordDAO.getInstance().getById(passwordId, ac);
-        	} else {
-        		password = new Password();
-        	}
+			User thisUser = SecurityUtils.getRemoteUser(request);
+			AccessControl ac = null;
+			if (passwordId != null && passwordId.length() > 0) {
+				ac = AccessControlDAO.getInstance().getAccessControlEvenIfDisabled(thisUser, passwordId);
+				if (ac == null || ac.getModifyKey() == null) {
+					throw new ServletException("You can not update the passsword.");
+				}
+				password = UnfilteredPasswordDAO.getInstance().getById(passwordId, ac);
+			} else {
+				password = new Password();
+			}
 
-        	password.setCustomFields(customFields);
-    		if(!updatePassword( request, thisUser, password )) {
-    			request.getRequestDispatcher("/system/EditPassword").forward(request, response);
-    			return;
-    		}
-        	boolean sendEmail = ((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
+			password.setCustomFields(customFields);
+			updatePassword(request, thisUser, password);
+			boolean sendEmail = ((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY) != 0);
 
+			if (passwordId != null && passwordId.length() > 0) {
+				pDAO.update(password, thisUser, ac);
+			} else {
+				pDAO.storeNewPassword(password, thisUser);
+				if (password.getAuditLevel() != Password.AUDITING_NONE) {
+					TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+							thisUser, password, "Created the password.", sendEmail);
+				}
+			}
 
-        	if( passwordId != null && passwordId.length() > 0 ) {
-        		pDAO.update(password, thisUser, ac);
-        	} else {
-        		pDAO.storeNewPassword(password, thisUser);
-        		if(password.getAuditLevel() != Password.AUDITING_NONE) {
-	        		TamperproofEventLogDAO.getInstance().create(
-	    					TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-	        				thisUser,
-	        				password,
-	        				"Created the password.",
-	        				sendEmail
-	    				);
-        		}
-        	}
+			sendChangeNotifications(pDAO, password);
 
-            // Check email has been enabled
-            String smtpEnabled = ConfigurationDAO.getValue(ConfigurationOption.SMTP_ENABLED);
-            if (smtpEnabled != null && smtpEnabled.equals("Y")) {
-                try {
-                    Set<String> emailAddresses = pDAO.getEmailsOfUsersWithAccess(password);
-                    String message =  "The password for "+password+" has changed.";
-                    EmailerThread emailer = new EmailerThread(emailAddresses, "Change of password", message);
-                    emailer.start();
-                } catch (Exception excpt) {
-                    log("Error attempting to send password change notifications.",
-                            excpt);
-                }
-            }
-
-            ServletUtils.getInstance().generateMessage(request, "The password was successfully changed.");
+			ServletUtils.getInstance().generateMessage(request, "The password was successfully changed.");
+		} catch (RedirectException e) {
+			request.getRequestDispatcher(e.getDestination()).forward(request, response);
+			return;
     	} catch (Exception ex) {
     		throw new ServletException("The password could not be updated due to an error.", ex);
     	}
@@ -145,6 +99,22 @@ public final class ChangePassword extends HttpServlet {
         String newOtid = request.getAttribute("nextOtid").toString();
         response.sendRedirect(request.getContextPath()+"/system/ViewPassword?id="+passwordId+"&otid="+newOtid);
     }
+
+    private void sendChangeNotifications(PasswordDAO pDAO, Password password)
+			throws SQLException {
+		String smtpEnabled = ConfigurationDAO.getValue(ConfigurationOption.SMTP_ENABLED);
+		if (smtpEnabled != null && smtpEnabled.equals("Y")) {
+			try {
+				Set<String> emailAddresses = pDAO.getEmailsOfUsersWithAccess(password);
+				String message =  "The password for "+password+" has changed.";
+				EmailerThread emailer = new EmailerThread(emailAddresses, "Change of password", message);
+				emailer.start();
+			} catch (Exception excpt) {
+				log("Error attempting to send password change notifications.",
+						excpt);
+			}
+		}
+	}
 
     /**
      * Checks to see if a date is in the past.
@@ -165,14 +135,14 @@ public final class ChangePassword extends HttpServlet {
         return "Updates a password";
     }
 
-    private boolean updatePassword(final HttpServletRequest request, final User thisUser,
+    private void updatePassword(final HttpServletRequest request, final User thisUser,
     		final Password thePassword )
-    	throws SQLException, ParseException, ServletException {
+			throws SQLException, ParseException, ServletException, RedirectException {
         String password = extractPassword(request);
     	String restrictionId = extractRestrictionID(request);
         if(!isRestrictionCompliant(password, restrictionId)) {
         	ServletUtils.getInstance().generateErrorMessage(request, "The password does not comply with the restrictions specified");
-        	return false;
+        	throw new RedirectException("/system/EditPassword");
         }
 
         if( password != null ) {
@@ -190,8 +160,6 @@ public final class ChangePassword extends HttpServlet {
 			thePassword.setRestrictionId(extractRestrictionID(request));
 			setRestrictedAccess(request, thePassword);
 		}
-
-        return true;
 	}
 
 	/**
@@ -322,16 +290,23 @@ public final class ChangePassword extends HttpServlet {
             throw new ServletException( "The expiry date must be in the future.");
         }
 
-        String maxExpiryDistance = ConfigurationDAO.getValue(ConfigurationOption.MAX_FUTURE_EXPIRY_DISTANCE);
-        if( !maxExpiryDistance.equals("0") ) {
-            long maxDistance = Long.parseLong(maxExpiryDistance);
-            long distance = DateFormatter.daysInPast(date);
-            if( distance > maxDistance ) {
-                throw new ServletException("The expiry date must be "+maxDistance+" days or less in the future.");
-            }
-        }
-
+        ensureExpiryIsValid(date);
         password.setExpiry(date);
+	}
+
+
+	private void ensureExpiryIsValid(long date)
+			throws SQLException, ServletException {
+		String maxExpiryDistance = ConfigurationDAO.getValue(ConfigurationOption.MAX_FUTURE_EXPIRY_DISTANCE);
+		if( maxExpiryDistance.equals("0") ) {
+			return;
+		}
+
+		long maxDistance = Long.parseLong(maxExpiryDistance);
+		long distance = DateFormatter.daysInPast(date);
+		if( distance > maxDistance ) {
+			throw new ServletException("The expiry date must be "+maxDistance+" days or less in the future.");
+		}
 	}
 
 	/**
