@@ -119,22 +119,9 @@ public final class ViewPassword extends HttpServlet {
 			RestrictedAccessRequest restrictedAccessRequest =
 					ensureRestrictedAccessConditionsHaveBeenMet(request, user, thisPassword);
 
-			boolean logRequired = ensureReasonSuppliedIfRequired(request, thisPassword);
-			if (thisPassword instanceof Password) {
-				logRequired = (((Password) thisPassword).getAuditLevel() != Password.AUDITING_NONE);
-			}
-			if (logRequired) {
-				String dt = request.getParameter(BaseServlet.DATE_TIME_PARAMETER);
-				TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-						user, thisPassword, constructAccessReasonLogMessage(dt, restrictedAccessRequest),
-						shouldSendEmail(user, thisPassword));
-			}
+			logIfRequired(request, user, thisPassword, restrictedAccessRequest);
 
 			populateRequestAttributesWithData(request, user, thisPassword);
-
-			if (thisPassword.getPassword() != null) {
-				request.setAttribute("encodedPassword", thisPassword.getPassword().replace("\"", "\\\""));
-			}
 
 			request.getRequestDispatcher("/system/view_password.jsp").forward(request, response);
 		} catch (RedirectException e) {
@@ -231,10 +218,8 @@ public final class ViewPassword extends HttpServlet {
 		boolean logRequired = true;
 		String reason = request.getParameter(REASON_PARAMETER);
 		if( reason == null || reason.trim().length() == 0 ) {
-			String lastReasonViewId =
-					(String) request.getSession().getAttribute("reason.lastid");
-			String lastPassword =
-					(String) request.getSession().getAttribute("reason.password");
+			String lastReasonViewId = (String) request.getSession().getAttribute("reason.lastid");
+			String lastPassword = (String) request.getSession().getAttribute("reason.password");
 			if( lastReasonViewId != null &&	lastReasonViewId.equals(thisPassword.getId())
 			&&	lastPassword != null &&	lastPassword.equals(thisPassword.getPassword())) {
 				reason = (String) request.getSession().getAttribute("reason.text");
@@ -284,7 +269,25 @@ public final class ViewPassword extends HttpServlet {
 		request.setAttribute("display", shouldDisplay(request.getParameter("display")));
 		request.setAttribute("cfields", password.getAllCustomFields());
 		request.setAttribute("showHistoryOption", shouldShowHistory(user, password));
+		if (password.getPassword() != null) {
+			request.setAttribute("encodedPassword", password.getPassword().replace("\"", "\\\""));
+		}
 	}
+
+	private void logIfRequired(HttpServletRequest request, User user, PasswordBase password,
+                               RestrictedAccessRequest restrictedAccessRequest)
+            throws SQLException, GeneralSecurityException, IOException, RedirectException {
+        boolean logRequired = ensureReasonSuppliedIfRequired(request, password);
+        if (password instanceof Password) {
+            logRequired = ((Password)password).getAuditLevel() != Password.AUDITING_NONE;
+        }
+        if (logRequired) {
+            String dt = request.getParameter(BaseServlet.DATE_TIME_PARAMETER);
+            TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+                    user, password, constructAccessReasonLogMessage(dt, restrictedAccessRequest),
+                    shouldSendEmail(user, password));
+        }
+    }
 
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
@@ -308,19 +311,26 @@ public final class ViewPassword extends HttpServlet {
             logMessage.append('\"');
             logMessage.append('.');
         }
-        if( raRequest != null ) {
-            logMessage.append(" The user(s) who approved the request are; ");
-
-            String listId = raRequest.getApproversListId();
-            for(String approverId : ApproverListDAO.getInstance().getApproverIDs(listId)) {
-                logMessage.append( " {user:");
-                logMessage.append( approverId );
-                logMessage.append( "}," );
-            }
-            logMessage.deleteCharAt(logMessage.length()-1);
-            logMessage.append('.');
-        }
+        addRestrictedAccessRequestDetails(logMessage, raRequest);
         return logMessage.toString();
+    }
+
+    private void addRestrictedAccessRequestDetails(StringBuilder logMessage, RestrictedAccessRequest raRequest)
+            throws SQLException {
+        if(raRequest == null) {
+            return;
+        }
+
+        logMessage.append(" The user(s) who approved the request are; ");
+
+        String listId = raRequest.getApproversListId();
+        for(String approverId : ApproverListDAO.getInstance().getApproverIDs(listId)) {
+            logMessage.append( " {user:");
+            logMessage.append( approverId );
+            logMessage.append( "}," );
+        }
+        logMessage.deleteCharAt(logMessage.length()-1);
+        logMessage.append('.');
     }
 
     private boolean isCrossUserPersonalPasswordAccessAttempt(User thisUser, PasswordBase thisPassword)
@@ -356,20 +366,16 @@ public final class ViewPassword extends HttpServlet {
 
 	private Boolean shouldShowHistory(final User thisUser, final PasswordBase thisPassword)
 			throws SQLException {
-		if	( AccessRoleDAO.getInstance().hasRole(thisUser.getUserId(), thisPassword.getId(),
-				AccessRole.HISTORYVIEWER_ROLE) ) {
+        UserClassifier userClassifier = new UserClassifier();
+		if	( AccessRoleDAO.getInstance().hasRole(thisUser.getUserId(), thisPassword.getId(), AccessRole.HISTORYVIEWER_ROLE)
+        ||    userClassifier.isAdministrator(thisUser)) {
 			return Boolean.TRUE;
-		} else {
-			UserClassifier userClassifier = new UserClassifier();
-			if			( userClassifier.isAdministrator(thisUser) ) {
-				return Boolean.TRUE;
-			} else if	( userClassifier.isSubadministrator(thisUser)) {
-				String showSubadminHistory = ConfigurationDAO.getValue(ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS);
-				if( showSubadminHistory.charAt(0) == 'Y' ) {
-					return Boolean.TRUE;
-				}
-			}
 		}
+
+        if	( userClassifier.isSubadministrator(thisUser)) {
+            return ConfigurationDAO.getValue(ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS).charAt(0) == 'Y';
+        }
+
 		return Boolean.FALSE;
 	}
 
