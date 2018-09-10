@@ -31,6 +31,7 @@ import javax.servlet.http.HttpSession;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
+import com.enterprisepasswordsafe.ui.web.utils.RedirectException;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -90,12 +91,6 @@ public final class ViewPassword extends HttpServlet {
     private static final String RESTRICTED_ACCESS_EXPIRED_PAGE = "/system/ra_expired.jsp";
 
     /**
-     * The page to send the user to if the restricted access request was denied.
-     */
-
-    private static final String RESTRICTED_ACCESS_DENIED_PAGE = "/system/ra_denied.jsp";
-
-    /**
      * The page to send the user to the password is a restricted access page
      */
 
@@ -111,167 +106,185 @@ public final class ViewPassword extends HttpServlet {
             throws IOException, ServletException {
         // Check to see if this user already has a valid session.
     	try {
-			String backAllowed = ConfigurationDAO.getValue(ConfigurationOption.ALLOW_BACK_BUTTON_TO_ACCESS_PASSWORD);
-			if( backAllowed == null || backAllowed.equals("false") ) {
-		    	HttpSession session = request.getSession(false);
-		        String sessionOtid = (String) session.getAttribute("otid");
-		        String requestOtid = request.getParameter("otid");
-		        if( requestOtid == null ) {
-		        	requestOtid = (String) request.getAttribute("otid");
-		        }
-		        if (sessionOtid == null || !sessionOtid.equals(requestOtid)) {
-					throw new ServletException("You can not view passwords using your browsers back button.");
-		        }
+			ensureBackIsNotUsedIfBlocked(request);
+
+			User user = SecurityUtils.getRemoteUser(request);
+
+			PasswordBase thisPassword = getDecryptedPassword(request, user);
+			if ( thisPassword == null) {
+				response.sendError(HttpServletResponse.SC_FORBIDDEN);
+				return;
 			}
 
-	        User thisUser = SecurityUtils.getRemoteUser(request);
+			RestrictedAccessRequest restrictedAccessRequest =
+					ensureRestrictedAccessConditionsHaveBeenMet(request, user, thisPassword);
 
-			UserClassifier userClassifier = new UserClassifier();
-            if(userClassifier.isNonViewingUser(thisUser)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return;
-            }
+			boolean logRequired = ensureReasonSuppliedIfRequired(request, thisPassword);
+			if (thisPassword instanceof Password) {
+				logRequired = (((Password) thisPassword).getAuditLevel() != Password.AUDITING_NONE);
+			}
+			if (logRequired) {
+				String dt = request.getParameter(BaseServlet.DATE_TIME_PARAMETER);
+				TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+						user, thisPassword, constructAccessReasonLogMessage(dt, restrictedAccessRequest),
+						shouldSendEmail(user, thisPassword));
+			}
 
-	        final ServletUtils servletUtils = ServletUtils.getInstance();
-	        String id = servletUtils.getParameterValue(request, SharedParameterNames.PASSWORD_ID_PARAMETER);
+			populateRequestAttributesWithData(request, user, thisPassword);
 
-	        AccessControl ac;
-	        if (userClassifier.isPriviledgedUser(thisUser)) {
-	            ac = AccessControlDAO.getInstance().getAccessControlEvenIfDisabled(thisUser, id);
-	        } else {
-	            ac = AccessControlDAO.getInstance().getAccessControl(thisUser, id);
-	        }
-
-	        if (ac == null) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return;
-	        }
-
-	        String dt = request.getParameter(BaseServlet.DATE_TIME_PARAMETER);
-	        PasswordBase thisPassword;
-	        if (dt == null || dt.length() == 0) {
-	            thisPassword = UnfilteredPasswordDAO.getInstance().getById(id, ac);
-	        } else {
-	        	long timestamp = Long.parseLong(dt);
-	            thisPassword = HistoricalPasswordDAO.getInstance().getByIdForTime(ac, id, timestamp);
-	            if( thisPassword == null ) {
-	                throw new ServletException("The password history is not available for the selected entry");
-	            }
-	            request.setAttribute(BaseServlet.DATE_TIME_PARAMETER, dt);
-	            request.setAttribute(
-	            		HUMAN_READABLE_TIMEPOINT,
-	            		DateFormatter.convertToDateTimeString(timestamp)
-	            	);
-	        }
-
-
-            thisPassword.decrypt(ac);
-
-            if(isCrossUserPersonalPasswordAccessAttempt(thisUser, thisPassword)) {
-	            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-	            return;
-            }
-
-	        RestrictedAccessRequest raRequest = null;
-	    	String reason = null;
-	    	if( thisPassword instanceof Password ) {
-	    		Password password = (Password) thisPassword;
-	    		if(password.isRaEnabled()) {
-	       			String raPage = getRaPage(password, thisUser, request);
-	       			if( raPage != null ) {
-	    	            request.getRequestDispatcher(raPage).forward(request, response);
-	    	            return;
-	       			}
-	       			raRequest =
-	       				(RestrictedAccessRequest) request.getSession().getAttribute(RA_REQUEST_ATTRIBUTE);
-	       			reason = raRequest.getReason();
-	       			servletUtils.generateMessage(request,
-	       					"This is a restricted access password. Your request to view it has been approved by the approproate users.");
-	       			request.getSession().removeAttribute(RA_REQUEST_ATTRIBUTE);
-	        	}
-	    	}
-
-	    	String reasonRequired =
-					ConfigurationDAO.getInstance().get(ConfigurationOption.PASSWORD_REASON_FOR_VIEWING_REQUIRED);
-	    	boolean logRequired = true;
-	    	if( reasonRequired.charAt(0) == 'y') {
-		    	reason = request.getParameter(REASON_PARAMETER);
-		    	if( reason == null || reason.trim().length() == 0 ) {
-		    		String lastReasonViewId =
-		    			(String) request.getSession().getAttribute("reason.lastid");
-		    		String lastPassword =
-		    			(String) request.getSession().getAttribute("reason.password");
-		    		if( lastReasonViewId != null
-		    		&&	lastReasonViewId.equals(id)
-		    		&&	lastPassword != null
-		    		&&	lastPassword.equals(thisPassword.getPassword())) {
-		    			reason =
-		    				(String) request.getSession().getAttribute("reason.text");
-		    			logRequired = false;
-		    		}
-		    	}
-	    		request.getSession().removeAttribute("reason.lastid");
-	    		request.getSession().removeAttribute("reason.password");
-	    		request.getSession().removeAttribute("reason.text");
-	    		if( reason == null || reason.trim().length() == 0 ) {
-		    		String displayValue = request.getParameter("display");
-		    		if( displayValue == null ) {
-		    			displayValue = "";
-		    		}
-		    		request.setAttribute("display", displayValue);
-		   			request.setAttribute("id", id);
-		   			servletUtils.generateErrorMessage(request, "You must enter a reason for viewing the password.");
-		            request.getRequestDispatcher(REASON_PAGE).forward(request, response);
-		            return;
-		    	}
-
-	    		request.getSession().setAttribute("reason.lastid", id);
-		    	request.getSession().setAttribute("reason.password", thisPassword.getPassword());
-		   		request.getSession().setAttribute("reason.text", reason);
-		   		request.setAttribute("reason", reason);
-	       	} else {
-	    		request.getSession().removeAttribute("reason.lastid");
-	    		request.getSession().removeAttribute("reason.password");
-	    		request.getSession().removeAttribute("reason.text");
-	       		request.setAttribute("reason", "");
-	       	}
-
-	    	if(thisPassword instanceof Password) {
-	    		logRequired =
-	    			(((Password)thisPassword).getAuditLevel() != Password.AUDITING_NONE);
-	    	}
-
-	    	if(logRequired) {
-		        TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-		        			thisUser, thisPassword,
-                            constructAccessReasonLogMessage(dt, reason, raRequest),
-                            shouldSendEmail(thisPassword, ac));
-	    	}
-
-	        String passwordTimeout = ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_ON_SCREEN_TIME);
-	        int timeout = Integer.parseInt(passwordTimeout) * DateFormatter.MILLIS_IN_MINUTE;
-	        passwordTimeout = Integer.toString(timeout);
-
-	        request.setAttribute(BaseServlet.USER_ATTRIBUTE, thisUser);
-	        request.setAttribute("password", thisPassword);
-	        request.setAttribute(SharedParameterNames.PASSWORD_TIMEOUT_ATTRIBUTE, passwordTimeout);
-			request.setAttribute(SCRIPTS_IN_USE, IntegrationModuleScriptDAO.getInstance().hasScripts(thisPassword));
-	        request.setAttribute("password_displayType", ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_DISPLAY_TYPE));
-	        request.setAttribute("display", shouldDisplay(request.getParameter("display")));
-	        request.setAttribute("cfields", thisPassword.getAllCustomFields());
-			request.setAttribute("showHistoryOption", shouldShowHistory(thisUser, thisPassword));
-
-			if(thisPassword.getPassword() != null) {
+			if (thisPassword.getPassword() != null) {
 				request.setAttribute("encodedPassword", thisPassword.getPassword().replace("\"", "\\\""));
 			}
 
 			request.getRequestDispatcher("/system/view_password.jsp").forward(request, response);
-	    } catch(SQLException | GeneralSecurityException e) {
+		} catch (RedirectException e) {
+			request.getRequestDispatcher(e.getDestination()).forward(request, response);
+	    } catch (SQLException | GeneralSecurityException e) {
             Logger.getAnonymousLogger().log(Level.WARNING, "Problem obtaining password details.", e);
             throw new ServletException("There was a problem obtaining the password details.",e);
 	    }
 
     }
+
+    private void ensureBackIsNotUsedIfBlocked(final HttpServletRequest request)
+			throws ServletException, SQLException {
+		String backAllowed = ConfigurationDAO.getValue(ConfigurationOption.ALLOW_BACK_BUTTON_TO_ACCESS_PASSWORD);
+		if( backAllowed == null || backAllowed.equals("false") ) {
+			HttpSession session = request.getSession(false);
+			String sessionOtid = (String) session.getAttribute("otid");
+			String requestOtid = request.getParameter("otid");
+			if( requestOtid == null ) {
+				requestOtid = (String) request.getAttribute("otid");
+			}
+			if (sessionOtid == null || !sessionOtid.equals(requestOtid)) {
+				throw new ServletException("You can not view passwords using your browsers back button.");
+			}
+		}
+	}
+
+	private PasswordBase getDecryptedPassword(HttpServletRequest request, User thisUser)
+			throws SQLException, ServletException, GeneralSecurityException, IOException {
+		final ServletUtils servletUtils = ServletUtils.getInstance();
+		String id = servletUtils.getParameterValue(request, SharedParameterNames.PASSWORD_ID_PARAMETER);
+
+		UserClassifier userClassifier = new UserClassifier();
+		if(userClassifier.isNonViewingUser(thisUser)) {
+			return null;
+		}
+
+		AccessControl ac = userClassifier.isPriviledgedUser(thisUser) ?
+			AccessControlDAO.getInstance().getAccessControlEvenIfDisabled(thisUser, id) :
+			AccessControlDAO.getInstance().getAccessControl(thisUser, id);
+		if (ac == null) {
+			return null;
+		}
+
+		String dt = request.getParameter(BaseServlet.DATE_TIME_PARAMETER);
+		PasswordBase thisPassword;
+		if (dt == null || dt.length() == 0) {
+			thisPassword = UnfilteredPasswordDAO.getInstance().getById(id, ac);
+		} else {
+			long timestamp = Long.parseLong(dt);
+			thisPassword = HistoricalPasswordDAO.getInstance().getByIdForTime(ac, id, timestamp);
+			if( thisPassword == null ) {
+				throw new ServletException("The password history is not available for the selected entry");
+			}
+			request.setAttribute(BaseServlet.DATE_TIME_PARAMETER, dt);
+			request.setAttribute(HUMAN_READABLE_TIMEPOINT, DateFormatter.convertToDateTimeString(timestamp));
+		}
+
+		thisPassword.decrypt(ac);
+		return isCrossUserPersonalPasswordAccessAttempt(thisUser, thisPassword) ? null : thisPassword;
+	}
+
+	private RestrictedAccessRequest ensureRestrictedAccessConditionsHaveBeenMet(HttpServletRequest request, User user,
+															 PasswordBase thisPassword)
+			throws SQLException, RedirectException {
+		RestrictedAccessRequest raRequest = null;
+		if (thisPassword instanceof Password) {
+			Password password = (Password) thisPassword;
+			if (password.isRaEnabled()) {
+				String raPage = getRaPage(password, user, request);
+				if (raPage != null) {
+					throw new RedirectException(raPage);
+				}
+				raRequest = (RestrictedAccessRequest) request.getSession().getAttribute(RA_REQUEST_ATTRIBUTE);
+				ServletUtils.getInstance().generateMessage(request,
+						"This is a restricted access password. Your request to view it has been approved by the approproate users.");
+				request.getSession().removeAttribute(RA_REQUEST_ATTRIBUTE);
+			}
+		}
+		return raRequest;
+	}
+
+	private boolean ensureReasonSuppliedIfRequired(HttpServletRequest request, PasswordBase thisPassword)
+			throws SQLException, RedirectException {
+		String reasonRequired =
+				ConfigurationDAO.getInstance().get(ConfigurationOption.PASSWORD_REASON_FOR_VIEWING_REQUIRED);
+
+		if( reasonRequired.charAt(0) != 'y') {
+			clearReasonSessionAttributes(request);
+			request.setAttribute("reason", "");
+			return true;
+		}
+
+		boolean logRequired = true;
+		String reason = request.getParameter(REASON_PARAMETER);
+		if( reason == null || reason.trim().length() == 0 ) {
+			String lastReasonViewId =
+					(String) request.getSession().getAttribute("reason.lastid");
+			String lastPassword =
+					(String) request.getSession().getAttribute("reason.password");
+			if( lastReasonViewId != null &&	lastReasonViewId.equals(thisPassword.getId())
+			&&	lastPassword != null &&	lastPassword.equals(thisPassword.getPassword())) {
+				reason = (String) request.getSession().getAttribute("reason.text");
+				logRequired = false;
+			}
+		}
+
+		clearReasonSessionAttributes(request);
+		if( reason == null || reason.trim().length() == 0 ) {
+			String displayValue = request.getParameter("display");
+			if( displayValue == null ) {
+				displayValue = "";
+			}
+			request.setAttribute("display", displayValue);
+			request.setAttribute("id", thisPassword.getId());
+			ServletUtils.getInstance().generateErrorMessage(request, "You must enter a reason for viewing the password.");
+			throw new RedirectException(REASON_PAGE);
+		}
+
+		request.getSession().setAttribute("reason.lastid", thisPassword.getId());
+		request.getSession().setAttribute("reason.password", thisPassword.getPassword());
+		request.getSession().setAttribute("reason.text", reason);
+		request.setAttribute("reason", reason);
+
+		return logRequired;
+	}
+
+	private void clearReasonSessionAttributes(HttpServletRequest request) {
+    	HttpSession session = request.getSession();
+		session.removeAttribute("reason.lastid");
+		session.removeAttribute("reason.password");
+		session.removeAttribute("reason.text");
+	}
+
+
+	private void populateRequestAttributesWithData(HttpServletRequest request, User user, PasswordBase password)
+			throws SQLException {
+		String passwordTimeout = ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_ON_SCREEN_TIME);
+		int timeout = Integer.parseInt(passwordTimeout) * DateFormatter.MILLIS_IN_MINUTE;
+		passwordTimeout = Integer.toString(timeout);
+
+		request.setAttribute(BaseServlet.USER_ATTRIBUTE, user);
+		request.setAttribute("password", password);
+		request.setAttribute(SharedParameterNames.PASSWORD_TIMEOUT_ATTRIBUTE, passwordTimeout);
+		request.setAttribute(SCRIPTS_IN_USE, IntegrationModuleScriptDAO.getInstance().hasScripts(password));
+		request.setAttribute("password_displayType", ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_DISPLAY_TYPE));
+		request.setAttribute("display", shouldDisplay(request.getParameter("display")));
+		request.setAttribute("cfields", password.getAllCustomFields());
+		request.setAttribute("showHistoryOption", shouldShowHistory(user, password));
+	}
 
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
@@ -279,8 +292,8 @@ public final class ViewPassword extends HttpServlet {
     	doGet(request, response);
     }
 
-    private String constructAccessReasonLogMessage(String accessTimestamp, String reason,
-                                                   RestrictedAccessRequest raRequest) throws SQLException {
+    private String constructAccessReasonLogMessage(String accessTimestamp, RestrictedAccessRequest raRequest)
+			throws SQLException {
         StringBuilder logMessage = new StringBuilder();
         logMessage.append("The password was viewed by the user");
         if (accessTimestamp != null) {
@@ -288,6 +301,7 @@ public final class ViewPassword extends HttpServlet {
             logMessage.append(DateFormatter.convertToDateTimeString(Long.parseLong(accessTimestamp)));
         }
         logMessage.append('.');
+        String reason = raRequest == null ? null : raRequest.getReason();
         if( reason != null && reason.length() > 0 ) {
             logMessage.append(" The reason given was\n\"");
             logMessage.append(reason);
@@ -321,13 +335,13 @@ public final class ViewPassword extends HttpServlet {
         return personalNode == null || !personalNode.getNodeId().equals(containerNode.getParentId());
     }
 
-    private boolean shouldSendEmail(PasswordBase thisPassword, AccessControl accessControl)
+    private boolean shouldSendEmail(User user, PasswordBase thisPassword)
             throws GeneralSecurityException, SQLException, IOException {
         if(thisPassword instanceof Password) {
             return ((((Password)thisPassword).getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
         }
 
-        Password currentPassword = UnfilteredPasswordDAO.getInstance().getById(thisPassword.getId(), accessControl);
+        Password currentPassword = UnfilteredPasswordDAO.getInstance().getById(user, thisPassword.getId());
         return ((currentPassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
     }
 
