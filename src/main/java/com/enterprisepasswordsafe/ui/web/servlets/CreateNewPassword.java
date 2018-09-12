@@ -52,10 +52,7 @@ public final class CreateNewPassword extends AbstractPasswordManipulatingServlet
     	request.setAttribute("error_page", "/system/CreatePassword");
     	try {
 	    	Map<String,String> customFields = extractCustomFieldsFromRequest(request);
-
-	    	String newCf = request.getParameter("newCF");
-	    	if( newCf != null && newCf.length() > 0 ) {
-	    		customFields.put("New Field "+customFields.size(), "");
+            if (addCustomFieldIfRequested(request, customFields)) {
 	    		request.setAttribute("cfields", customFields);
 	    		request.getRequestDispatcher("/system/CreatePassword").forward(request, response);
 	    		return;
@@ -73,8 +70,7 @@ public final class CreateNewPassword extends AbstractPasswordManipulatingServlet
 	        boolean history = getHistorySetting(request);
             long expiryDate = getExpiry(request);
 
-	        int raApprovers = 0,
-	        	raBlockers = 0;
+	        int raApprovers = 0, raBlockers = 0;
 	        boolean raEnabled = false;
 	        String raEnabledString = request.getParameter("ra_enabled");
 	        if( raEnabledString != null && raEnabledString.equals("true") ) {
@@ -84,12 +80,8 @@ public final class CreateNewPassword extends AbstractPasswordManipulatingServlet
 	        }
 
 	        String parentNodeId = ServletUtils.getInstance().getNodeId(request);
-
-	        int type = Password.TYPE_SYSTEM;
-	        HierarchyNode parentNode = HierarchyNodeDAO.getInstance().getById(parentNodeId);
-	        if( parentNode.getType() == HierarchyNode.USER_CONTAINER_NODE) {
-	        	type = Password.TYPE_PERSONAL;
-	        }
+            HierarchyNode parentNode = HierarchyNodeDAO.getInstance().getById(parentNodeId);
+            int type = parentNode.getType() == HierarchyNode.USER_CONTAINER_NODE ? Password.TYPE_PERSONAL : Password.TYPE_SYSTEM;
 
 	        User thisUser = SecurityUtils.getRemoteUser(request);
 	        Group adminGroup = GroupDAO.getInstance().getAdminGroup(thisUser);
@@ -166,22 +158,29 @@ public final class CreateNewPassword extends AbstractPasswordManipulatingServlet
         Date parsedDate = dateFormatter.parse(expiry);
         Calendar cal = Calendar.getInstance();
         cal.setTime(parsedDate);
+
         long date = cal.getTimeInMillis();
+        ensureExpiryIsValid(date);
+        return date;
+    }
+
+    private void ensureExpiryIsValid(long date)
+            throws ServletException, SQLException {
         String rejectHistoricalExpiry = ConfigurationDAO.getValue(ConfigurationOption.REJECT_HISTORICAL_EXPIRY_DATES);
         if (rejectHistoricalExpiry != null && rejectHistoricalExpiry.equals("Y") && date < DateFormatter.getToday()) {
             throw new ServletException( "The expiry date must be in the future.");
         }
 
         String maxExpiryDistance = ConfigurationDAO.getValue(ConfigurationOption.MAX_FUTURE_EXPIRY_DISTANCE);
-        if( !maxExpiryDistance.equals("0") ) {
-            long maxDistance = Long.parseLong(maxExpiryDistance);
-            long distance = DateFormatter.daysInPast(date);
-            if( distance > maxDistance ) {
-                throw new ServletException("The expiry date must be "+maxDistance+" days or less in the future.");
-            }
+        if( maxExpiryDistance.equals("0") ) {
+            return;
         }
 
-        return date;
+        long maxDistance = Long.parseLong(maxExpiryDistance);
+        long distance = DateFormatter.daysInPast(date);
+        if( distance > maxDistance ) {
+            throw new ServletException("The expiry date must be "+maxDistance+" days or less in the future.");
+        }
     }
 
     private void redispatchException(final Exception ex)

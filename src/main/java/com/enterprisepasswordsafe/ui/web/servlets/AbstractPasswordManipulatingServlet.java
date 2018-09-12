@@ -36,6 +36,17 @@ public abstract class AbstractPasswordManipulatingServlet extends HttpServlet {
         return customFields;
     }
 
+    boolean addCustomFieldIfRequested(HttpServletRequest request, Map<String,String> customFields) {
+        String newCf = request.getParameter("newCF");
+        if( newCf == null || newCf.length() == 0 ) {
+            return false;
+        }
+
+        customFields.put("New Field "+customFields.size(), "");
+        request.setAttribute("cfields", customFields);
+        return true;
+    }
+
     boolean getHistorySetting(HttpServletRequest request)
             throws SQLException {
         String passwordHistory = ConfigurationDAO.getInstance().get( ConfigurationOption.STORE_PASSWORD_HISTORY );
