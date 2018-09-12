@@ -6,6 +6,9 @@ import com.enterprisepasswordsafe.engine.database.User;
 
 import java.sql.SQLException;
 
+/**
+ * Class to identify which type of user this is. This class must be thread-safe.
+ */
 public class UserClassifier {
     public static final String ADMIN_USER_ID = "0";
 

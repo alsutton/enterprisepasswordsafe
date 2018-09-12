@@ -16,25 +16,23 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
-import java.util.Comparator;
-import java.util.List;
+import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
-import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
+import java.util.Comparator;
 
 
 /**
@@ -43,10 +41,10 @@ import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 public final class Explorer extends HttpServlet {
 
-    /**
-     * @throws UnsupportedEncodingException
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
+    private static final String INCLUDE_EMPTY_ATTRIBUTE = "_include_empty";
+
+	private UserClassifier userClassifier = new UserClassifier();
+
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -62,141 +60,111 @@ public final class Explorer extends HttpServlet {
 
         try {
 	        HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
-	        HierarchyNode node = hnDAO.getById(nodeId);
-	        if(node == null) {
-	        	nodeId = HierarchyNode.ROOT_NODE_ID;
-	        	node = hnDAO.getById(nodeId);
-	        }
+	        HierarchyNode node = getClosestValidNodeToRequested(request, user, nodeId);
+	    	su.setCurrentNodeId(request, node.getNodeId());
 
-	        if( node.getType() == HierarchyNode.USER_CONTAINER_NODE ) {
-	        	nodeId = HierarchyNode.ROOT_NODE_ID;
-	        	node = hnDAO.getById(nodeId);
-	        }
+	    	request.setAttribute(INCLUDE_EMPTY_ATTRIBUTE,
+              ConfigurationDAO.getValue(ConfigurationOption.HIDE_EMPTY_FOLDERS).equals(Configuration.HIDE_EMPTY_FOLDERS_OFF));
 
-			UserClassifier userClassifier = new UserClassifier();
-	        List<HierarchyNode> parentage = hnDAO.getParentage(node);
-	        HierarchyNodeAccessRuleDAO hnarDAO = HierarchyNodeAccessRuleDAO.getInstance();
-	        if( !userClassifier.isAdministrator(user)
-	        &&	hnarDAO.getAccessibilityForUser(node, user)
-					== HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
-	        	for(HierarchyNode thisNode : parentage) {
-		        	if(hnarDAO.getAccessibilityForUser(thisNode, user)
-		    				== HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
-		        		break;
-		        	}
-		        	node = thisNode;
-	        	}
-	        	su.generateErrorMessage(
-	        			request,
-	        			"You are not allowed access to the folder you requested. "+
-	        			"You have been diverted to a folder you can access."
-	        		);
-	        	parentage = hnDAO.getParentage(node);
-	        }
-	        su.setCurrentNodeId(request, node.getNodeId());
-
-	    	su.setCurrentNodeId(request, nodeId);
-	        boolean includeEmpty =
-					ConfigurationDAO.
-							getValue(ConfigurationOption.HIDE_EMPTY_FOLDERS).
-							equals(Configuration.HIDE_EMPTY_FOLDERS_OFF);
-
-	        request.setAttribute("edithierarchy_allowed", "N");
-            if(!userClassifier.isNonViewingUser(user)) {
-                if			( userClassifier.isAdministrator(user) ) {
-                    request.setAttribute("edithierarchy_allowed", "Y");
-                } else if	( userClassifier.isSubadministrator(user) ){
-                    String displayEdit = ConfigurationDAO.getValue(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
-                    if( displayEdit != null && 	displayEdit.equals("S") ) {
-                        request.setAttribute("edithierarchy_allowed", "Y");
-                        includeEmpty = true;
-                    }
-                }
-            }
-
-	        HttpSession session = request.getSession(false);
-	        String sortOrder = request.getParameter(BaseServlet.SORT_PARAMETER);
-	        if (sortOrder == null) {
-	            sortOrder = (String) session.getAttribute(BaseServlet.SORT_PARAMETER);
-	        }
-	        Comparator<Password> objectComparator;
-	        if (sortOrder != null && sortOrder.startsWith("S")) {
-	        	objectComparator = new SystemComparator();
-	        } else {
-	            objectComparator = new UsernameComparator();
-	        }
-
-	        HierarchyNodeChildren children = hnDAO.getChildrenValidForUser(node, user, includeEmpty, null, objectComparator);
-            if(userClassifier.isNonViewingUser(user)) {
-                children.setObjects(null);
-            }
-
-	        session.setAttribute(BaseServlet.SORT_PARAMETER, sortOrder);
-	        su.setCurrentNodeId(request, nodeId);
+	        determineHierarchyEditability(request, user);
 
 	        request.setAttribute(BaseServlet.NODE, node);
-	        request.setAttribute(BaseServlet.NODE_PARENTAGE, parentage);
-	        request.setAttribute(BaseServlet.NODE_CHILDREN, children);
-        } catch( GeneralSecurityException sqle ) {
-        	throw new ServletException("The password explorer encountered an error.", sqle);
-        } catch( SQLException sqle ) {
-        	throw new ServletException("The password explorer encountered an error.", sqle);
+	        request.setAttribute(BaseServlet.NODE_PARENTAGE, hnDAO.getParentage(node));
+	        request.setAttribute(BaseServlet.NODE_CHILDREN, getVisibleChildren(request, user, node));
+        } catch( GeneralSecurityException | SQLException e ) {
+        	throw new ServletException("The password explorer encountered an error.", e);
         }
         request.getRequestDispatcher("/system/view_subnodes.jsp").forward(request, response);
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Obtains and displays the information about a node in the hierarchy";
     }
 
-    /**
-     * Base Comparitor for two passwords.
-     */
+    private HierarchyNode getClosestValidNodeToRequested(HttpServletRequest request, User user, String nodeId)
+			throws SQLException, GeneralSecurityException {
+		HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
+		HierarchyNode node = hnDAO.getById(nodeId);
+		if(node == null || node.getType() == HierarchyNode.USER_CONTAINER_NODE) {
+			nodeId = HierarchyNode.ROOT_NODE_ID;
+			node = hnDAO.getById(nodeId);
+		}
+
+        HierarchyNodeAccessRuleDAO hnarDAO = HierarchyNodeAccessRuleDAO.getInstance();
+		if (userClassifier.isAdministrator(user)) {
+		    return node;
+        }
+
+        ServletUtils.getInstance().generateErrorMessage(request, "You are not allowed access to the folder "+
+                "you requested. You have been diverted to a folder you can access.");
+        for(HierarchyNode thisNode : hnDAO.getParentage(node)) {
+            if(hnarDAO.getAccessibilityForUser(thisNode, user) != HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
+                return thisNode;
+            }
+        }
+		return hnDAO.getById(HierarchyNode.ROOT_NODE_ID);
+	}
+
+    private void determineHierarchyEditability(HttpServletRequest request, User user)
+			throws SQLException {
+		request.setAttribute("edithierarchy_allowed", "N");
+		if(userClassifier.isNonViewingUser(user)) {
+		    return;
+        }
+
+        if			( userClassifier.isAdministrator(user) ) {
+            request.setAttribute("edithierarchy_allowed", "Y");
+            return;
+        }
+
+        if	( userClassifier.isSubadministrator(user) ){
+            String displayEdit = ConfigurationDAO.getValue(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
+            if( displayEdit != null && 	displayEdit.equals("S") ) {
+                request.setAttribute("edithierarchy_allowed", "Y");
+                request.setAttribute(INCLUDE_EMPTY_ATTRIBUTE, Boolean.TRUE);
+            }
+        }
+	}
+
+	private HierarchyNodeChildren getVisibleChildren(HttpServletRequest request, User user, HierarchyNode node)
+            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        String sortOrder = getSortOrder(request);
+        Comparator<Password> objectComparator;
+        if (sortOrder != null && sortOrder.startsWith("S")) {
+            objectComparator = new SystemComparator();
+        } else {
+            objectComparator = new UsernameComparator();
+        }
+
+        HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
+        HierarchyNodeChildren children =
+                hnDAO.getChildrenValidForUser(node, user,
+                        ((Boolean)request.getAttribute(INCLUDE_EMPTY_ATTRIBUTE)), null, objectComparator);
+        if(userClassifier.isNonViewingUser(user)) {
+            children.setObjects(null);
+        }
+        return children;
+    }
+
+    private String getSortOrder(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        String sortOrder = request.getParameter(BaseServlet.SORT_PARAMETER);
+        if (sortOrder == null) {
+            sortOrder = (String) session.getAttribute(BaseServlet.SORT_PARAMETER);
+        }
+        session.setAttribute(BaseServlet.SORT_PARAMETER, sortOrder);
+        return sortOrder;
+    }
+
 
     private abstract class PasswordComparator implements Comparator<Password>, Serializable {
-        /**
-		 *
-		 */
-		private static final long serialVersionUID = -2072081239990481472L;
-
-		/**
-         * Get the username from a password or password summary.
-         *
-         * @param passwordObject
-         *            The Password or Password.Summary object
-         *
-         * @return The string to compare.
-         */
 
         protected abstract String getKeyString(Object passwordObject) throws Exception;
 
-        /**
-         * Get the username from a password or password summary.
-         *
-         * @param passwordObject
-         *            The Password or Password.Summary object
-         *
-         * @return The string to compare.
-         */
-
         protected abstract String getSecondaryString(Object passwordObject) throws Exception;
 
-        /**
-         * Extract the key string from a Password or Password.Summary object and
-         * compare.
-         *
-         * @param passwordObject0
-         *            The Password or Password.Summary object.
-         * @param passwordObject1
-         *            The other Password or Password.Summary object.
-         *
-         * @return < 0 if passwordObject0 is less than passwordObject1, 0 if the
-         *  two are equal, or > 0 if passwordObject0 is greater than passwordObject1.
-         */
         @Override
 		public int compare(final Password passwordObject0, final Password passwordObject1) {
         	try {
@@ -214,88 +182,52 @@ public final class Explorer extends HttpServlet {
 	            	return 0;
 	            }
 
-	            String key0 = getKeyString(passwordObject0);
-	            String key1 = getKeyString(passwordObject1);
-	            if (key0 == null) {
-	                return Integer.MIN_VALUE;
-	            }
-	            if (key1 == null) {
-	                return Integer.MAX_VALUE;
-	            }
-
-	            int caseInsensitiveComparison = key0.compareToIgnoreCase(key1);
-	            if (caseInsensitiveComparison != 0) {
-	            	return caseInsensitiveComparison;
-	            }
-	            int caseSensitiveComparison = key0.compareTo(key1);
-	        	if( caseSensitiveComparison != 0 ) {
-	        		return caseSensitiveComparison;
-	        	}
-
-	            key0 = getSecondaryString(passwordObject0);
-	            key1 = getSecondaryString(passwordObject1);
-	            if (key0 == null) {
-	                return Integer.MIN_VALUE;
-	            }
-	            if (key1 == null) {
-	                return Integer.MAX_VALUE;
-	            }
-
-	            caseInsensitiveComparison = key0.compareToIgnoreCase(key1);
-	            if (caseInsensitiveComparison != 0) {
-	            	return caseInsensitiveComparison;
-	            }
-	            caseSensitiveComparison = key0.compareTo(key1);
-	        	if( caseSensitiveComparison != 0 ) {
-	        		return caseSensitiveComparison;
-	        	}
-
-	            return passwordObject0.getId().compareTo(passwordObject1.getId());
+				int keyComparison = compareKeys(passwordObject0, passwordObject1);
+	            return keyComparison == 0 ? passwordObject0.getId().compareTo(passwordObject1.getId()) : keyComparison;
         	} catch( Exception ex ) {
         		throw new RuntimeException(ex);
         	}
         }
+
+        private int compareKeys(final Password passwordObject0, final Password passwordObject1)
+				throws Exception {
+			int primaryKeyComparison = compareIndividualKeys(getKeyString(passwordObject0), getKeyString(passwordObject1));
+			return primaryKeyComparison == 0 ?
+					compareIndividualKeys(getSecondaryString(passwordObject0), getSecondaryString(passwordObject1))
+				:	primaryKeyComparison;
+		}
+
+		private int compareIndividualKeys(String key0, String key1) {
+			if (key0 == null) {
+				return Integer.MIN_VALUE;
+			}
+			if (key1 == null) {
+				return Integer.MAX_VALUE;
+			}
+
+			int caseInsensitiveComparison = key0.compareToIgnoreCase(key1);
+			if (caseInsensitiveComparison != 0) {
+				return caseInsensitiveComparison;
+			}
+
+			int caseSensitiveComparison = key0.compareTo(key1);
+			if( caseSensitiveComparison != 0 ) {
+				return caseSensitiveComparison;
+			}
+
+			return  0;
+		}
     }
 
-    /**
-     * Class to compare passwords based on the username.
-     */
-
     private class UsernameComparator extends PasswordComparator {
-        /**
-		 *
-		 */
-		private static final long serialVersionUID = -5621430270656996999L;
-
-		/**
-         * Get the username from a password or password summary.
-         *
-         * @param passwordObject
-         *            The Password or Password.Summary object to extract the
-         *            username from.
-         *
-         * @return The username
-		 * @throws GeneralSecurityException
-		 * @throws UnsupportedEncodingException
-         */
 
         @Override
-		protected String getKeyString(final Object passwordObject) throws UnsupportedEncodingException, GeneralSecurityException {
+		protected String getKeyString(final Object passwordObject) {
             if (passwordObject instanceof PasswordBase) {
                 return ((PasswordBase) passwordObject).getUsername();
             }
             return null;
         }
-
-        /**
-         * Get the location from a password or password summary.
-         *
-         * @param passwordObject
-         *            The Password or Password.Summary object to extract the
-         *            location from.
-         *
-         * @return The username
-         */
 
         @Override
 		protected String getSecondaryString(final Object passwordObject) {
@@ -307,25 +239,7 @@ public final class Explorer extends HttpServlet {
         }
     }
 
-    /**
-     * Class to compare passwords based on the system.
-     */
-
     private class SystemComparator extends PasswordComparator {
-        /**
-		 *
-		 */
-		private static final long serialVersionUID = 1821016630814778167L;
-
-		/**
-         * Get the location from a password or password summary.
-         *
-         * @param passwordObject
-         *            The Password or Password.Summary object to extract the
-         *            location from.
-         *
-         * @return The username
-         */
 
         @Override
 		protected String getKeyString(final Object passwordObject) {
@@ -335,20 +249,8 @@ public final class Explorer extends HttpServlet {
             return null;
         }
 
-        /**
-         * Get the username from a password or password summary.
-         *
-         * @param passwordObject
-         *            The Password or Password.Summary object to extract the
-         *            username from.
-         *
-         * @return The username
-         * @throws GeneralSecurityException
-         * @throws UnsupportedEncodingException
-         */
-
         @Override
-		protected String getSecondaryString(final Object passwordObject) throws UnsupportedEncodingException, GeneralSecurityException {
+		protected String getSecondaryString(final Object passwordObject) {
             if (passwordObject instanceof PasswordBase) {
                 return ((PasswordBase) passwordObject).getUsername();
             }
