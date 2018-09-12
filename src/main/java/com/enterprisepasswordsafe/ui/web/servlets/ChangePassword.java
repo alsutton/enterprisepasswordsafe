@@ -35,7 +35,7 @@ import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.*;
 
-public final class ChangePassword extends HttpServlet {
+public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 
 	private UserClassifier userClassifier = new UserClassifier();
 
@@ -50,7 +50,7 @@ public final class ChangePassword extends HttpServlet {
 
         String passwordId = request.getParameter("id");
         try {
-            Map<String,String> customFields = new CustomPasswordFields().extractCustomFieldsFromRequest(request);
+            Map<String,String> customFields = extractCustomFieldsFromRequest(request);
             addNewCustomFieldIfRequested(request, customFields);
 
             PasswordDAO pDAO = PasswordDAO.getInstance();
