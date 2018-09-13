@@ -27,11 +27,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-/**
- *  Utility classes associated with date formatting.
- *
- * @author al
- */
 public final class DateFormatter {
 
 	/**
@@ -302,13 +297,7 @@ public final class DateFormatter {
      */
 
     public static String convertToDateTimeString(final long datetime) {
-        StringBuffer string = new StringBuffer();
-
-        string.append(convertTimeFromDateTimeToString(datetime));
-        string.append(" on ");
-        string.append(convertToString(datetime));
-
-        return string.toString();
+        return convertTimeFromDateTimeToString(datetime) + " on " + convertToString(datetime);
     }
 
     /**
@@ -325,9 +314,7 @@ public final class DateFormatter {
      */
 
     public static long combineDate(final String day, final String month, final String year) {
-        if (day == null   || day.length() == 0
-         || month == null || month.length() == 0
-         || year == null  || year.length() == 0) {
+        if (StringUtils.isAnyEmpty(day, month, year)) {
             return Long.MIN_VALUE;
         }
 
@@ -350,7 +337,7 @@ public final class DateFormatter {
     /**
      * Return the number of days in the past a specific time is
 	 *
-     * @param time The time to get the value for.
+     * @param date The time to get the value for.
 	 *
      * @return The number of days in the past the time is.
      */

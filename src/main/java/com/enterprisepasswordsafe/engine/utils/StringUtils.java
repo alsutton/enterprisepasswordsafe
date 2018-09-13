@@ -49,4 +49,19 @@ public class StringUtils {
 
         return string.substring(start, end+1);
     }
+
+
+    public static boolean isEmpty(final String string) {
+        return string == null || string.isEmpty();
+    }
+
+    public static boolean isAnyEmpty(final String... strings) {
+        for (String string : strings) {
+            if (isEmpty(string)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
