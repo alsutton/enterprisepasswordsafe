@@ -33,7 +33,7 @@ import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
 import com.enterprisepasswordsafe.engine.database.ConfigurationListenersDAO;
 import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
 import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
-import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 
 
 public final class HeaderParameterFilter

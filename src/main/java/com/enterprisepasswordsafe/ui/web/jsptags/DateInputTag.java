@@ -19,7 +19,7 @@
  */
 package com.enterprisepasswordsafe.ui.web.jsptags;
 
-import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 
 import java.io.IOException;
 import java.util.Calendar;

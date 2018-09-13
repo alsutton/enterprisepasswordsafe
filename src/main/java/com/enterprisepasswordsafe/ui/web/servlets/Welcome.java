@@ -34,7 +34,7 @@ import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
 import com.enterprisepasswordsafe.engine.database.PasswordRestrictionDAO;
 import com.enterprisepasswordsafe.engine.database.User;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
 

@@ -28,7 +28,7 @@ import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
 import com.enterprisepasswordsafe.engine.database.User;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
-import com.enterprisepasswordsafe.ui.web.utils.DateFormatter;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import org.apache.commons.codec.binary.Base64;
 
