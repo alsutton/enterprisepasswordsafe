@@ -49,4 +49,8 @@ public class StringUtilsTests {
     public void testIsAnyEmptySpotsAnEmpty() {
         Assertions.assertTrue(StringUtils.isAnyEmpty("1", "", "2"));
     }
-}
+
+    @Test
+    public void testIsAnyEmptyIdentifiesNoneCorrectly() {
+        Assertions.assertFalse(StringUtils.isAnyEmpty("1", "2", "3"));
+    }}
