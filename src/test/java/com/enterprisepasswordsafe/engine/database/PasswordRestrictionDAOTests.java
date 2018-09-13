@@ -16,16 +16,11 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
-
-/**
- * Tests for the PasswordRestrictionDAO
- */
 public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
     @Test
     public void testCreateAndGetById() throws SQLException {
@@ -36,16 +31,16 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
                 passwordRestrictionDAO.create(runId, 0, 0, 0, 0, 0, 0, "", 0);
         PasswordRestriction fetchedRestriction =
                 passwordRestrictionDAO.getById(createdRestriction.getId());
-        assertThat(fetchedRestriction, is(equalTo(createdRestriction)));
-        assertThat(fetchedRestriction.getLifetime(), is(0));
-        assertThat(fetchedRestriction.getMaxLength(), is(0));
-        assertThat(fetchedRestriction.getMinLength(), is(0));
-        assertThat(fetchedRestriction.getMinLower(), is(0));
-        assertThat(fetchedRestriction.getMinNumeric(), is(0));
-        assertThat(fetchedRestriction.getMinSpecial(), is(0));
-        assertThat(fetchedRestriction.getMinUpper(), is(0));
-        assertThat(fetchedRestriction.getName(), is(equalTo(runId)));
-        assertThat(fetchedRestriction.getSpecialCharacters(), is(equalTo("")));
+        Assertions.assertEquals(createdRestriction, fetchedRestriction);
+        Assertions.assertEquals(0, fetchedRestriction.getLifetime());
+        Assertions.assertEquals(0, fetchedRestriction.getMaxLength());
+        Assertions.assertEquals(0, fetchedRestriction.getMinLength());
+        Assertions.assertEquals(0, fetchedRestriction.getMinLower());
+        Assertions.assertEquals(0, fetchedRestriction.getMinNumeric());
+        Assertions.assertEquals(0, fetchedRestriction.getMinSpecial());
+        Assertions.assertEquals(0, fetchedRestriction.getMinUpper());
+        Assertions.assertEquals(runId, fetchedRestriction.getName());
+        Assertions.assertEquals("", fetchedRestriction.getSpecialCharacters());
     }
 
     @Test
@@ -56,16 +51,15 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
         PasswordRestriction createdRestriction = new PasswordRestriction(runId, 0, 0, 0, 0, 0, 0, "", 0);
         passwordRestrictionDAO.store(createdRestriction);
         PasswordRestriction fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
-        assertThat(fetchedRestriction, is(equalTo(createdRestriction)));
-        assertThat(fetchedRestriction.getLifetime(), is(0));
-        assertThat(fetchedRestriction.getMaxLength(), is(0));
-        assertThat(fetchedRestriction.getMinLength(), is(0));
-        assertThat(fetchedRestriction.getMinLower(), is(0));
-        assertThat(fetchedRestriction.getMinNumeric(), is(0));
-        assertThat(fetchedRestriction.getMinSpecial(), is(0));
-        assertThat(fetchedRestriction.getMinUpper(), is(0));
-        assertThat(fetchedRestriction.getName(), is(equalTo(runId)));
-        assertThat(fetchedRestriction.getSpecialCharacters(), is(equalTo("")));
+        Assertions.assertEquals(0, fetchedRestriction.getLifetime());
+        Assertions.assertEquals(0, fetchedRestriction.getMaxLength());
+        Assertions.assertEquals(0, fetchedRestriction.getMinLength());
+        Assertions.assertEquals(0, fetchedRestriction.getMinLower());
+        Assertions.assertEquals(0, fetchedRestriction.getMinNumeric());
+        Assertions.assertEquals(0, fetchedRestriction.getMinSpecial());
+        Assertions.assertEquals(0, fetchedRestriction.getMinUpper());
+        Assertions.assertEquals(runId, fetchedRestriction.getName());
+        Assertions.assertEquals("", fetchedRestriction.getSpecialCharacters());
     }
 
     @Test
@@ -87,15 +81,15 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
         fetchedRestriction.setSpecialCharacters("!");
         passwordRestrictionDAO.update(fetchedRestriction);
         fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
-        assertThat(fetchedRestriction.getLifetime(), is(10));
-        assertThat(fetchedRestriction.getMaxLength(), is(9));
-        assertThat(fetchedRestriction.getMinLength(), is(8));
-        assertThat(fetchedRestriction.getMinLower(), is(7));
-        assertThat(fetchedRestriction.getMinNumeric(), is(6));
-        assertThat(fetchedRestriction.getMinSpecial(), is(5));
-        assertThat(fetchedRestriction.getMinUpper(), is(4));
-        assertThat(fetchedRestriction.getName(), is(equalTo("Updated")));
-        assertThat(fetchedRestriction.getSpecialCharacters(), is(equalTo("!")));
+        Assertions.assertEquals(10, fetchedRestriction.getLifetime());
+        Assertions.assertEquals(9, fetchedRestriction.getMaxLength());
+        Assertions.assertEquals(8, fetchedRestriction.getMinLength());
+        Assertions.assertEquals(7, fetchedRestriction.getMinLower());
+        Assertions.assertEquals(6, fetchedRestriction.getMinNumeric());
+        Assertions.assertEquals(5, fetchedRestriction.getMinSpecial());
+        Assertions.assertEquals(4, fetchedRestriction.getMinUpper());
+        Assertions.assertEquals("Updated", fetchedRestriction.getName());
+        Assertions.assertEquals("!", fetchedRestriction.getSpecialCharacters());
     }
 
     @Test
@@ -106,10 +100,10 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
         PasswordRestriction createdRestriction = new PasswordRestriction(runId, 0, 0, 0, 0, 0, 0, "", 0);
         passwordRestrictionDAO.store(createdRestriction);
         PasswordRestriction fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
-        assertThat(fetchedRestriction, is(not(nullValue())));
+        Assertions.assertNotNull(fetchedRestriction);
         passwordRestrictionDAO.delete(createdRestriction.getId());
         fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
-        assertThat(fetchedRestriction, is(nullValue()));
+        Assertions.assertNull(fetchedRestriction);
     }
 
     @Test
@@ -128,7 +122,6 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
                 break;
             }
         }
-
-        assertThat(found, is(true));
+        Assertions.assertTrue(found);
     }
 }

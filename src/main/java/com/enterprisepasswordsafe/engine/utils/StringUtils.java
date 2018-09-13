@@ -22,34 +22,12 @@ package com.enterprisepasswordsafe.engine.utils;
 public class StringUtils {
 
     public static final String removeLeadingAndTailingWhitespace(final String string) {
-        if(string == null) {
+        if (string == null) {
             return null;
         }
-
-        int start = 0;
-        while( start < string.length() ) {
-            if(!Character.isWhitespace(string.charAt(start)))
-                break;
-            start++;
-        }
-
-        if(start == string.length()) {
-            return "";
-        }
-
-        int end = string.length()-1;
-        while( end > start ) {
-            if(!Character.isWhitespace(string.charAt(start)))
-                continue;
-            end--;
-        }
-        if(end == start) {
-            return "";  // Shouldn't happen, but lets be safe.
-        }
-
-        return string.substring(start, end+1);
+        
+        return string.trim();
     }
-
 
     public static boolean isEmpty(final String string) {
         return string == null || string.isEmpty();

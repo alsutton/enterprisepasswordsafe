@@ -17,16 +17,14 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.tests.utils.PasswordTestUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 /**
  * Test cases for the PasswordDAO
@@ -41,10 +39,10 @@ public class PasswordDAOTests extends EmbeddedDatabaseTestBase {
 
         User adminUser = getAdminUser();
         Password retrieved = PasswordDAO.getInstance().getById(adminUser, passwordId);
-        assertThat(retrieved.getUsername(), is("u" + runId));
-        assertThat(retrieved.getPassword(), is("p" + runId));
-        assertThat(retrieved.getLocation(), is("l" + runId));
-        assertThat(retrieved.getNotes(),    is("n" + runId));
+        Assertions.assertEquals("u" + runId, retrieved.getUsername());
+        Assertions.assertEquals("p" + runId, retrieved.getPassword());
+        Assertions.assertEquals("l" + runId, retrieved.getLocation());
+        Assertions.assertEquals("n" + runId, retrieved.getNotes());
     }
 
     @Test
@@ -54,8 +52,8 @@ public class PasswordDAOTests extends EmbeddedDatabaseTestBase {
         User adminUser = getAdminUser();
         String passwordId = PasswordTestUtils.createPassword(runId, adminUser);
         Set<String> ids = PasswordDAO.getInstance().performRawAPISearch(adminUser, "u" + runId, "l" + runId);
-        assertThat(ids.isEmpty(), is(false));
-        assertThat(ids.contains(passwordId), is(true));
+        Assertions.assertFalse(ids.isEmpty());
+        Assertions.assertTrue(ids.contains(passwordId));
     }
 
     @Test
@@ -75,7 +73,7 @@ public class PasswordDAOTests extends EmbeddedDatabaseTestBase {
         pDAO.update(password, adminUser);
 
         List<Password> passwords= pDAO.getPasswordsRestrictionAppliesTo(adminUser, createdRestriction.getId());
-        assertThat(passwords.isEmpty(), is(false));
+        Assertions.assertFalse(passwords.isEmpty());
 
         boolean found = false;
         for(Password thisPassword: passwords) {
@@ -84,6 +82,6 @@ public class PasswordDAOTests extends EmbeddedDatabaseTestBase {
                 break;
             }
         }
-        assertThat(found, is(true));
+        Assertions.assertTrue(found);
     }
 }

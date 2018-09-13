@@ -16,11 +16,8 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
 import com.enterprisepasswordsafe.engine.configuration.TestJDBCConfiguration;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -28,12 +25,9 @@ import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
 
-/**
- * Utilities to set up and access an in-memory database for testing purposes.
- */
-public class EmbeddedDatabaseTestBase {
+abstract class EmbeddedDatabaseTestBase {
 
-    @BeforeClass
+    @BeforeAll
     public static void initialise()
             throws SQLException, InstantiationException, IllegalAccessException,
             ClassNotFoundException, IOException, GeneralSecurityException {

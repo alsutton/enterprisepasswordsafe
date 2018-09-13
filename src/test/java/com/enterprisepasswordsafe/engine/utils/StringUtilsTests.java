@@ -6,47 +6,47 @@ import org.junit.jupiter.api.Test;
 public class StringUtilsTests {
 
     @Test
-    private void testLeadingWhitespaceRemoval() {
+    public void testLeadingWhitespaceRemoval() {
         Assertions.assertEquals("1", StringUtils.removeLeadingAndTailingWhitespace(" 1"));
     }
 
     @Test
-    private void testTrailingWhitespaceRemoval() {
+    public void testTrailingWhitespaceRemoval() {
         Assertions.assertEquals("1", StringUtils.removeLeadingAndTailingWhitespace("1 "));
     }
 
     @Test
-    private void testWhitespaceRemovalBothEnds() {
+    public void testWhitespaceRemovalBothEnds() {
         Assertions.assertEquals("1", StringUtils.removeLeadingAndTailingWhitespace(" 1 "));
     }
 
     @Test
-    private void testWhitespaceRemovalEmptiesString() {
+    public void testWhitespaceRemovalEmptiesString() {
         Assertions.assertEquals("", StringUtils.removeLeadingAndTailingWhitespace("  "));
     }
 
     @Test
-    private void testWhitespaceRemovalNullHandling() {
+    public void testWhitespaceRemovalNullHandling() {
         Assertions.assertEquals(null, StringUtils.removeLeadingAndTailingWhitespace(null));
     }
 
     @Test
-    private void testIsEmptyIdentifiesEmptyStrings() {
+    public void testIsEmptyIdentifiesEmptyStrings() {
         Assertions.assertTrue(StringUtils.isEmpty(""));
     }
 
     @Test
-    private void testIsEmptyIdentifiesNulls() {
+    public void testIsEmptyIdentifiesNulls() {
         Assertions.assertTrue(StringUtils.isEmpty(null));
     }
 
     @Test
-    private void testIsEmptyIdentifiesNonEmptyStrings() {
+    public void testIsEmptyIdentifiesNonEmptyStrings() {
         Assertions.assertFalse(StringUtils.isEmpty("1"));
     }
 
     @Test
-    private void testIsAnyEmptySpotsAnEmpty() {
+    public void testIsAnyEmptySpotsAnEmpty() {
         Assertions.assertTrue(StringUtils.isAnyEmpty("1", "", "2"));
     }
 }
