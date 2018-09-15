@@ -63,31 +63,20 @@ public final class ViewEvents extends HttpServlet {
         Calendar startDate = getStartDate(request, sdf);
         Calendar endDate = getEndDate(request, sdf);
 
-        String userLimit =
-                getParameterWhichHasMinusOneAsDefault(request, USER_LIMIT_PARAMETER);
-        String passwordLimit =
-                getParameterWhichHasMinusOneAsDefault(request, SharedParameterNames.PASSWORD_ID_PARAMETER);
-        User remoteUser =
-                getCurrentUserAndStoreInRequest(request);
+        String userLimit = getParameterWhichHasMinusOneAsDefault(request, USER_LIMIT_PARAMETER);
+        String passwordLimit = getParameterWhichHasMinusOneAsDefault(request, SharedParameterNames.PASSWORD_ID_PARAMETER);
+        User remoteUser = getCurrentUserAndStoreInRequest(request);
 
         try {
             List<EventsForDay> events = TamperproofEventLogDAO.getInstance().
-                    getEventsForDateRange(
-                            startDate.getTimeInMillis(),
-                            endDate.getTimeInMillis(),
-                            userLimit,
-                            passwordLimit,
-                            remoteUser,
-                            false,
-                            true
-                    );
+                    getEventsForDateRange(startDate.getTimeInMillis(), endDate.getTimeInMillis(),
+                        userLimit, passwordLimit, remoteUser, false, true);
             request.setAttribute("events", events);
         } catch (SQLException | GeneralSecurityException e) {
             throw new ServletException(e);
         }
 
-        String nextPage = determineNextPage(request);
-        request.getRequestDispatcher(nextPage).forward(request, response);
+        request.getRequestDispatcher(determineNextPage(request)).forward(request, response);
     }
 
     private User getCurrentUserAndStoreInRequest(HttpServletRequest request)
@@ -99,11 +88,7 @@ public final class ViewEvents extends HttpServlet {
 
     private Calendar getStartDate(final HttpServletRequest request, final SimpleDateFormat sdf) {
         Calendar startDate = convertFromDatePicker(sdf, request.getParameter(START_DATE_PARAMETER));
-        startDate.set(Calendar.HOUR_OF_DAY, 0);
-        startDate.set(Calendar.MINUTE, 0);
-        startDate.set(Calendar.SECOND, 0);
-        startDate.set(Calendar.MILLISECOND, 0);
-
+        fixTimeAt(startDate, 0,0,0,0);
         request.setAttribute(START_DATE_PARAMETER, sdf.format(startDate.getTime()));
 
         return startDate;
@@ -111,14 +96,16 @@ public final class ViewEvents extends HttpServlet {
 
     private Calendar getEndDate(final HttpServletRequest request, final SimpleDateFormat sdf) {
         Calendar endDate = convertFromDatePicker(sdf,request.getParameter(END_DATE_PARAMETER));
-        endDate.set(Calendar.HOUR_OF_DAY, 23);
-        endDate.set(Calendar.MINUTE, 59);
-        endDate.set(Calendar.SECOND, 59);
-        endDate.set(Calendar.MILLISECOND, 999);
-
+        fixTimeAt(endDate, 23, 59, 59,999);
         request.setAttribute(END_DATE_PARAMETER, sdf.format(endDate.getTime()));
-
         return endDate;
+    }
+
+    private void fixTimeAt(Calendar date, int hour, int minute, int second, int millisecond) {
+        date.set(Calendar.HOUR_OF_DAY, hour);
+        date.set(Calendar.MINUTE, minute);
+        date.set(Calendar.SECOND, second);
+        date.set(Calendar.MILLISECOND, millisecond);
     }
 
     private String getParameterWhichHasMinusOneAsDefault(HttpServletRequest request, String parameter) {
