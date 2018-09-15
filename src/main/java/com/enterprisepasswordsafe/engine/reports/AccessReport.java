@@ -17,7 +17,6 @@
 package com.enterprisepasswordsafe.engine.reports;
 
 import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.io.IOException;
@@ -27,114 +26,82 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- * Sends the access rule report to a PrintWriter
- */
-
 public class AccessReport
     implements ExternalInterface {
 
-    /**
-     * The query to get the passwords a user has direct access to.
-     */
-
     private static final String GET_ACCESSIBLE_PASSWORDS_FOR_USER_SQL =
             "SELECT item_id FROM user_access_control WHERE user_id = ?";
-
-    /**
-     * The query to get the passwords a user has access to via GACs.
-     */
 
     private static final String GET_ACCESSIBLE_PASSWORDS_FOR_USER_VIA_GAC_SQL =
             "SELECT gac.group_id, gac.item_id FROM membership m, group_access_control gac "
             + " WHERE m.user_id = ? AND m.group_id = gac.group_id AND gac.rkey is not null ";
 
-    /**
-     * Private constructor to prevent instantiation
-     */
-
     private AccessReport() {
         super();
     }
 
-    /**
-     * Generate the user access report.
-     *
-     * @param user The user requesting the report.
-     * @param printWriter The PrintWriter to send the report to.
-     * @param separator The separator to use between elements on a line.
-     */
     public void generateReport(final User user, final PrintWriter printWriter, final String separator)
             throws SQLException, GeneralSecurityException, IOException {
+// TODO Look for more efficient algorithm
+
         GroupDAO gDAO = GroupDAO.getInstance();
         Group adminGroup = gDAO.getAdminGroup(user);
-
-        PreparedStatement uacPS =
-                BOMFactory.getCurrentConntection().prepareStatement(GET_ACCESSIBLE_PASSWORDS_FOR_USER_SQL);
-        try {
-            PreparedStatement gacPS =
-                    BOMFactory.getCurrentConntection().prepareStatement(GET_ACCESSIBLE_PASSWORDS_FOR_USER_VIA_GAC_SQL);
-            try {
-// TODO Look for more efficient algorithm
-                PasswordDAO pDAO = PasswordDAO.getInstance();
-                GroupAccessControlDAO gacDAO = GroupAccessControlDAO.getInstance();
-
+        try(PreparedStatement uacPS = BOMFactory.getCurrentConntection().prepareStatement(GET_ACCESSIBLE_PASSWORDS_FOR_USER_SQL)) {
+            try(PreparedStatement gacPS = BOMFactory.getCurrentConntection().prepareStatement(GET_ACCESSIBLE_PASSWORDS_FOR_USER_VIA_GAC_SQL)) {
+                Context context = new Context(uacPS, gacPS, printWriter, separator);
                 for(User thisUser : UserDAO.getInstance().getAll()) {
                     thisUser.decryptAdminAccessKey(adminGroup);
 
-                    uacPS.setString(1, thisUser.getUserId());
-                    ResultSet rsPasswords = uacPS.executeQuery();
-                    try {
-                        while (rsPasswords.next()) {
-                            String passwordId = rsPasswords.getString(1);
-
-                            Password thisPassword = pDAO.getById(thisUser, passwordId);
-                            if( thisPassword == null )
-                                continue;
-                            printWriter.println(constructDetails( thisUser, thisPassword, null,	separator));
-                        }
-                    } finally {
-                        DatabaseConnectionUtils.close(rsPasswords);
-                    }
-
-                    gacPS.setString(1, thisUser.getUserId());
-                    rsPasswords = gacPS.executeQuery();
-                    try {
-                        while (rsPasswords.next()) {
-                            int idx = 1;
-                            String groupId = rsPasswords.getString(idx++);
-                            if( groupId.equals(Group.ADMIN_GROUP_ID)
-                                    ||  groupId.equals(Group.SUBADMIN_GROUP_ID) ) {
-                                continue;
-                            }
-
-                            Group group = gDAO.getById(groupId);
-                            if( group == null )
-                                continue;
-
-                            String passwordId = rsPasswords.getString(idx);
-
-                            AccessControl ac = gacDAO.getGac(thisUser, group, passwordId);
-                            if( ac == null )
-                                continue;
-
-                            Password password = pDAO.getById(passwordId, ac);
-                            if( password == null )
-                                continue;
-
-                            printWriter.println(constructDetails(thisUser, password, group, separator));
-                        }
-                    } finally {
-                        DatabaseConnectionUtils.close(rsPasswords);
-                    }
+                    getDirectlyAccessiblePasswords(context, thisUser);
+                    getPasswordsAccessibleViaGroup(context, thisUser);
                 }
-            } finally {
-                DatabaseConnectionUtils.close(gacPS);
             }
-        } finally {
-            DatabaseConnectionUtils.close(uacPS);
         }
+    }
 
+
+    private void getDirectlyAccessiblePasswords(Context context, User user)
+            throws SQLException, IOException, GeneralSecurityException {
+        context.directlyAccessiblePS.setString(1, user.getUserId());
+        PasswordDAO passwordDAO = PasswordDAO.getInstance();
+        try(ResultSet rsPasswords = context.directlyAccessiblePS.executeQuery()) {
+            while (rsPasswords.next()) {
+                String passwordId = rsPasswords.getString(1);
+                Password thisPassword = passwordDAO.getById(user, passwordId);
+                if( thisPassword == null )
+                    continue;
+                context.output.println(constructDetails( user, thisPassword, null, context.separator));
+            }
+        }
+    }
+
+    private void getPasswordsAccessibleViaGroup(Context context, User user)
+            throws SQLException, GeneralSecurityException, IOException {
+        context.groupAccessiblePS.setString(1, user.getUserId());
+        try(ResultSet rsPasswords = context.groupAccessiblePS.executeQuery()) {
+            while (rsPasswords.next()) {
+                String groupId = rsPasswords.getString(1);
+                if( groupId.equals(Group.ADMIN_GROUP_ID) ||  groupId.equals(Group.SUBADMIN_GROUP_ID) ) {
+                    continue;
+                }
+
+                Group group = GroupDAO.getInstance().getById(groupId);
+                if( group == null )
+                    continue;
+
+                String passwordId = rsPasswords.getString(2);
+
+                AccessControl ac = GroupAccessControlDAO.getInstance().getGac(user, group, passwordId);
+                if( ac == null )
+                    continue;
+
+                Password password = PasswordDAO.getInstance().getById(passwordId, ac);
+                if( password == null )
+                    continue;
+
+                context.output.println(constructDetails(user, password, group, context.separator));
+            }
+        }
     }
 
     private String constructDetails(final User user, final Password password,
@@ -162,6 +129,22 @@ public class AccessReport
 
         return details.toString();
     }
+
+    private static class Context {
+        PreparedStatement directlyAccessiblePS;
+        PreparedStatement groupAccessiblePS;
+        PrintWriter output;
+        String separator;
+
+        Context(PreparedStatement directlyAccessiblePS, PreparedStatement groupAccessiblePS,
+                PrintWriter output, String separator) {
+            this.directlyAccessiblePS = directlyAccessiblePS;
+            this.groupAccessiblePS = groupAccessiblePS;
+            this.output = output;
+            this.separator = separator;
+        }
+    }
+
 
     //------ Singleton
 
