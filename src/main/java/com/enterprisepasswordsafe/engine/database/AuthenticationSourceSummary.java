@@ -105,20 +105,13 @@ public final class AuthenticationSourceSummary {
     public static List<AuthenticationSourceSummary> getAll(final Connection conn)
         throws SQLException {
         List<AuthenticationSourceSummary> summaries = new ArrayList<AuthenticationSourceSummary>();
-
-        Statement stmt = conn.createStatement();
-        ResultSet rs = null;
-        try {
-            rs = stmt
-                    .executeQuery(AuthenticationSourceSummary.GET_ALL_SUMMARIES);
-            while (rs.next()) {
-                summaries.add(new AuthenticationSourceSummary(rs));
+        try(Statement stmt = conn.createStatement()) {
+            try(ResultSet rs = stmt.executeQuery(AuthenticationSourceSummary.GET_ALL_SUMMARIES)) {
+                while (rs.next()) {
+                    summaries.add(new AuthenticationSourceSummary(rs));
+                }
             }
-        } finally {
-            DatabaseConnectionUtils.close(rs);
-            DatabaseConnectionUtils.close(stmt);
         }
-
         return summaries;
     }
 

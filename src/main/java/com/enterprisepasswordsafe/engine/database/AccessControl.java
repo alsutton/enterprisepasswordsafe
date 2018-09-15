@@ -413,17 +413,13 @@ public abstract class AccessControl
     private static void getData(final Connection conn, final String userId,
             final List<String> list, final String statement)
         throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(statement);
-        ResultSet rs = null;
-        try {
+        try(PreparedStatement ps = conn.prepareStatement(statement)) {
             ps.setString(1, userId);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(rs.getString(1));
+            try(ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString(1));
+                }
             }
-        } finally {
-            DatabaseConnectionUtils.close(rs);
-            DatabaseConnectionUtils.close(ps);
         }
     }
 

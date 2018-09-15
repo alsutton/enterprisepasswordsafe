@@ -28,70 +28,26 @@ import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
-/**
- * Data access object for passwords.
- */
-
 public class HistoricalPasswordDAO implements ExternalInterface {
 
-    /**
-     * The fields needed to create a HistoricalPassword object from a ResultSet.
-     */
-
-    public static final String HISTORICAL_PASSWORD_FIELDS = PasswordBase.PASSWORD_BASE_FIELDS
-            + ", pass.dt_l";
-
-    /**
-     * The SQL statement to the last change date before a specified date for a
-     * password.
-     */
+    public static final String HISTORICAL_PASSWORD_FIELDS = PasswordBase.PASSWORD_BASE_FIELDS + ", pass.dt_l";
 
     private static final String GET_LAST_CHANGED_SQL = "SELECT MAX(dt_l) FROM password_history WHERE password_id = ? AND dt_l <= ?";
-
-    /**
-     * The SQL statement to the password details for a specific entry in the
-     * password history table.
-     */
 
     private static final String GET_HISTORY_ENTRY_SQL = "SELECT "
             + HISTORICAL_PASSWORD_FIELDS
             + "  FROM password_history pass"
             + " WHERE pass.password_id = ? AND pass.dt_l = ?";
 
-    /**
-     * The SQL statement to insert a password history option.
-     */
-
     private static final String WRITE_PASSWORD_HISTORY_SQL =
         "INSERT INTO password_history(password_id, dt_l, password_data) VALUES (?,?,?)";
-
-    /**
-     * The SQL statement to insert a nullpassword history option.
-     */
 
     private static final String WRITE_NULL_PASSWORD_HISTORY_SQL =
         "INSERT INTO password_history(password_id, dt_l) VALUES (?,?)";
 
-	/**
-	 * Private constructor to prevent instantiation
-	 */
-
 	private HistoricalPasswordDAO() {
 		super();
 	}
-
-    /**
-     * Writes a new history entry for a password.
-     *
-     * @param conn
-     *            The connection to the database.
-     * @param ac
-     *            An access control which can update the password.
-
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem encrypting the data.
-     * @throws UnsupportedEncodingException
-     */
 
     public final void writeHistoryEntry(final Password password, final AccessControl ac)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -99,56 +55,26 @@ public class HistoricalPasswordDAO implements ExternalInterface {
 
     	try {
 	    	byte[] passwordData = PasswordUtils.encrypt(password, ac);
-
-	    	PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_PASSWORD_HISTORY_SQL);
-	        try {
+	        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_PASSWORD_HISTORY_SQL)) {
 	            ps.setString(1, password.getId());
 	            ps.setLong  (2, timestamp);
 	            ps.setBytes (3, passwordData);
 	            ps.executeUpdate();
-	        } finally {
-	            DatabaseConnectionUtils.close(ps);
 	        }
     	} catch (IOException ioe) {
     		throw new SQLException("Unable to store password history properties", ioe);
     	}
     }
 
-    /**
-     * Writes a null history entry for a password. A null entry indicates
-     * history was not recorded beyond this point.
-     *
-     * @param conn
-     *            The connection to the database
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
     public final void writeNullEntry(final Password password)
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_NULL_PASSWORD_HISTORY_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_NULL_PASSWORD_HISTORY_SQL)) {
             ps.setString(1, password.getId());
             ps.setLong  (2, DateFormatter.getNow());
 
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
-
-    /**
-     * Gets the data about an individual password for a particular time.
-     *
-     * @param ac The access control for accessing the password
-     * @param id The ID of the password to get.
-     * @param dt The timepoint at which to get the password.
-     *
-     * @return The Password object, or null if the user does not exist.
-     *
-     * @throws SQLException
-     *             Thrown if there is a problem getting the password.
-     */
 
     public HistoricalPassword getByIdForTime(final AccessControl ac, final String id, final long dt) throws SQLException {
         if (id == null) {
@@ -156,34 +82,26 @@ public class HistoricalPasswordDAO implements ExternalInterface {
         }
 
         long timepoint;
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_LAST_CHANGED_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_LAST_CHANGED_SQL)) {
             ps.setString(1, id);
             ps.setLong  (2, dt);
             ps.setMaxRows(1);
 
-            ResultSet rs = ps.executeQuery();
-            try {
+            ;
+            try(ResultSet rs = ps.executeQuery()) {
 	            if (!rs.next()) {
 	                return null;
 	            }
 
 	            timepoint = rs.getLong(1);
-            } finally {
-            	DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
 
-        ps = BOMFactory.getCurrentConntection().prepareStatement(GET_HISTORY_ENTRY_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_HISTORY_ENTRY_SQL)) {
             ps.setString(1, id);
             ps.setLong  (2, timepoint);
             ps.setMaxRows(1);
-            ResultSet rs = ps.executeQuery();
-            try {
+            try(ResultSet rs = ps.executeQuery()) {
 	            if (!rs.next()) {
 	            	return null;
 	            }
@@ -197,11 +115,7 @@ public class HistoricalPasswordDAO implements ExternalInterface {
             	throw new SQLException("Problem decoding password", ioe);
             } catch(GeneralSecurityException gse) {
             	throw new SQLException("Problem accessing password", gse);
-            } finally {
-                DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
