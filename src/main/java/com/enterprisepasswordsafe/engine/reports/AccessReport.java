@@ -78,30 +78,40 @@ public class AccessReport
     private void getPasswordsAccessibleViaGroup(Context context, User user)
             throws SQLException, GeneralSecurityException, IOException {
         context.groupAccessiblePS.setString(1, user.getUserId());
-        try(ResultSet rsPasswords = context.groupAccessiblePS.executeQuery()) {
-            while (rsPasswords.next()) {
-                String groupId = rsPasswords.getString(1);
-                if( groupId.equals(Group.ADMIN_GROUP_ID) ||  groupId.equals(Group.SUBADMIN_GROUP_ID) ) {
-                    continue;
-                }
-
-                Group group = GroupDAO.getInstance().getById(groupId);
-                if( group == null )
-                    continue;
-
-                String passwordId = rsPasswords.getString(2);
-
-                AccessControl ac = GroupAccessControlDAO.getInstance().getGac(user, group, passwordId);
-                if( ac == null )
-                    continue;
-
-                Password password = PasswordDAO.getInstance().getById(passwordId, ac);
-                if( password == null )
-                    continue;
-
-                context.output.println(constructDetails(user, password, group, context.separator));
+        try(ResultSet resultSet = context.groupAccessiblePS.executeQuery()) {
+            while (resultSet.next()) {
+                processGroup(context, user, resultSet);
             }
         }
+    }
+
+    private void processGroup(Context context, User user, ResultSet resultSet)
+            throws SQLException, GeneralSecurityException, IOException {
+        Group group = getGroupIfValid(resultSet);
+        if( group == null )
+            return;
+
+        String passwordId = resultSet.getString(2);
+
+        AccessControl ac = GroupAccessControlDAO.getInstance().getGac(user, group, passwordId);
+        if( ac == null )
+            return;
+
+        Password password = PasswordDAO.getInstance().getById(passwordId, ac);
+        if( password == null )
+            return;
+
+        context.output.println(constructDetails(user, password, group, context.separator));
+    }
+
+    private Group getGroupIfValid(ResultSet resultSet)
+            throws SQLException {
+        String groupId = resultSet.getString(1);
+        if( groupId.equals(Group.ADMIN_GROUP_ID) ||  groupId.equals(Group.SUBADMIN_GROUP_ID) ) {
+            return  null;
+        }
+
+        return GroupDAO.getInstance().getById(groupId);
     }
 
     private String constructDetails(final User user, final Password password,
