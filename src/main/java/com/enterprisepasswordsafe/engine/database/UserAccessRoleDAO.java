@@ -25,100 +25,35 @@ import java.util.Map;
 import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
-/**
- * Data access object for UserAccessRole objects.
- */
-
-public class UserAccessRoleDAO implements ExternalInterface{
-
-	/**
-	 * SQL to get all of the roles for a item.
-	 */
+public class UserAccessRoleDAO
+		extends AbstractAccessRoleDAO<UserAccessRole>
+		implements ExternalInterface {
 
 	private static final String GET_ALL_SQL =
 			"SELECT actor_id, role FROM user_access_roles WHERE item_id = ? ";
 
-	/**
-	 * SQL to get the UAR for a user and item.
-	 */
-
 	private static final String GET_SQL =
 			"select role FROM user_access_roles WHERE item_id = ? AND actor_id = ?";
-
-	/**
-	 * SQL to store the data via an insert.
-	 */
 
 	private static final String INSERT_SQL =
 			"INSERT INTO user_access_roles(item_id, actor_id, role) VALUES (?, ?, ?)";
 
-	/**
-	 * SQL to store the data via an update.
-	 */
-
 	private static final String UPDATE_SQL =
-			"UPDATE user_access_roles "+
-			"   SET role     = ? " +
-			" WHERE actor_id = ? AND item_id = ?";
-
-	/**
-	 * SQL to store the data via an update.
-	 */
+			"UPDATE user_access_roles SET role = ? WHERE actor_id = ? AND item_id = ?";
 
 	private static final String DELETE_SQL =
-			"DELETE FROM user_access_roles "+
-			"      WHERE item_id  = ?" +
-			"        AND actor_id = ?" +
-			"        AND role     = ?";
-
-	/**
-	 * Private constructor to prevent instantiation
-	 */
+			"DELETE FROM user_access_roles WHERE item_id = ? AND actor_id = ? AND role = ?";
 
 	private UserAccessRoleDAO( ) {
-		super();
+		super(GET_ALL_SQL, GET_SQL, DELETE_SQL);
 	}
 
-	/**
-	 * Create a new user access role.
-	 *
-	 */
-
-	public UserAccessRole create(final String itemId, final String actorId,
-			final String role)
+	public UserAccessRole create(final String itemId, final String actorId, final String role)
 		throws SQLException {
 		UserAccessRole uar = new UserAccessRole(itemId, actorId, role);
 		store(uar);
 		return uar;
 	}
-
-	/**
-	 * Create a new user access role.
-	 *
-	 */
-
-	public void delete(final String itemId, final String actorId,
-			final String role)
-		throws SQLException {
-		PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL);
-		try {
-			ps.setString(1, itemId);
-			ps.setString(2, actorId);
-			ps.setString(3, role);
-			ps.executeUpdate();
-		} finally {
-			DatabaseConnectionUtils.close(ps);
-		}
-
-	}
-
-	/**
-	 * Store this access role in the database.
-	 *
-	 * @param role The UserAccessRole to store.
-	 *
-	 * @throws SQLException Thrown if there is a problem accessing the database.
-	 */
 
 	public void store( final UserAccessRole role )
 		throws SQLException {
@@ -133,14 +68,6 @@ public class UserAccessRoleDAO implements ExternalInterface{
 		}
 	}
 
-	/**
-	 * Update a UserAccessRole in the database.
-	 *
-	 * @param role The UserAccessRole to update.
-	 *
-	 * @throws SQLException Thrown if there is a problem accessing the database.
-	 */
-
 	public void update( final UserAccessRole role )
 		throws SQLException {
 		PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_SQL);
@@ -154,70 +81,10 @@ public class UserAccessRoleDAO implements ExternalInterface{
 		}
 	}
 
-	/**
-	 * Gets a UserAccessRole for a item and user
-	 *
-	 * @param itemId The ID of the item to get the UserAccessRole for.
-	 * @param actorId The ID of the user to get the UserAccessRole for.
-	 *
-	 * @throws SQLException Thrown if there is a problem talking to the database.
-	 */
-
-	public UserAccessRole getByIds(final String itemId, final String actorId)
-		throws SQLException {
-		PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_SQL);
-		try {
-			ps.setString(1, itemId);
-			ps.setString(2, actorId);
-			ps.setMaxRows(1);
-			ResultSet rs = ps.executeQuery();
-			try {
-				if( rs.next() ) {
-					return new UserAccessRole(itemId, actorId, rs.getString(1));
-				}
-
-				return null;
-			} finally {
-				DatabaseConnectionUtils.close(rs);
-			}
-		} finally {
-			DatabaseConnectionUtils.close(ps);
-		}
-	}
-
-	/**
-	 * Get all of the rights for a item as a Map of the user ID to the
-	 * role.
-	 *
-	 * @param id The ID of the item to get the roles for.
-	 *
-	 * @throws SQLException Thrown if there is a problem talking to the database.
-	 */
-
-	public Map<String,String> getAllForItem(final String id)
-		throws SQLException {
-		Map<String,String> results = new HashMap<String,String>();
-
-		PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_ALL_SQL);
-		try {
-			ps.setString(1, id);
-
-			ResultSet rs = ps.executeQuery();
-			try {
-				while( rs.next() ) {
-					String actorId = rs.getString(1);
-					String role = rs.getString(2).intern();
-					results.put(actorId, role);
-				}
-
-				return results;
-			} finally {
-				DatabaseConnectionUtils.close(rs);
-			}
-		} finally {
-			DatabaseConnectionUtils.close(ps);
-		}
-	}
+    @Override
+    UserAccessRole newInstanceForRole(String itemId, String actorId, String role) {
+        return new UserAccessRole(itemId, actorId, role);
+    }
 
     //------------------------
 
