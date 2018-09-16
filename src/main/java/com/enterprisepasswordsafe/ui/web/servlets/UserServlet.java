@@ -30,13 +30,10 @@ import javax.servlet.http.HttpServletResponse;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
+import com.enterprisepasswordsafe.engine.utils.StringUtils;
 import com.enterprisepasswordsafe.ui.web.EPSUIException;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
-
-/**
- * Servlet to get and manipulate user information.
- */
 
 public final class UserServlet extends HttpServlet {
 
@@ -44,27 +41,12 @@ public final class UserServlet extends HttpServlet {
                                 USER_TYPE_SUBADMIN = "P",
                                 USER_TYPE_NORMAL = "N";
 
-    /**
-     * The prefix used for group membership parameters
-     */
-
     private static final String GROUP_MEMBERSHIP_PERAMETER_PREFIX = "group_";
-
-    /**
-     * The prefix for a zone rule parameter
-     */
 
     private static final String ZONE_RULE_PREFIX = "zone_";
 
-    /**
-     * The length of the zone rule parameter prefix.
-     */
-
     private static final int ZONE_RULE_PREFIX_LENGTH = ZONE_RULE_PREFIX.length();
 
-    /**
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -102,8 +84,7 @@ public final class UserServlet extends HttpServlet {
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException{
         String csrfToken = request.getParameter("token");
-        if(csrfToken == null
-                || !csrfToken.equals(request.getSession(true).getAttribute("csrfToken"))) {
+        if(csrfToken == null || !csrfToken.equals(request.getSession(true).getAttribute("csrfToken"))) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -129,35 +110,10 @@ public final class UserServlet extends HttpServlet {
             ServletUtils servletUtils = ServletUtils.getInstance();
 
             String userId = request.getParameter("userId");
-            User user = null;
-            if(userId != null && !userId.isEmpty()) {
-                user = uDAO.getById(userId);
-            }
-
-            boolean newUser = (user==null);
-            if(newUser) {
-                user = uDAO.createUser( remoteUser,
-                                        new UserSummary(
-                                            servletUtils.getParameterValue(request, "username"),
-                                            servletUtils.getParameterValue(request, BaseServlet.FULL_NAME_PARAMETER)),
-                                        servletUtils.getParameterValue(request, "password1"),
-                                        servletUtils.getParameterValue(request, BaseServlet.EMAIL_PARAMETER));
-            } else {
-                user.decryptAdminAccessKey(adminGroup);
-
-                user.setFullName(servletUtils.getParameterValue(request, BaseServlet.FULL_NAME_PARAMETER));
-                user.setEmail(servletUtils.getParameterValue(request, BaseServlet.EMAIL_PARAMETER));
-                user.setAuthSource(servletUtils.getParameterValue(request, BaseServlet.AUTH_SOURCE_ATTRIBUTE));
-
-                String newPassword = request.getParameter("password1");
-                if(newPassword != null && !newPassword.isEmpty()) {
-                    user.decryptAdminAccessKey(adminGroup);
-                    uDAO.updatePassword(user, newPassword);
-                }
-            }
+            boolean newUser = uDAO.getById(userId) == null;
+            User user = getUser(request, remoteUser, adminGroup, userId);
 
             setUserPriviledgeLevel(request, remoteUser, adminGroup, user);
-
             String enabled = request.getParameter("user_enabled");
             if (enabled.equals("Y")) {
                 if( ! user.isEnabled() ) {
@@ -178,17 +134,42 @@ public final class UserServlet extends HttpServlet {
             updateGroupMemberships(request, remoteUser, user);
             updateRestrictions(request, user);
 
-
-            if(newUser) {
-                servletUtils.generateMessage(request, "The profile has been created.");
-            } else {
-                servletUtils.generateMessage(request, "The profile has been updated.");
-            }
-
+            servletUtils.generateMessage(request, newUser ? "The profile has been created." :
+                    "The profile has been updated.");
             response.sendRedirect(request.getContextPath()+"/admin/User?userId="+user.getUserId());
         } catch(Exception e) {
             throw new ServletException("There was a problem updating the user.", e);
         }
+    }
+
+    private User getUser(HttpServletRequest request, User remoteUser, Group adminGroup, String userId)
+            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        ServletUtils servletUtils = ServletUtils.getInstance();
+        UserDAO uDAO = UserDAO.getInstance();
+        User user = null;
+        if(userId != null && !userId.isEmpty()) {
+            user = uDAO.getById(userId);
+        }
+        if(user == null) {
+            return uDAO.createUser( remoteUser,
+                    new UserSummary(servletUtils.getParameterValue(request, "username"),
+                            servletUtils.getParameterValue(request, BaseServlet.FULL_NAME_PARAMETER)),
+                    servletUtils.getParameterValue(request, "password1"),
+                    servletUtils.getParameterValue(request, BaseServlet.EMAIL_PARAMETER));
+        }
+
+        user.decryptAdminAccessKey(adminGroup);
+
+        user.setFullName(servletUtils.getParameterValue(request, BaseServlet.FULL_NAME_PARAMETER));
+        user.setEmail(servletUtils.getParameterValue(request, BaseServlet.EMAIL_PARAMETER));
+        user.setAuthSource(servletUtils.getParameterValue(request, BaseServlet.AUTH_SOURCE_ATTRIBUTE));
+
+        String newPassword = request.getParameter("password1");
+        if(newPassword != null && !newPassword.isEmpty()) {
+            user.decryptAdminAccessKey(adminGroup);
+            uDAO.updatePassword(user, newPassword);
+        }
+        return user;
     }
 
     /**
@@ -245,15 +226,12 @@ public final class UserServlet extends HttpServlet {
             return;
         }
 
-        if ((password1 == null || password1.isEmpty())
-        ||  (password2 == null || password2.isEmpty())
-        ||  !password1.equals(password2)) {
+        if ( StringUtils.isAnyEmpty(password1, password2) || !password1.equals(password2)) {
             throw new EPSUIException("The passwords you entered were not the same.");
         }
 
         PasswordRestriction control = PasswordRestrictionDAO.getInstance().getById(
-                PasswordRestriction.LOGIN_PASSWORD_RESTRICTION_ID
-        );
+                PasswordRestriction.LOGIN_PASSWORD_RESTRICTION_ID);
         if (control != null && !control.verify(password1)) {
             throw new EPSUIException(
                     "The users password has NOT been updated because it does not meet the following requirements; "
@@ -261,14 +239,6 @@ public final class UserServlet extends HttpServlet {
         }
 
     }
-
-    /**
-     * Update the group memberships based on the selected items
-     *
-     * @param request The request currently being serviced.
-     * @param remoteUser The user interacting with the EPS.
-     * @param user The user whose membership is being checked.
-     */
 
     private void updateGroupMemberships(final HttpServletRequest request, final User remoteUser, final User user)
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -287,49 +257,57 @@ public final class UserServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Update the login restrictions
-     */
-
     private void updateRestrictions(final HttpServletRequest request, final User user)
         throws SQLException {
-        UserIPZoneRestrictionDAO uipzrDAO = UserIPZoneRestrictionDAO.getInstance();
         String userId = user.getUserId();
-
         Enumeration<String> parameterNames = request.getParameterNames();
         while(parameterNames.hasMoreElements()) {
             String parameterName = parameterNames.nextElement();
-            if(!parameterName.startsWith(ZONE_RULE_PREFIX)) {
-                continue;
-            }
-            String zoneId = parameterName.substring(ZONE_RULE_PREFIX_LENGTH);
-            String rule = request.getParameter(parameterName);
-
-            UserIPZoneRestriction restriction = uipzrDAO.getByZoneAndUser(userId, zoneId);
-            if( rule.equals(UserIPZoneRestriction.DEFAULT_STRING) ) {
-                if( restriction != null ) {
-                    uipzrDAO.delete(restriction);
-                }
-            } else {
-                int ruleValue = UserIPZoneRestriction.DENY_INT;
-                if( rule.equals(UserIPZoneRestriction.ALLOW_STRING) ) {
-                    ruleValue = UserIPZoneRestriction.ALLOW_INT;
-                }
-
-                if( restriction == null ) {
-                    uipzrDAO.create(zoneId, userId, ruleValue);
-                } else {
-                    restriction.setRule(ruleValue);
-                    uipzrDAO.update(restriction);
-                }
-            }
+            processParameter(request, userId, parameterName);
         }
     }
 
-    private void setUserPriviledgeLevel(final HttpServletRequest request,
-                                        final User remoteUser,
-                                        final Group adminGroup,
-                                        final User user)
+    private void processParameter(HttpServletRequest request, String userId, String parameterName) throws SQLException {
+        if(!parameterName.startsWith(ZONE_RULE_PREFIX)) {
+            return;
+        }
+        String zoneId = parameterName.substring(ZONE_RULE_PREFIX_LENGTH);
+        String rule = request.getParameter(parameterName);
+
+        UserIPZoneRestrictionDAO uipzrDAO = UserIPZoneRestrictionDAO.getInstance();
+        UserIPZoneRestriction restriction = uipzrDAO.getByZoneAndUser(userId, zoneId);
+        if( rule.equals(UserIPZoneRestriction.DEFAULT_STRING) ) {
+            setAsDefault(uipzrDAO, restriction);
+        } else {
+            setRule(uipzrDAO, restriction, zoneId, userId, rule);
+        }
+    }
+
+    private void setAsDefault(UserIPZoneRestrictionDAO uipzrDAO, UserIPZoneRestriction restriction)
+            throws SQLException {
+        if( restriction != null ) {
+            uipzrDAO.delete(restriction);
+        }
+    }
+
+    private void setRule(UserIPZoneRestrictionDAO uipzrDAO, UserIPZoneRestriction restriction,
+                         String zoneId, String userId, String rule)
+            throws SQLException {
+        int ruleValue = UserIPZoneRestriction.DENY_INT;
+        if( rule.equals(UserIPZoneRestriction.ALLOW_STRING) ) {
+            ruleValue = UserIPZoneRestriction.ALLOW_INT;
+        }
+
+        if( restriction == null ) {
+            uipzrDAO.create(zoneId, userId, ruleValue);
+        } else {
+            restriction.setRule(ruleValue);
+            uipzrDAO.update(restriction);
+        }
+    }
+
+    private void setUserPriviledgeLevel(final HttpServletRequest request, final User remoteUser,
+                                        final Group adminGroup, final User user)
             throws GeneralSecurityException, SQLException, IOException {
         UserPriviledgeTransitioner userPriviledgeTransitioner = new UserPriviledgeTransitioner();
         switch(request.getParameter("user_type")) {
@@ -348,10 +326,6 @@ public final class UserServlet extends HttpServlet {
         userPriviledgeTransitioner.setNotViewing(user, noView != null && noView.equals("Y"));
     }
 
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Obtains the information about a user to be edited.";
