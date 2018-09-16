@@ -16,23 +16,14 @@
 
 package com.enterprisepasswordsafe.engine.database.schema;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 import com.enterprisepasswordsafe.engine.database.BOMFactory;
 import com.enterprisepasswordsafe.engine.dbabstraction.ColumnSpecification;
 import com.enterprisepasswordsafe.engine.dbabstraction.IndexSpecification;
 import com.enterprisepasswordsafe.engine.dbabstraction.TableSpecification;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
+
+import java.sql.*;
 
 public abstract class AbstractTable {
-
-	/**
-	 * Creates the table from nothing.
-	 */
 
 	public void create()
 		throws SQLException {
@@ -52,37 +43,14 @@ public abstract class AbstractTable {
 		}
 	}
 
-	/**
-	 * Update the current schema to the latest version
-	 *
-	 * @param conn An auto-commiting connection to the database
-	 * @param schemaID The ID of the current schema in the database.
-	 */
-
 	public abstract void updateSchema(final long schemaID)
 		throws SQLException;
 
-	/**
-	 * Get the name of the table
-	 */
-
 	public abstract String getTableName();
-
-	/**
-	 * Get all of the columns in the table
-	 */
 
 	abstract ColumnSpecification[] getAllColumns();
 
-	/**
-	 * Get all of the indexes in the table
-	 */
-
 	abstract IndexSpecification[] getAllIndexes();
-
-	/**
-	 * Checks if a column exists, if it doesn't then it is created
-	 */
 
 	void createIfNotPresent(final ColumnSpecification column)
 		throws SQLException {
@@ -98,11 +66,6 @@ public abstract class AbstractTable {
 			throw new SQLException("Error enabling "+column+" on "+getTableName(), ex);
 		}
 	}
-
-	/**
-	 * Checks if the table exists by checking for an ID column, if the ID column does not exist
-	 * the table is created.
-	 */
 
 	boolean createTableIfNotPresent(final ColumnSpecification idColumn)
 		throws SQLException {
@@ -121,11 +84,6 @@ public abstract class AbstractTable {
 		}
 	}
 
-
-	/**
-	 * Renames a column if needed
-	 */
-
 	void renameColumn(final String oldName, final ColumnSpecification columnSpecification)
 		throws SQLException {
 		if(!columnExists(oldName)) {
@@ -133,28 +91,14 @@ public abstract class AbstractTable {
 		}
 
 		try {
-			BOMFactory.
-				getDatabaseAbstractionLayer().
-					renameColumn(
-							getTableName(),
-							oldName,
-							columnSpecification.getName(),
-							columnSpecification.getType() );
-		} catch(SQLException sqle) {
-			throw sqle;
+			BOMFactory.getDatabaseAbstractionLayer().renameColumn(getTableName(),
+				oldName, columnSpecification.getName(), columnSpecification.getType() );
+		} catch(SQLException sqlex) {
+			throw sqlex;
 		} catch(Exception ex) {
 			throw new SQLException("Error during column rename.", ex);
 		}
 	}
-
-
-	/**
-	 * Check to see if a column exists
-	 *
-	 * @param name The name of the column to check for.
-     *
-     * @return true if it exists, false if not.
-	 */
 
 	private boolean columnExists(final String name)
 		throws SQLException {
@@ -165,13 +109,8 @@ public abstract class AbstractTable {
 		query.append(getTableName());
 
 		Connection conn = BOMFactory.getCurrentConntection();
-		Statement stmt = null;
-		try {
-			stmt = conn.createStatement();
-			ResultSet rs = null;
-			try {
-				rs = stmt.executeQuery(query.toString());
-
+		try(Statement stmt = conn.createStatement()) {
+			try(ResultSet rs = stmt.executeQuery(query.toString())) {
 				ResultSetMetaData rsm = rs.getMetaData();
 				for(int i = 1 ; i <= rsm.getColumnCount() ; i++) {
 					if(name.equalsIgnoreCase(rsm.getColumnName(i))) {
@@ -180,15 +119,9 @@ public abstract class AbstractTable {
 				}
 
 				return false;
-			} catch(SQLException sqle) {
-				return false;
-			} finally {
-				DatabaseConnectionUtils.close(rs);
 			}
 		} catch(SQLException sqle) {
 			return false;
-		} finally {
-			DatabaseConnectionUtils.close(stmt);
 		}
 	}
 }

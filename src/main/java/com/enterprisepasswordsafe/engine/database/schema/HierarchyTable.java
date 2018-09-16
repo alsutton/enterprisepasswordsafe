@@ -131,49 +131,42 @@ public final class HierarchyTable
 
     private void migrateLocations()
     	throws SQLException {
-    	PreparedStatement ps = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-        try {
-        	Connection conn = BOMFactory.getCurrentConntection();
-            ps = conn.prepareStatement(INSERT_NODE_SQL);
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(GET_MIGRATION_INFO_SQL);
-            String lastLocation = null;
-            String currentParentId = HierarchyNode.ROOT_NODE_ID;
-            while (rs.next()) {
-                String name = rs.getString(2).intern();
+		Connection conn = BOMFactory.getCurrentConntection();
+        try(PreparedStatement ps = conn.prepareStatement(INSERT_NODE_SQL) ) {
+        	try(Statement stmt = conn.createStatement()) {
+				try (ResultSet rs = stmt.executeQuery(GET_MIGRATION_INFO_SQL);) {
+					String lastLocation = null;
+					String currentParentId = HierarchyNode.ROOT_NODE_ID;
+					while (rs.next()) {
+						String name = rs.getString(2).intern();
 
-                if (lastLocation != name) {
-                	String newId = IDGenerator.getID();
-                	int idx = 1;
-                	ps.setString(idx++, name);
-                	ps.setString(idx++, HierarchyNode.ROOT_NODE_ID);
-                	ps.setInt(idx++, HierarchyNode.CONTAINER_NODE);
-                	ps.setString(idx++, newId);
-                	ps.executeUpdate();
+						if (lastLocation != name) {
+							String newId = IDGenerator.getID();
+							ps.setString(1, name);
+							ps.setString(2, HierarchyNode.ROOT_NODE_ID);
+							ps.setInt(3, HierarchyNode.CONTAINER_NODE);
+							ps.setString(4, newId);
+							ps.executeUpdate();
 
-                    currentParentId = newId;
-                    lastLocation = name;
-                }
+							currentParentId = newId;
+							lastLocation = name;
+						}
 
-                String passwordId = rs.getString(1);
+						String passwordId = rs.getString(1);
 
-            	int idx = 1;
-            	ps.setString(idx++, passwordId);
-            	ps.setString(idx++, currentParentId);
-            	ps.setInt(idx++, HierarchyNode.OBJECT_NODE);
-            	ps.setString(idx++, IDGenerator.getID());
-            	ps.executeUpdate();
-            }
+						int idx = 1;
+						ps.setString(1, passwordId);
+						ps.setString(2, currentParentId);
+						ps.setInt(3, HierarchyNode.OBJECT_NODE);
+						ps.setString(4, IDGenerator.getID());
+						ps.executeUpdate();
+					}
+				}
+			}
         } catch(SQLException sqle) {
         	throw sqle;
         } catch(Exception ex) {
         	throw new SQLException("Error migrating password locations", ex);
-        } finally {
-            DatabaseConnectionUtils.close(rs);
-            DatabaseConnectionUtils.close(stmt);
-            DatabaseConnectionUtils.close(ps);
         }
     }
 

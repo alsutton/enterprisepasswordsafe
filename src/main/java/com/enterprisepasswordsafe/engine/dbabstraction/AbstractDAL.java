@@ -16,6 +16,8 @@
 
 package com.enterprisepasswordsafe.engine.dbabstraction;
 
+import com.enterprisepasswordsafe.engine.database.BOMFactory;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,9 +26,6 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.enterprisepasswordsafe.engine.database.BOMFactory;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 
 /**
  * Interface implemented by all Database Abstraction Layer classes.
@@ -271,21 +270,11 @@ public abstract class AbstractDAL
 	@Override
 	public boolean runSQLQuery( final String sql )
 		throws SQLException {
-		Statement stmt = getConnection().createStatement();
-		try
-		{
+		try(Statement stmt = getConnection().createStatement()) {
 			stmt.setMaxRows(1);
-			ResultSet rs = null;
-			try {
-				rs = stmt.executeQuery( sql );
+			try(ResultSet rs = stmt.executeQuery( sql )) {
 				return rs.next();
-			} finally {
-				DatabaseConnectionUtils.close(rs);
 			}
-		}
-		finally
-		{
-			DatabaseConnectionUtils.close(stmt);
 		}
 	}
 
@@ -300,14 +289,8 @@ public abstract class AbstractDAL
 	@Override
 	public void runSQLUpdate( String sql )
 		throws SQLException {
-		Statement stmt = getConnection().createStatement();
-		try
-		{
+		try(Statement stmt = getConnection().createStatement()) {
 			stmt.executeUpdate( sql );
-		}
-		finally
-		{
-			DatabaseConnectionUtils.close(stmt);
 		}
 	}
 

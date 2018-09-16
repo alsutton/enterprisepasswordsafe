@@ -16,6 +16,11 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
+import com.enterprisepasswordsafe.engine.utils.KeyUtils;
+import com.enterprisepasswordsafe.proguard.ExternalInterface;
+
+import javax.crypto.SecretKey;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
@@ -27,94 +32,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.enterprisepasswordsafe.engine.utils.Cache;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
-import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
-import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
-import javax.crypto.SecretKey;
-
-
-/**
- * Data access object for the user access control.
- *
- * @author alsutton
- */
-
 public final class MembershipDAO implements ExternalInterface {
-    /**
-     * The marker used in a membership map to show a user belongs to a group
-     */
 
     private static final Object MEMBERSHIP_MARKER = new Object();
 
-    /**
-     * The SQL Fields needed to construct a membership object.
-     */
-
     public static final String MEMBERSHIP_FIELDS = " mem.user_id, mem.group_id, mem.akey ";
 
-    /**
-     * The SQL to get a specific membership object.
-     */
+    private static final String GET_MEMBERSHIP_SQL =
+            "SELECT " + MEMBERSHIP_FIELDS + "  FROM membership mem  WHERE mem.user_id = ? AND mem.group_id = ? ";
 
-    private static final String GET_MEMBERSHIP_SQL = "SELECT "
-            + MEMBERSHIP_FIELDS + "  FROM membership mem "
-            + " WHERE mem.user_id = ? " + "   AND mem.group_id = ? ";
-
-    /**
-     * The SQL to get a specific membership object.
-     */
-
-    private static final String GET_MEMBERSHIPS_FOR_USER_SQL = "SELECT "
-            + MEMBERSHIP_FIELDS + "  FROM membership mem "
-            + " WHERE mem.user_id = ? ";
-
-    /**
-     * The SQL statement to write the details of a membership.
-     */
+    private static final String GET_MEMBERSHIPS_FOR_USER_SQL =
+            "SELECT " + MEMBERSHIP_FIELDS + "  FROM membership mem WHERE mem.user_id = ? ";
 
     private static final String WRITE_MEMBERSHIP_SQL =
     		"INSERT INTO membership(user_id, group_id, akey) VALUES (?,?,?)";
 
-    /**
-     * The SQL statement to update a membership key
-     */
-
     private static final String UPDATE_MEMBERSHIP_KEY_SQL =
     		"UPDATE membership SET akey = ? WHERE user_id = ? AND group_id = ?";
-
-    /**
-     * The SQL to delete a specific membership object.
-     */
 
     private static final String DELETE_MEMBERSHIP_SQL =
     		"DELETE FROM membership WHERE user_id = ? AND group_id = ? ";
 
-    /**
-     * The SQL statement to get the groups a user has access to.
-     */
-
     private static final String GET_USER_MEMBERSHIPS_SQL =
             "SELECT   grp.group_id "
-                    + "  FROM groups grp, "
-                    + "       application_users u, "
-                    + "       membership m "
-                    + " WHERE u.user_id = ? "
-                    + "   AND (u.disabled is null or u.disabled = 'N')"
-                    + "   AND m.user_id = u.user_id "
-                    + "   AND m.group_id = grp.group_id "
-                    + "   AND grp.group_id != '0' "
-                    + "   AND grp.group_id != '1' "
-                    + "   AND grp.group_id != '2' "
-                    + "   AND grp.group_id != '3' ";
-
-    /**
-	 * A cache of memberships previously fetched.
-	 */
-
-	private static Cache<String, Membership> cache = new Cache<String, Membership>();
+                    + "  FROM groups grp, application_users u, membership m "
+                    + " WHERE u.user_id = ? AND (u.disabled is null or u.disabled = 'N')"
+                    + "   AND m.user_id = u.user_id AND m.group_id = grp.group_id "
+                    + "   AND grp.group_id != '0' AND grp.group_id != '1' "
+                    + "   AND grp.group_id != '2' AND grp.group_id != '3' ";
 
 	/**
 	 * Private constructor to prevent instantiation
@@ -150,22 +95,16 @@ public final class MembershipDAO implements ExternalInterface {
 
     public void write(final User user, Membership membership)
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_MEMBERSHIP_SQL);
-        try {
-            int idx = 1;
-            ps.setString(idx++, membership.getUserId());
-            ps.setString(idx++, membership.getGroupId());
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_MEMBERSHIP_SQL)) {
+            ps.setString(1, membership.getUserId());
+            ps.setString(2, membership.getGroupId());
             SecretKey accessKey = membership.getAccessKey();
             if(accessKey == null) {
-                ps.setNull(idx, Types.BLOB);
+                ps.setNull(3, Types.BLOB);
             } else {
-                ps.setBytes(idx, KeyUtils.encryptKey(membership.getAccessKey(), user.getKeyEncrypter()));
+                ps.setBytes(3, KeyUtils.encryptKey(membership.getAccessKey(), user.getKeyEncrypter()));
             }
             ps.executeUpdate();
-
-    		cache.put(generateCacheKey(membership), membership);
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -231,13 +170,9 @@ public final class MembershipDAO implements ExternalInterface {
         theGroup.updateAccessKey(membership);
 
         create(user, theGroup);
-        TamperproofEventLogDAO.getInstance().create(
-                TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                remoteUser,
-                null,
-                "Added {user:" + remoteUser.getUserId()
-                        + "} to the group {group:" + theGroup.getGroupId() + "}",
-                true);
+        TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
+			remoteUser, null,"Added {user:" + remoteUser.getUserId()
+				+ "} to the group {group:" + theGroup.getGroupId() + "}",true);
 
         return create(user, GroupDAO.getInstance().getById(groupId));
     }
@@ -279,31 +214,12 @@ public final class MembershipDAO implements ExternalInterface {
 	        return null;
 	    }
 
-	    final String cacheKey = generateCacheKey(user.getUserId(), groupId);
-    	Membership membership = cache.get(cacheKey);
-    	if(membership != null) {
-    		return membership;
-    	}
-
-	    PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_MEMBERSHIP_SQL);
-	    try {
+	    try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_MEMBERSHIP_SQL)) {
 	        ps.setString(1, user.getUserId());
 	        ps.setString(2, groupId);
-
-	        ResultSet rs = ps.executeQuery();
-	        try {
-		        if (!rs.next()) {
-		        	return null;
-		        }
-
-	            membership = new Membership(rs, 1, user);
-	            cache.put(cacheKey, membership);
-	            return membership;
-	        } finally {
-		        DatabaseConnectionUtils.close(rs);
+	        try(ResultSet rs = ps.executeQuery()) {
+		        return rs.next() ? new Membership(rs, 1, user) : null;
 	        }
-	    } finally {
-	    	DatabaseConnectionUtils.close(ps);
 	    }
 	}
 
@@ -324,23 +240,12 @@ public final class MembershipDAO implements ExternalInterface {
 	        return false;
 	    }
 
-	    if (cache.get(generateCacheKey(userId, groupId)) != null) {
-	    	return true;
-	    }
-
-	    PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_MEMBERSHIP_SQL);
-	    try {
+	    try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_MEMBERSHIP_SQL)) {
 	        ps.setString(1, userId);
 	        ps.setString(2, groupId);
-
-	        ResultSet rs = ps.executeQuery();
-	        try {
+	        try(ResultSet rs = ps.executeQuery()) {
 	        	return rs.next();
-	        } finally {
-		        DatabaseConnectionUtils.close(rs);
 	        }
-	    } finally {
-	        DatabaseConnectionUtils.close(ps);
 	    }
 	}
 
@@ -405,15 +310,10 @@ public final class MembershipDAO implements ExternalInterface {
 
     public void delete(final String userId, final String groupId)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        cache.remove(generateCacheKey(userId, groupId));
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_MEMBERSHIP_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_MEMBERSHIP_SQL)) {
             ps.setString(1, userId);
             ps.setString(2, groupId);
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -436,34 +336,24 @@ public final class MembershipDAO implements ExternalInterface {
         }
 
         List<Membership> memberships = new ArrayList<Membership>();
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_MEMBERSHIPS_FOR_USER_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_MEMBERSHIPS_FOR_USER_SQL)) {
             ps.setString(1, user.getUserId());
-            ResultSet rs = ps.executeQuery();
-            try {
+            try(ResultSet rs = ps.executeQuery()) {
 	            while(rs.next()) {
 		            final Membership membership = new Membership( rs, 1, user);
 		            memberships.add(membership);
 	            }
-            } finally {
-                DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
 
-        ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_MEMBERSHIP_KEY_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_MEMBERSHIP_KEY_SQL)) {
             for( Membership membership : memberships ) {
-            	int idx = 1;
-            	ps.setBytes(idx++, KeyUtils.encryptKey(membership.getAccessKey(), encrypter));
-            	ps.setString(idx++, membership.getUserId());
-            	ps.setString(idx, membership.getGroupId());
+            	ps.setBytes(1, KeyUtils.encryptKey(membership.getAccessKey(), encrypter));
+            	ps.setString(2, membership.getUserId());
+            	ps.setString(3, membership.getGroupId());
             	ps.addBatch();
             }
             ps.executeBatch();
-        } finally {
-        	DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -480,20 +370,13 @@ public final class MembershipDAO implements ExternalInterface {
 
     public Map<String,Object> getMemberships(final String id) throws SQLException {
         Map<String, Object> membershipMap = new HashMap<String,Object>();
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_USER_MEMBERSHIPS_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_USER_MEMBERSHIPS_SQL)) {
             ps.setString(1, id);
-            ResultSet rs = ps.executeQuery();
-            try {
+            try(ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     membershipMap.put(rs.getString(1), MEMBERSHIP_MARKER);
                 }
-            } finally {
-                DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
 
         return membershipMap;

@@ -16,10 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.database.schema;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -165,45 +162,29 @@ public final class PasswordsTable
 
     private void createTypes()
     	throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
-    	Statement stmt = BOMFactory.getDatabaseAbstractionLayer().getConnection().createStatement();
-    	try {
-    		stmt.executeUpdate(SET_ALL_TO_SYSTEM_SQL);
+		Connection conn = BOMFactory.getDatabaseAbstractionLayer().getConnection();
 
-    		PreparedStatement updatePS =
-				BOMFactory.
-            		getDatabaseAbstractionLayer().
-            			getConnection().
-            				prepareStatement(UPDATE_TO_PERSONAL_PASSWORD_SQL);
-    		PreparedStatement selectPS =
-				BOMFactory.
-            		getDatabaseAbstractionLayer().
-            			getConnection().
-            				prepareStatement(SELECT_PERSONAL_PASSWORDS_SQL);
+    	try(Statement stmt = conn.createStatement()) {
+			stmt.executeUpdate(SET_ALL_TO_SYSTEM_SQL);
 
-    		ResultSet rs = stmt.executeQuery(GET_PERONAL_NODE_IDS);
-    		try {
-    			while( rs.next() ) {
-    				String id = rs.getString(1);
-    				selectPS.setString(1, id);
+			try (PreparedStatement updatePS = conn.prepareStatement(UPDATE_TO_PERSONAL_PASSWORD_SQL)) {
+				try (PreparedStatement selectPS = conn.prepareStatement(SELECT_PERSONAL_PASSWORDS_SQL)) {
+					try (ResultSet rs = stmt.executeQuery(GET_PERONAL_NODE_IDS)) {
+						while (rs.next()) {
+							String id = rs.getString(1);
+							selectPS.setString(1, id);
 
-    				ResultSet selectRS = selectPS.executeQuery();
-    				try {
-    					while(selectRS.next()) {
-    						String passwordID = selectRS.getString(1);
-    						updatePS.setString(1, passwordID);
-    						updatePS.executeUpdate();
-    					}
-    				} finally {
-    					DatabaseConnectionUtils.close(selectRS);
-    				}
-    			}
-    		} finally {
-            	DatabaseConnectionUtils.close(selectPS);
-            	DatabaseConnectionUtils.close(updatePS);
-            	DatabaseConnectionUtils.close(rs);
-    		}
-        } finally {
-    		DatabaseConnectionUtils.close(stmt);
+							try (ResultSet selectRS = selectPS.executeQuery()) {
+								while (selectRS.next()) {
+									String passwordID = selectRS.getString(1);
+									updatePS.setString(1, passwordID);
+									updatePS.executeUpdate();
+								}
+							}
+						}
+					}
+				}
+			}
         }
     }
 
