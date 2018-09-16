@@ -17,7 +17,10 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -31,160 +34,40 @@ import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.exceptions.DatabaseUnavailableException;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
+import com.enterprisepasswordsafe.ui.web.utils.ForwardException;
+import com.enterprisepasswordsafe.ui.web.utils.RedirectException;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-
-/**
- * Servlet to authenticate a user logging in.
- */
-
 public final class VerifyLogin extends LoginAuthenticationServlet {
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 8992563176702910158L;
-
-    /**
-     * The next page to send the user to.
-     */
 
     private static final String NEXT_PAGE_REDIRECT = "/system/Welcome";
-
-    /**
-     * The next page to send the user to.
-     */
-
     private static final String PASSWORD_SYNC_PAGE = "/passwordsync.jsp";
 
     private UserClassifier userClassifier = new UserClassifier();
 
-    /**
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
-    	HttpSession session = request.getSession();
-    	if( session != null ) {
-	    	session.removeAttribute(AuthenticationFilter.USER_IS_ADMIN);
-	    	session.removeAttribute(AuthenticationFilter.USER_IS_SUBADMIN);
-	    	session.removeAttribute(AuthenticationFilter.ACCESS_KEY_PARAMETER);
-	    	session.removeAttribute(AuthenticationFilter.USER_NAME_PARAMETER);
-	    	session.removeAttribute(SecurityUtils.USER_ID_PARAMETER);
-    	}
+    	HttpSession session = getClearSession(request);
 
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-
-        // check the username and password were supplied
         if (username == null || password == null) {
             throw new ServletException("Please enter your username and password.");
         }
 
         try {
-			User theUser = UserDAO.getInstance().getByName(username);
-			if (theUser == null) {
-				TamperproofEventLogDAO.getInstance().create(
-						TamperproofEventLog.LOG_LEVEL_AUTHENTICATION,
-						null,
-						"An attempt was made to log in as a non-existent user ("
-								+ username + ") from " + request.getRemoteHost() + ". ",
-						false
-				);
-				ServletUtils.getInstance().generateErrorMessage(request, "There was a problem authorising your details");
-				response.sendRedirect(request.getContextPath() + "/Login");
-				return;
-			}
-
-			if (!theUser.isEnabled()) {
-				TamperproofEventLogDAO.getInstance().create(
-						TamperproofEventLog.LOG_LEVEL_AUTHENTICATION,
-						theUser,
-						"An attempt was made to log in as a disabled user ("
-								+ username + ") from " + request.getRemoteHost() + ". ",
-						false
-				);
-				ServletUtils.getInstance().generateErrorMessage(request, "There was a problem authorising your details");
-				response.sendRedirect(request.getContextPath() + "/Login");
-				return;
-			}
-
-			try {
-				UserDAO.getInstance().authenticateUser(theUser, password);
-			} catch (LoginException le) {
-				// Handle syncing if the user enters their EPS password and it differs from the
-				// auth source one.
-				if (theUser.getAuthSource() != null
-						&& !theUser.getAuthSource().equals(AuthenticationSource.DEFAULT_SOURCE.getSourceId())) {
-					if (theUser.checkPassword(password)) {
-						request.setAttribute(SecurityUtils.USER_ID_PARAMETER, theUser.getUserId());
-						request.getRequestDispatcher(PASSWORD_SYNC_PAGE).forward(request, response);
-						return;
-					}
-				}
-
-				TamperproofEventLogDAO.getInstance().create(
-						TamperproofEventLog.LOG_LEVEL_AUTHENTICATION,
-						theUser,
-						"An attempt to log in as the user "
-								+ username + " from " + request.getRemoteHost()
-								+ " failed (" + le.getLocalizedMessage() + "). ",
-						false
-				);
-				ServletUtils.getInstance().generateErrorMessage(request, "There was a problem authorising your details");
-				response.sendRedirect(request.getContextPath() + "/Login");
-				return;
-			}
-
-			// Handle syncing if the user enters their Auth source password and it differs from the
-			// EPS one.
-			if (theUser.getAuthSource() != null
-					&& !theUser.getAuthSource().equals(AuthenticationSource.DEFAULT_SOURCE.getSourceId())) {
-				if (!theUser.checkPassword(password)) {
-					request.setAttribute(SecurityUtils.USER_ID_PARAMETER, theUser.getUserId());
-					request.getRequestDispatcher(PASSWORD_SYNC_PAGE).forward(request, response);
-					return;
-				}
-			}
-
-			// If the user has logged in using an external source we need to
-			// ensure the external and EPS password are synchronized.
-			if (!theUser.checkPassword(password)) {
-				if (!userClassifier.isMasterAdmin(theUser)) {
-					UserDAO.getInstance().increaseFailedLogins(theUser);
-				}
-				ServletUtils.getInstance().generateErrorMessage(request, "Your login details are incorrect.");
-				response.sendRedirect(request.getContextPath() + "/Login");
-				return;
-			}
-
-			// Check for a login restriction. admin@localhost will ALWAYS be allowed.
-			String address = request.getRemoteAddr();
-			String userId = theUser.getUserId();
-			List<UserIPZoneRestriction> restrictions = UserIPZoneRestrictionDAO.getInstance().getApplicable(userId, address);
-			if (restrictions.size() > 0) {
-				for (UserIPZoneRestriction thisRestriction : restrictions) {
-					if (thisRestriction.getRule() == UserIPZoneRestriction.DENY_INT) {
-						throw new ServletException("You can not log in from the system you are using.");
-					}
-				}
-			} else {
-				String defaultLoginAccess = ConfigurationDAO.getValue(ConfigurationOption.DEFAULT_LOGIN_ACCESS);
-				if (defaultLoginAccess.equals(UserIPZoneRestriction.DENY_STRING)) {
-					ServletUtils.getInstance().generateErrorMessage(request, "You can not log in from the system you are using.");
-					response.sendRedirect(request.getContextPath() + "/Login");
-					return;
-				}
-			}
-
-			theUser.decryptAccessKey(password);
-			UserDAO.getInstance().zeroFailedLogins(theUser);
-
+            User theUser = getUser(request, username);
+            authenticateUser(request, theUser, password);
 			storeUserInformation(session, theUser);
 			storeTimeoutInformation(session);
 			String redirect = response.encodeRedirectURL(request.getContextPath() + NEXT_PAGE_REDIRECT);
 			response.sendRedirect(redirect);
+        } catch (RedirectException e) {
+            response.sendRedirect(request.getContextPath() + e.getDestination());
+        } catch (ForwardException e) {
+            request.getRequestDispatcher(e.getDestination()).forward(request, response);
 		} catch (DatabaseUnavailableException e) {
 			response.sendRedirect(request.getContextPath()+"/VerifyJDBCConfiguration");
         } catch (SQLException | GeneralSecurityException e) {
@@ -192,9 +75,119 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
         }
     }
 
-    /**
-     * An attempt to get bounces the user back to the main page
-     */
+    private HttpSession getClearSession(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        if( session != null ) {
+            session.removeAttribute(AuthenticationFilter.USER_IS_ADMIN);
+            session.removeAttribute(AuthenticationFilter.USER_IS_SUBADMIN);
+            session.removeAttribute(AuthenticationFilter.ACCESS_KEY_PARAMETER);
+            session.removeAttribute(AuthenticationFilter.USER_NAME_PARAMETER);
+            session.removeAttribute(SecurityUtils.USER_ID_PARAMETER);
+        }
+        return session;
+	}
+
+	private User getUser(HttpServletRequest request, final String username)
+            throws RedirectException, SQLException, UnsupportedEncodingException, GeneralSecurityException {
+        User theUser = UserDAO.getInstance().getByName(username);
+        if (theUser == null) {
+            TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_AUTHENTICATION,
+                    null, "An attempt was made to log in as a non-existent user ("
+                            + username + ") from " + request.getRemoteHost() + ". ",false);
+            ServletUtils.getInstance().generateErrorMessage(request, "There was a problem authorising your details");
+            throw new RedirectException("/Login");
+        }
+
+        if (!theUser.isEnabled()) {
+            TamperproofEventLogDAO.getInstance().create(
+                    TamperproofEventLog.LOG_LEVEL_AUTHENTICATION,
+                    theUser, "An attempt was made to log in as a disabled user ("
+                            + username + ") from " + request.getRemoteHost() + ". ", false);
+            ServletUtils.getInstance().generateErrorMessage(request, "There was a problem authorising your details");
+            throw new RedirectException("/Login");
+        }
+        return theUser;
+    }
+
+    private void authenticateUser(HttpServletRequest request, User user, String password)
+            throws GeneralSecurityException, UnsupportedEncodingException, SQLException,
+            RedirectException, ForwardException, ServletException, UnknownHostException {
+        try {
+            UserDAO.getInstance().authenticateUser(user, password);
+        } catch (LoginException e) {
+            handleAuthenticationFailure(request, user, password, e.getLocalizedMessage());
+        }
+        checkRemoteAndLocalPasswordsMatch(request, user, password);
+        if (!user.checkPassword(password)) {
+            handleFailedLogin(request, user);
+        }
+        checkLoginRestrictions(request, user);
+        user.decryptAccessKey(password);
+        UserDAO.getInstance().zeroFailedLogins(user);
+    }
+
+    private void handleAuthenticationFailure(HttpServletRequest request, User user, String password,
+                                             String failureMessage)
+            throws ForwardException, RedirectException, UnsupportedEncodingException,
+            GeneralSecurityException, SQLException {
+        if (user.getAuthSource() != null
+                && !user.getAuthSource().equals(AuthenticationSource.DEFAULT_SOURCE.getSourceId())) {
+            if (user.checkPassword(password)) {
+                request.setAttribute(SecurityUtils.USER_ID_PARAMETER, user.getUserId());
+                throw new ForwardException(PASSWORD_SYNC_PAGE);
+            }
+        }
+
+        TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_AUTHENTICATION,
+                user, "An attempt to log in as the user " + user.getUserName() + " from " +
+                        request.getRemoteHost() + " failed (" + failureMessage + "). ", false);
+        ServletUtils.getInstance().generateErrorMessage(request, "There was a problem authorising your details");
+        throw new RedirectException("/Login");
+    }
+
+    private void checkRemoteAndLocalPasswordsMatch(HttpServletRequest request, User user, String password)
+            throws ForwardException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        if (user.getAuthSource() == null
+        ||  user.getAuthSource().equals(AuthenticationSource.DEFAULT_SOURCE.getSourceId())) {
+            return;
+        }
+
+        if (user.checkPassword(password)) {
+            return;
+        }
+
+        request.setAttribute(SecurityUtils.USER_ID_PARAMETER, user.getUserId());
+        throw new ForwardException(PASSWORD_SYNC_PAGE);
+    }
+
+    private void handleFailedLogin(HttpServletRequest request, User user)
+            throws GeneralSecurityException, UnsupportedEncodingException, SQLException, RedirectException {
+        if (!userClassifier.isMasterAdmin(user)) {
+            UserDAO.getInstance().increaseFailedLogins(user);
+        }
+        ServletUtils.getInstance().generateErrorMessage(request, "Your login details are incorrect.");
+        throw new RedirectException("/Login");
+    }
+
+    private void checkLoginRestrictions(HttpServletRequest request, User user)
+            throws GeneralSecurityException, SQLException, UnknownHostException, ServletException, RedirectException {
+        String address = request.getRemoteAddr();
+        String userId = user.getUserId();
+        List<UserIPZoneRestriction> restrictions = UserIPZoneRestrictionDAO.getInstance().getApplicable(userId, address);
+        if (restrictions.size() > 0) {
+            for (UserIPZoneRestriction thisRestriction : restrictions) {
+                if (thisRestriction.getRule() == UserIPZoneRestriction.DENY_INT) {
+                    throw new ServletException("You can not log in from the system you are using.");
+                }
+            }
+        } else {
+            String defaultLoginAccess = ConfigurationDAO.getValue(ConfigurationOption.DEFAULT_LOGIN_ACCESS);
+            if (defaultLoginAccess.equals(UserIPZoneRestriction.DENY_STRING)) {
+                ServletUtils.getInstance().generateErrorMessage(request, "You can not log in from the system you are using.");
+                throw new RedirectException("/Login");
+            }
+        }
+    }
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -202,9 +195,6 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
     	response.sendRedirect(request.getContextPath());
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to delete a group from the system";
