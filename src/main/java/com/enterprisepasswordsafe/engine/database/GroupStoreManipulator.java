@@ -32,14 +32,11 @@ public abstract class GroupStoreManipulator extends StoredObjectManipulator<Grou
 
     public void update(final Group group)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_GROUP_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_GROUP_SQL)) {
             ps.setString(1, group.getGroupName());
             ps.setInt(2, group.getStatus());
             ps.setString(3, group.getGroupId());
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -47,13 +44,7 @@ public abstract class GroupStoreManipulator extends StoredObjectManipulator<Grou
             throws SQLException {
         String theGroupId = group.getGroupId();
         for(String sql: DELETE_SQL_STATEMENTS) {
-            PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql);
-            try {
-                ps.setString(1, theGroupId);
-                ps.executeUpdate();
-            } finally {
-                DatabaseConnectionUtils.close(ps);
-            }
+            runResultlessParameterisedSQL(sql, theGroupId);
         }
     }
 }

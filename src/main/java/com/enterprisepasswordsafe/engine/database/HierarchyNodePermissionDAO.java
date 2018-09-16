@@ -79,12 +79,9 @@ public class HierarchyNodePermissionDAO
         if( nodeId == null )
             return;
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_DEFAULT_PASSWORD_PERMISSIONS_FOR_NODE);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_DEFAULT_PASSWORD_PERMISSIONS_FOR_NODE)) {
             ps.setString(1, nodeId);
-
-            ResultSet rs = ps.executeQuery();
-            try {
+            try(ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String type = rs.getString(1);
                     String actorId = rs.getString(2);
@@ -97,11 +94,7 @@ public class HierarchyNodePermissionDAO
                         throw new GeneralSecurityException("Unknown password permission default "+type);
                     }
                 }
-            } finally {
-                DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -119,24 +112,17 @@ public class HierarchyNodePermissionDAO
     public UserNodeDefaultPermission getDefaultPermissionForUser(final UserSummary user, String nodeId)
             throws SQLException {
         synchronized( this ) {
-            PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_PERMISSION_SUMMARY_FOR_USER);
-            try {
+            try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_PERMISSION_SUMMARY_FOR_USER)) {
                 ps.setString(1, user.getId());
                 ps.setString(2, nodeId);
                 ps.setMaxRows(1);
-
-                ResultSet rs = ps.executeQuery();
-                try {
+                try(ResultSet rs = ps.executeQuery()) {
                     if(rs.next()) {
                         return new UserNodeDefaultPermission(user, rs.getString(1));
                     }
 
                     return new UserNodeDefaultPermission(user, "0");
-                } finally {
-                    DatabaseConnectionUtils.close(rs);
                 }
-            } finally {
-                DatabaseConnectionUtils.close(ps);
             }
         }
     }
@@ -154,24 +140,14 @@ public class HierarchyNodePermissionDAO
     public GroupNodeDefaultPermission getDefaultPermissionForGroup(final Group group, String nodeId)
             throws SQLException {
         synchronized( this ) {
-            PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_PERMISSION_SUMMARY_FOR_GROUP);
-            try {
+            try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_PERMISSION_SUMMARY_FOR_GROUP)) {
                 ps.setString(1, group.getId());
                 ps.setString(2, nodeId);
                 ps.setMaxRows(1);
-
-                ResultSet rs = ps.executeQuery();
-                try {
-                    if(rs.next()) {
-                        return new GroupNodeDefaultPermission(group, rs.getString(1));
-                    }
-
-                    return new GroupNodeDefaultPermission(group, "0");
-                } finally {
-                    DatabaseConnectionUtils.close(rs);
+                try(ResultSet rs = ps.executeQuery()) {
+                    return rs.next() ? new GroupNodeDefaultPermission(group, rs.getString(1)) :
+                                        new GroupNodeDefaultPermission(group, "0");
                 }
-            } finally {
-                DatabaseConnectionUtils.close(ps);
             }
         }
     }
@@ -193,16 +169,12 @@ public class HierarchyNodePermissionDAO
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         if( nodeId == null )
             return;
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_DEFAULT_PASSWORD_PERMISSIONS_FOR_NODE);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_DEFAULT_PASSWORD_PERMISSIONS_FOR_NODE)) {
             String currentNodeId =  nodeId;
             while( currentNodeId != null ) {
                 HierarchyNode currentNode =  hierarchyNodeDAO.getById(currentNodeId);
                 ps.setString(1, currentNodeId);
-
-                ResultSet rs = ps.executeQuery();
-                try {
+                try(ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         int idx = 1;
                         String type = rs.getString(idx++);
@@ -222,15 +194,10 @@ public class HierarchyNodePermissionDAO
                             throw new GeneralSecurityException("Unknown password permission default "+type);
                         }
                     }
-                } finally {
-                    DatabaseConnectionUtils.close(rs);
-
                 }
 
                 currentNodeId = currentNode.getParentId();
             }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -249,15 +216,12 @@ public class HierarchyNodePermissionDAO
             throws SQLException {
         runResultlessParameterisedSQL(DELETE_PASSWORD_DEFAULTS_FOR_NODE, nodeId);
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(SET_PASSWORD_DEFAULTS_FOR_NODE);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(SET_PASSWORD_DEFAULTS_FOR_NODE)) {
             ps.setString(1, nodeId);
             ps.setString(2, "u");
             setDefaultPermissions(ps, userPermMap);
             ps.setString(2, "g");
             setDefaultPermissions(ps, groupPermMap);
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 

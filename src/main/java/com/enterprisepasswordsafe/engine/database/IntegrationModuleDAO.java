@@ -109,15 +109,12 @@ public final class IntegrationModuleDAO
     	changer.install(BOMFactory.getDatabaseAbstractionLayer().getConnection());
 
     	// Delete the details of the node.
-    	PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(INSERT_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(INSERT_SQL)) {
             int idx = 1;
             ps.setString(idx++, module.getId());
             ps.setString(idx++, module.getName());
             ps.setString(idx,   module.getClassName());
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -139,12 +136,9 @@ public final class IntegrationModuleDAO
     	changer.uninstall(BOMFactory.getDatabaseAbstractionLayer().getConnection());
 
     	// Delete the details of the node.
-    	PreparedStatement deleteStatement = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL);
-        try {
+        try(PreparedStatement deleteStatement = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL)) {
             deleteStatement.setString(1, module.getId());
             deleteStatement.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(deleteStatement);
         }
 
         // Delete the configuration
@@ -164,19 +158,14 @@ public final class IntegrationModuleDAO
 
     public IntegrationModule getById(final String id)
             throws SQLException {
-    	PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_SQL);
-        ResultSet rs = null;
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_SQL)) {
             ps.setString(1, id);
             ps.setMaxRows(1);
-
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                return new IntegrationModule(rs);
+            try(ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new IntegrationModule(rs);
+                }
             }
-        } finally {
-            DatabaseConnectionUtils.close(rs);
-            DatabaseConnectionUtils.close(ps);
         }
 
         return null;
@@ -194,19 +183,13 @@ public final class IntegrationModuleDAO
     public List<IntegrationModule> getAll()
             throws SQLException {
     	List<IntegrationModule> modules = new ArrayList<IntegrationModule>();
-
-    	Statement stmt = BOMFactory.getCurrentConntection().createStatement();
-        ResultSet rs = null;
-        try {
-            rs = stmt.executeQuery(GET_ALL_SQL);
-            while(rs.next()) {
-                modules.add( new IntegrationModule(rs) );
+        try(Statement stmt = BOMFactory.getCurrentConntection().createStatement()) {
+            try(ResultSet rs = stmt.executeQuery(GET_ALL_SQL)) {
+                while (rs.next()) {
+                    modules.add(new IntegrationModule(rs));
+                }
             }
-        } finally {
-            DatabaseConnectionUtils.close(rs);
-            DatabaseConnectionUtils.close(stmt);
         }
-
         return modules;
     }
 
@@ -250,16 +233,11 @@ public final class IntegrationModuleDAO
 
     public boolean isInUse( final IntegrationModule module )
     	throws SQLException {
-    	PreparedStatement checkPS =
-    		BOMFactory.getCurrentConntection().prepareStatement(CHECK_FOR_MODULE_USE_SQL);
-    	ResultSet rs = null;
-    	try {
+    	try(PreparedStatement checkPS = BOMFactory.getCurrentConntection().prepareStatement(CHECK_FOR_MODULE_USE_SQL)) {
             checkPS.setString(1, module.getId());
-            rs = checkPS.executeQuery();
-        	return rs.next();
-    	} finally {
-    		DatabaseConnectionUtils.close(rs);
-            DatabaseConnectionUtils.close(checkPS);
+            try(ResultSet rs = checkPS.executeQuery()) {
+                return rs.next();
+            }
     	}
     }
 
