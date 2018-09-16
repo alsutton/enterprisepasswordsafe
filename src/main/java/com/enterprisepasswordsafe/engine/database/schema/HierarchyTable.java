@@ -26,7 +26,6 @@ import com.enterprisepasswordsafe.engine.database.BOMFactory;
 import com.enterprisepasswordsafe.engine.database.HierarchyNode;
 import com.enterprisepasswordsafe.engine.dbabstraction.ColumnSpecification;
 import com.enterprisepasswordsafe.engine.dbabstraction.IndexSpecification;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
 
 public final class HierarchyTable

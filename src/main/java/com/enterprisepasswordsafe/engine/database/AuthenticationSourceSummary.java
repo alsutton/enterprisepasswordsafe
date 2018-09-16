@@ -26,8 +26,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
-
 
 /**
  * Summary class. Holds only the source name and ID

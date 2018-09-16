@@ -16,22 +16,19 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import java.security.GeneralSecurityException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
 import com.enterprisepasswordsafe.engine.database.exceptions.DatabaseUnavailableException;
 import com.enterprisepasswordsafe.engine.dbabstraction.DALFactory;
 import com.enterprisepasswordsafe.engine.dbabstraction.DALInterface;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
+
+import java.security.GeneralSecurityException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -94,7 +91,7 @@ public class DatabaseAccessManager {
 					connection.commit();
 				}
 			} finally {
-				DatabaseConnectionUtils.close(connection);
+				connection.close();
 			}
 		} catch(Exception ex) {
 			Logger.getAnonymousLogger().log(Level.WARNING, "Error commiting data on BOM close", ex);

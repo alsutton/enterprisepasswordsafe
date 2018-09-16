@@ -3,7 +3,6 @@ package com.enterprisepasswordsafe.engine.database;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.nodes.GroupNodeDefaultPermission;
 import com.enterprisepasswordsafe.engine.nodes.UserNodeDefaultPermission;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;

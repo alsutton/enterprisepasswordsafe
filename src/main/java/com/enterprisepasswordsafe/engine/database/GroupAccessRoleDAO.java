@@ -17,12 +17,8 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 public final class GroupAccessRoleDAO

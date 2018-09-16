@@ -37,7 +37,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.enterprisepasswordsafe.engine.AccessControlDecryptor;
 import com.enterprisepasswordsafe.engine.utils.Constants;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
 import com.enterprisepasswordsafe.proguard.JavaBean;
 

@@ -1,6 +1,5 @@
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 
 import java.io.IOException;
@@ -155,8 +154,7 @@ public abstract class PasswordStoreManipulator
 
     public void update(final Password password, final AccessControl ac)
             throws SQLException, GeneralSecurityException, IOException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_PASSWORD_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_PASSWORD_SQL)) {
             int idx = 1;
             if (password.isEnabled()) {
                 ps.setString(idx++, null);
@@ -174,8 +172,6 @@ public abstract class PasswordStoreManipulator
 
             ps.setString(idx, password.getId());
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
@@ -185,8 +181,7 @@ public abstract class PasswordStoreManipulator
             return;
         }
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL)) {
             ps.setString(1, password.getId());
             ps.executeUpdate();
 
@@ -195,8 +190,6 @@ public abstract class PasswordStoreManipulator
                 TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
                         deletingUser, null, "Deleted the password " + password.toString(), sendEmail);
             }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 

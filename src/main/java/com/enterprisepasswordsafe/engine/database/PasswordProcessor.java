@@ -2,7 +2,6 @@ package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.database.actions.PasswordAction;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

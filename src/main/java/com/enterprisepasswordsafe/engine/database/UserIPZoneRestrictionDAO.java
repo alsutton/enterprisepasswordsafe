@@ -16,6 +16,8 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.proguard.ExternalInterface;
+
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
@@ -26,92 +28,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
-/**
- * Data access object for the user objects.
- */
 public final class UserIPZoneRestrictionDAO
     implements ExternalInterface {
 
-    /**
-     * SQL to get a restriction based on an ip address and user id.
-     */
-
     private static final String GET_BY_USER_ID_AND_IP_SQL =
-        "SELECT uipz.ip_zone_id, uipz.user_id, uipz.setting "
-        + "  FROM user_ip_zones uipz, "
-        + "       ip_zones ipz "
-        + " WHERE ipz.ip_version = ? "
-        + "   AND ipz.ip_start <= ? "
-        + "   AND ipz.ip_end   >= ? "
-        + "   AND ipz.ip_zone_id = uipz.ip_zone_id "
-        + "   AND uipz.user_id = ?";
+        "SELECT uipz.ip_zone_id, uipz.user_id, uipz.setting FROM user_ip_zones uipz,  ip_zones ipz "
+        + " WHERE ipz.ip_version = ? AND ipz.ip_start <= ? AND ipz.ip_end   >= ? "
+        + "   AND ipz.ip_zone_id = uipz.ip_zone_id AND uipz.user_id = ?";
 
-
-    /**
-     * SQL to get a restriction by it's zone and user id.
-     */
 
     private static final String GET_BY_ZONE_AND_USER_SQL =
-        "SELECT ip_zone_id, user_id, setting "
-        + "  FROM user_ip_zones "
-        + " WHERE ip_zone_id   = ?"
-        + "   AND user_id = ?";
-
-    /**
-     * SQL to get the restrictions for a user.
-     */
+        "SELECT ip_zone_id, user_id, setting FROM user_ip_zones WHERE ip_zone_id = ? AND user_id = ?";
 
     private static final String GET_BY_USER_ID_SQL =
-        "SELECT ip_zone_id, setting "
-        + "  FROM user_ip_zones "
-        + " WHERE user_id = ?";
-
-    /**
-     * SQL to store the IP zone
-     */
+        "SELECT ip_zone_id, setting  FROM user_ip_zones WHERE user_id = ?";
 
     private static final String STORE_SQL =
-        "INSERT INTO user_ip_zones(ip_zone_id, user_id, setting) "
-        + "   VALUES              (         ?,       ?,    ? )";
-
-    /**
-     * SQL to update the IP Zone
-     */
+        "INSERT INTO user_ip_zones(ip_zone_id, user_id, setting) VALUES( ?, ?, ? )";
 
     private static final String UPDATE_SQL =
-        "UPDATE user_ip_zones "+
-        "   SET setting = ? "+
-        " WHERE ip_zone_id = ?" +
-        "   AND user_id    = ?";
-
-    /**
-     * SQL to delete a zone.
-     */
+        "UPDATE user_ip_zones SET setting = ? WHERE ip_zone_id = ? AND user_id    = ?";
 
     private static final String DELETE_SQL =
-        "DELETE FROM user_ip_zones "
-       +" WHERE ip_zone_id = ? "
-       +"   AND user_id = ?";
-
-	/**
-	 * Private constructor to prevent instantiation
-	 */
+        "DELETE FROM user_ip_zones WHERE ip_zone_id = ? AND user_id = ?";
 
 	private UserIPZoneRestrictionDAO() {
 		super();
 	}
-
-
-    /**
-     * Cretae a new restriction
-     *
-     * @param theZoneId The ID of the zone for this restriction.
-     * @param theUserId The ID of the user for this restriction.
-     * @param theRule The restruction rule.
-     */
 
     public final UserIPZoneRestriction create( final String zoneId, final String userId, final int rule )
     	throws SQLException {
@@ -119,15 +62,6 @@ public final class UserIPZoneRestrictionDAO
     	store(ipzr);
     	return ipzr;
     }
-
-    /**
-     * Get the list of restrictions for a user from an address.
-     *
-     * @param id The ID of the user to check.
-     * @param ip The IP address to check for.
-     *
-     * @return The list of applicable restrictions.
-     */
 
     public final List<UserIPZoneRestriction> getApplicable( final String id, final String ip )
         throws SQLException, UnknownHostException, GeneralSecurityException {
@@ -142,133 +76,67 @@ public final class UserIPZoneRestrictionDAO
     		dbString = IPZone.convertIP4ToDBString(ip);
     	}
 
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_USER_ID_AND_IP_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_USER_ID_AND_IP_SQL)) {
             ps.setInt    (1, ipVersion);
             ps.setString (2, dbString);
             ps.setString (3, dbString);
             ps.setString (4, id);
-            ResultSet rs = ps.executeQuery();
-            try {
+            try(ResultSet rs = ps.executeQuery()) {
 	            List<UserIPZoneRestriction> results = new ArrayList<UserIPZoneRestriction>();
 	            while(rs.next()) {
 	                results.add(new UserIPZoneRestriction(rs));
 	            }
 
 	            return results;
-            } finally {
-            	DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
-
-    /**
-     * Store this restriction in the database
-     *
-     * @param conn The connection to the database.
-     */
-
     public void store( final UserIPZoneRestriction ipzr )
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(STORE_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(STORE_SQL)) {
             ps.setString(1, ipzr.getZoneId());
             ps.setString(2, ipzr.getUserId());
             ps.setInt   (3, ipzr.getRule());
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
-
-    /**
-     * Update the data stored in the database.
-     *
-     * @param conn The connection to the database.
-     */
-
     public void update( final UserIPZoneRestriction ipzr )
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_SQL)) {
             ps.setInt   (1, ipzr.getRule());
             ps.setString(2, ipzr.getZoneId());
             ps.setString(3, ipzr.getUserId());
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
-
-    /**
-     * Delete this zone from the database
-     *
-     * @param conn The connection to the database.
-     */
 
     public void delete( final UserIPZoneRestriction ipzr )
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL)) {
             ps.setString(1, ipzr.getZoneId());
             ps.setString(2, ipzr.getUserId());
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
-
-
-    /**
-     * Get a restriction by from a zone and user id.
-     *
-     * @param conn The connection to the database.
-     * @param userId The ID of the user to get the restriction for.
-     * @param zoneId The ID of the zone to get the restriction for.
-     */
 
     public final UserIPZoneRestriction getByZoneAndUser( final String userId, final String zoneId )
         throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_ZONE_AND_USER_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_ZONE_AND_USER_SQL)) {
             ps.setString(1, zoneId);
             ps.setString(2,   userId);
-            ResultSet rs = ps.executeQuery();
-            try {
-	            if(!rs.next()) {
-	                return null;
-	            }
-
-	            return new UserIPZoneRestriction(rs);
-            } finally {
-                DatabaseConnectionUtils.close(rs);
+            try(ResultSet rs = ps.executeQuery()) {
+	            return rs.next() ? new UserIPZoneRestriction(rs) : null;
             }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
     }
 
-
-    /**
-     * Get the list of rules for a particular user
-     *
-     * @param id The ID of the user to get the zone information for.
-     *
-     * @return The map of groups to known permissions.
-     */
-
     public final Map<String,String> getRulesForUser( final String id ) throws SQLException {
         Map<String,String> rules = new HashMap<String,String>();
-
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_USER_ID_SQL);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_USER_ID_SQL)) {
             ps.setString(1, id);
-            ResultSet rs = ps.executeQuery();
-            try {
+            try(ResultSet rs = ps.executeQuery()) {
 	            while( rs.next() ) {
 	                String zoneId = rs.getString(1);
 	                int rule = rs.getInt(2);
@@ -280,11 +148,7 @@ public final class UserIPZoneRestrictionDAO
 	                    }
 	                }
 	            }
-            } finally {
-                DatabaseConnectionUtils.close(rs);
             }
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
 
         return rules;

@@ -16,14 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class UserAccessRoleDAO
 		extends AbstractAccessRoleDAO<UserAccessRole>
@@ -57,27 +53,21 @@ public class UserAccessRoleDAO
 
 	public void store( final UserAccessRole role )
 		throws SQLException {
-		PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(INSERT_SQL);
-		try {
+		try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(INSERT_SQL)) {
 			ps.setString(1, role.getItemId());
 			ps.setString(2, role.getActorId());
 			ps.setString(3, role.getRole());
 			ps.executeUpdate();
-		} finally {
-			DatabaseConnectionUtils.close(ps);
 		}
 	}
 
 	public void update( final UserAccessRole role )
 		throws SQLException {
-		PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_SQL);
-		try {
+		try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_SQL)) {
 			ps.setString(1, role.getRole());
 			ps.setString(2, role.getActorId());
 			ps.setString(3, role.getItemId());
 			ps.executeUpdate();
-		} finally {
-			DatabaseConnectionUtils.close(ps);
 		}
 	}
 

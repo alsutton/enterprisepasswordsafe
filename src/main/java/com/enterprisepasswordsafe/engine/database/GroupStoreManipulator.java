@@ -1,7 +1,5 @@
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
-
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;

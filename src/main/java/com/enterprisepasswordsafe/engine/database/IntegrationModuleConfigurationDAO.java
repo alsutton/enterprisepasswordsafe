@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 public final class IntegrationModuleConfigurationDAO implements ExternalInterface {

@@ -25,7 +25,6 @@ import java.util.List;
 
 import com.enterprisepasswordsafe.engine.integration.PasswordChanger;
 import com.enterprisepasswordsafe.engine.integration.PasswordChangerProperty;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**

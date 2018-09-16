@@ -29,12 +29,9 @@ import java.util.logging.Logger;
 import com.enterprisepasswordsafe.engine.database.actions.NodeObjectAction;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeSummary;
-import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.Cache;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
-import com.enterprisepasswordsafe.proguard.JavaBean;
 
 /**
  * Data access object for nodes in the hierarchy.

@@ -1,7 +1,5 @@
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,8 +34,7 @@ public abstract class AbstractAccessRoleDAO<T> {
 
     public Map<String,String> getAllForItem(final String id)
             throws SQLException {
-        Map<String,String> results = new HashMap<String,String>();
-
+        Map<String,String> results = new HashMap<>();
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(getAllSql)) {
             ps.setString(1, id);
             try(ResultSet rs = ps.executeQuery()) {
@@ -54,16 +51,12 @@ public abstract class AbstractAccessRoleDAO<T> {
 
     public void delete(final String itemId, final String actorId, final String role)
             throws SQLException {
-        PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(deleteSql);
-        try {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(deleteSql)) {
             ps.setString(1, itemId);
             ps.setString(2, actorId);
             ps.setString(3, role);
             ps.executeUpdate();
-        } finally {
-            DatabaseConnectionUtils.close(ps);
         }
-
     }
 
 }

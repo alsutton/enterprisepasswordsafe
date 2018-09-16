@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;

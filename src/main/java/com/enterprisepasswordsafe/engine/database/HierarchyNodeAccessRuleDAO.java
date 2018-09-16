@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
-import com.enterprisepasswordsafe.engine.utils.DatabaseConnectionUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
