@@ -278,25 +278,6 @@ public final class ActiveDirectoryNonAnonymousLoginModule
         ldapBase.delete(ldapBase.length() - 1, ldapBase.length());
     }
 
-    /**
-     * Attempt to bind the the directory using a given DN value.
-     *
-     * @param env The environment to use to attempt the bind.
-     * @param dn The DN value to use for the attempt.
-     * @param password The password the user is attempt to use to log in.
-     *
-     * @throws NamingException Thrown if there is a problem logging in.
-     */
-
-    private void attemptBind(final Hashtable<String,Object> env, final String dn,
-            final String password)
-        throws NamingException {
-        env.put(Context.SECURITY_PRINCIPAL, dn);
-        env.put(Context.SECURITY_CREDENTIALS, password);
-        DirContext ctx = new InitialDirContext(env);
-        ctx.close();
-    }
-
     @Override
 	public void initialize(final Subject newSubject,
             final CallbackHandler newCallbackHandler,

@@ -66,18 +66,6 @@ public final class ActiveDirectoryDomainLoginModule
     public static final String DOMAIN_CONTROLLER_PARAMETERNAME = "ad.domaincontroller";
 
     /**
-     * The options passed to this module.
-     */
-
-    private transient Map<String, ?> options;
-
-    /**
-     * The callback handler.
-     */
-
-    private transient CallbackHandler callbackHandler;
-
-    /**
      * Attempt to log the user in.
      *
      * @return true if the login went well, false if not.
@@ -184,29 +172,6 @@ public final class ActiveDirectoryDomainLoginModule
     	}
 
         throw new FailedLoginException("Your Active Directory Server did not authenticate you.");
-    }
-
-    /**
-     * Initialise the login module.
-     *
-     * @param newSubject
-     *            The subject being authorised.
-     * @param newCallbackHandler
-     *            The calklback handler which will obtain the login information.
-     * @param newSharedState
-     *            The shared state between LoginModules
-     * @param newOptions
-     *            The options for this LoginModule.
-     */
-    @Override
-	public void initialize(final Subject newSubject,
-            final CallbackHandler newCallbackHandler,
-            final Map<String, ?> newSharedState, final Map<String, ?> newOptions) {
-        subject = newSubject;
-        callbackHandler = newCallbackHandler;
-        loginOK = false;
-        commitOK = false;
-        options = newOptions;
     }
 
     /**

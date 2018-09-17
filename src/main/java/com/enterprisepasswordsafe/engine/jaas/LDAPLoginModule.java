@@ -45,37 +45,8 @@ import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
  * JAAS module for handling logging in a user.
  */
 public final class LDAPLoginModule
-	implements LoginModule, AuthenticationSourceModule {
-
-    /**
-     * The subject being authenticated.
-     */
-
-    private Subject subject;
-
-    /**
-     * The options passed to this module.
-     */
-
-    private Map<String,?> options;
-
-    /**
-     * The callback handler.
-     */
-
-    private CallbackHandler callbackHandler;
-
-    /**
-     * Whether or not the login has succeeded.
-     */
-
-    private boolean loginOK;
-
-    /**
-     * Whether or not the login commited.
-     */
-
-    private boolean commitOK;
+        extends BaseLDAPLoginModule
+	    implements AuthenticationSourceModule {
 
     /**
      * Abort the login attempt.
@@ -97,27 +68,6 @@ public final class LDAPLoginModule
             logout();
         }
 
-        return true;
-    }
-
-    /**
-     * Commit the authentication attempt.
-     *
-     * @return true if the commit was OK, false if not.
-     */
-    public boolean commit() {
-        commitOK = false;
-        if (!loginOK) {
-            return false;
-        }
-
-        DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
-        Set<Principal> principals = subject.getPrincipals();
-        if (!principals.contains(principal)) {
-            principals.add(principal);
-        }
-
-        commitOK = true;
         return true;
     }
 
@@ -179,20 +129,6 @@ public final class LDAPLoginModule
         }
 
         throw new FailedLoginException("Your LDAP Server did not authenticate you.");
-    }
-
-    /**
-     * Log the user out.
-     *
-     * @return true if the user was logged out without any problems.
-     */
-    public boolean logout() {
-        DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
-        subject.getPrincipals().remove(principal);
-        loginOK = false;
-        commitOK = false;
-
-        return true;
     }
 
     /**

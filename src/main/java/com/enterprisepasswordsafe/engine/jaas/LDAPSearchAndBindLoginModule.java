@@ -16,6 +16,17 @@
 
 package com.enterprisepasswordsafe.engine.jaas;
 
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.*;
+import javax.security.auth.login.FailedLoginException;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.spi.LoginModule;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Hashtable;
@@ -25,30 +36,12 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.naming.Context;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.FailedLoginException;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.spi.LoginModule;
-
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
-
 /**
  * JAAS module for handling logging in a user.
  */
 
 public final class LDAPSearchAndBindLoginModule
+    extends BaseLDAPLoginModule
 	implements LoginModule, AuthenticationSourceModule {
 
     /**
@@ -68,36 +61,6 @@ public final class LDAPSearchAndBindLoginModule
      */
 
     public static final String SEARCH_ATTRIBUTE_PARAMETERNAME = "jndi.search.attr";
-
-    /**
-     * The subject being authenticated.
-     */
-
-    private Subject subject;
-
-    /**
-     * The options passed to this module.
-     */
-
-    private Map<String,?> options;
-
-    /**
-     * The callback handler.
-     */
-
-    private CallbackHandler callbackHandler;
-
-    /**
-     * Whether or not the login has succeeded.
-     */
-
-    private boolean loginOK;
-
-    /**
-     * Whether or not the login commited.
-     */
-
-    private boolean commitOK;
 
     /**
      * Abort the login attempt.
@@ -135,9 +98,7 @@ public final class LDAPSearchAndBindLoginModule
 
         DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
         Set<Principal> principals = subject.getPrincipals();
-        if (!principals.contains(principal)) {
-            principals.add(principal);
-        }
+        principals.add(principal);
 
         commitOK = true;
         return true;
@@ -161,65 +122,43 @@ public final class LDAPSearchAndBindLoginModule
         Callback[] callbacks = new Callback[2];
         NameCallback nameCallback = new NameCallback("Username");
         callbacks[0] = nameCallback;
-        PasswordCallback passwordCallback = new PasswordCallback("Password",
-                false);
+        PasswordCallback passwordCallback = new PasswordCallback("Password", false);
         callbacks[1] = passwordCallback;
         try {
             callbackHandler.handle(callbacks);
-        } catch (IOException ioe) {
-            throw new LoginException(ioe.toString());
-        } catch (UnsupportedCallbackException uce) {
-            throw new LoginException(uce.toString());
+        } catch (IOException | UnsupportedCallbackException e) {
+            throw new LoginException(e.toString());
         }
 
         try {
-            Hashtable<String,Object> env = new Hashtable<String,Object>();
+            Hashtable<String,Object> env = new Hashtable<>();
             env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
             env.put(Context.PROVIDER_URL, options.get(PROVIDER_URL_PARAMETERNAME));
 
             DirContext context = new InitialDirContext(env);
             try {
                 String searchAttribute = (String) options.get(SEARCH_ATTRIBUTE_PARAMETERNAME);
-                StringBuffer searchFilter = new StringBuffer();
-                searchFilter.append('(');
-                searchFilter.append(searchAttribute);
-                searchFilter.append('=');
-                searchFilter.append(nameCallback.getName());
-                searchFilter.append(')');
 
                 String password = new String(passwordCallback.getPassword());
 
-                Hashtable<String,Object> rebindEnv = new Hashtable<String,Object>();
-                rebindEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-                rebindEnv.put(Context.PROVIDER_URL, options.get(PROVIDER_URL_PARAMETERNAME));
-                rebindEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
+                Hashtable<String,Object> rebindEnvironment = new Hashtable<>();
+                rebindEnvironment.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+                rebindEnvironment.put(Context.PROVIDER_URL, options.get(PROVIDER_URL_PARAMETERNAME));
+                rebindEnvironment.put(Context.SECURITY_AUTHENTICATION, "simple");
 
                 String searchBase = (String) options.get(SEARCH_BASE_PARAMETERNAME);
 
                 SearchControls searchControls = new SearchControls();
                 searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
                 NamingEnumeration<SearchResult> matches =
-                    context.search(
-                        searchBase,
-                        searchFilter.toString(),
-                        searchControls
-                     );
+                    context.search( searchBase, "(" + searchAttribute + '=' + nameCallback.getName() + ')',
+                        searchControls);
 
                 while (matches.hasMore() && !loginOK) {
-                    SearchResult thisResult = (SearchResult) matches.next();
-                    String dn = thisResult.getName().toString();
-                    try {
-                        StringBuffer fullDN = new StringBuffer(dn.length() + searchBase.length() + 2);
-                        fullDN.append(dn);
-                        fullDN.append(", ");
-                        fullDN.append(searchBase);
-                        attemptBind(rebindEnv, fullDN.toString(), password);
-                        loginOK = true;
+                    SearchResult thisResult = matches.next();
+                    String dn = thisResult.getName();
+                    if(canBindToServer(rebindEnvironment, searchBase, dn, password)) {
                         return true;
-                    } catch (Exception ex) {
-                        Logger.
-                            getLogger(LDAPSearchAndBindLoginModule.class.getName()).
-                                log(Level.WARNING, "Failed to bind with " + dn, ex);
                     }
                 }
             } finally {
@@ -232,39 +171,6 @@ public final class LDAPSearchAndBindLoginModule
         }
 
         throw new FailedLoginException("Your LDAP Server did not authenticate you.");
-    }
-
-    /**
-     * Attempt to bind the the directory using a given DN value.
-     *
-     * @param env The environment to use to attempt the bind.
-     * @param dn The DN value to use for the attempt.
-     * @param password The password the user is attempt to use to log in.
-     *
-     * @throws NamingException Thrown if there is a problem logging in.
-     */
-
-    private void attemptBind(final Hashtable<String,Object> env, final String dn,
-            final String password)
-        throws NamingException {
-        env.put(Context.SECURITY_PRINCIPAL, dn);
-        env.put(Context.SECURITY_CREDENTIALS, password);
-        DirContext ctx = new InitialDirContext(env);
-        ctx.close();
-    }
-
-    /**
-     * Log the user out.
-     *
-     * @return true if the user was logged out without any problems.
-     */
-    public boolean logout() {
-        DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
-        subject.getPrincipals().remove(principal);
-        loginOK = false;
-        commitOK = false;
-
-        return true;
     }
 
     /**

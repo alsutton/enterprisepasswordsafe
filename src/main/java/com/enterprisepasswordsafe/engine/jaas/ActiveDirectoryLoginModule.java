@@ -189,18 +189,8 @@ public final class ActiveDirectoryLoginModule
                 while (matches.hasMore() && !loginOK) {
                     SearchResult thisResult = matches.next();
                     String dn = thisResult.getName().toString();
-                    try {
-                        StringBuffer fullDN = new StringBuffer(dn.length() + searchBase.length() + 2);
-                        fullDN.append(dn);
-                        fullDN.append(", ");
-                        fullDN.append(searchBase);
-                        attemptBind(rebindEnv, fullDN.toString(), password);
-                        loginOK = true;
+                    if(canBindToServer(rebindEnv, searchBase, dn, password)) {
                         return true;
-                    } catch (Exception ex) {
-                        Logger.
-                            getLogger(ActiveDirectoryLoginModule.class.getName()).
-                                log(Level.WARNING, "Failed to bind with " + dn, ex);
                     }
                 }
             } finally {
@@ -213,25 +203,6 @@ public final class ActiveDirectoryLoginModule
         }
 
         throw new FailedLoginException("Your Active Directory Server did not authenticate you.");
-    }
-
-    /**
-     * Attempt to bind the the directory using a given DN value.
-     *
-     * @param env The environment to use to attempt the bind.
-     * @param dn The DN value to use for the attempt.
-     * @param password The password the user is attempt to use to log in.
-     *
-     * @throws NamingException Thrown if there is a problem logging in.
-     */
-
-    private void attemptBind(final Hashtable<String,Object> env, final String dn,
-            final String password)
-        throws NamingException {
-        env.put(Context.SECURITY_PRINCIPAL, dn);
-        env.put(Context.SECURITY_CREDENTIALS, password);
-        DirContext ctx = new InitialDirContext(env);
-        ctx.close();
     }
 
     /**

@@ -38,40 +38,7 @@ import com.enterprisepasswordsafe.engine.database.User;
 import com.enterprisepasswordsafe.engine.database.UserDAO;
 import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
 
-/**
- * JAAS module for handling logging in a user using the EPS database..
- */
-public final class DatabaseLoginModule implements LoginModule {
-
-    /**
-     * The subject being authenticated.
-     */
-
-    private Subject subject;
-
-    /**
-     * The callback handler.
-     */
-
-    private CallbackHandler callbackHandler;
-
-    /**
-     * Whether or not the login has succeeded.
-     */
-
-    private boolean loginOK;
-
-    /**
-     * Whether or not the login commited.
-     */
-
-    private boolean commitOK;
-
-    /**
-     * Abort the login attempt.
-     *
-     * @return true if this module performed some work, false if not.
-     */
+public final class DatabaseLoginModule extends BaseLoginModule {
 
     @Override
 	public boolean abort() {
@@ -92,36 +59,6 @@ public final class DatabaseLoginModule implements LoginModule {
         return true;
     }
 
-    /**
-     * Commit the authentication attempt.
-     *
-     * @return true if the commit was OK, false if not.
-     */
-    @Override
-	public boolean commit() {
-        commitOK = false;
-        if (!loginOK) {
-            return false;
-        }
-
-        DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
-        Set<Principal> principals = subject.getPrincipals();
-        if (!principals.contains(principal)) {
-            principals.add(principal);
-        }
-
-        commitOK = true;
-        return true;
-    }
-
-    /**
-     * Attempt to log the user in.
-     *
-     * @return true if the login went well, false if not.
-     *
-     * @throws LoginException
-     *             Thrown if there is a problem with the login.
-     */
     @Override
 	public boolean login() throws LoginException {
         loginOK = false;
@@ -133,65 +70,29 @@ public final class DatabaseLoginModule implements LoginModule {
         Callback[] callbacks = new Callback[2];
         NameCallback nameCallback = new NameCallback("Username");
         callbacks[0] = nameCallback;
-        PasswordCallback passwordCallback = new PasswordCallback("Password",
-                false);
+        PasswordCallback passwordCallback = new PasswordCallback("Password", false);
         callbacks[1] = passwordCallback;
         try {
             callbackHandler.handle(callbacks);
-        } catch (IOException ioe) {
-            throw new LoginException(ioe.toString());
-        } catch (UnsupportedCallbackException uce) {
-            throw new LoginException(uce.toString());
+        } catch (IOException | UnsupportedCallbackException e) {
+            throw new LoginException(e.toString());
         }
 
         try {
             // Verify the information.
             User theUser = UserDAO.getInstance().getByName(nameCallback.getName());
-            if (theUser == null
-             || !theUser.checkPassword(passwordCallback.getPassword())) {
-                throw new FailedLoginException(
-                        "The details specified were not correct");
+            if (theUser == null || !theUser.checkPassword(passwordCallback.getPassword())) {
+                throw new FailedLoginException("The details specified were not correct");
             }
 
             loginOK = true;
-        } catch (GeneralSecurityException ex) {
-            throw new LoginException(ex.toString());
-        } catch (SQLException ex) {
-            throw new LoginException(ex.toString());
-        } catch (UnsupportedEncodingException ex) {
+        } catch (GeneralSecurityException | SQLException | UnsupportedEncodingException ex) {
             throw new LoginException(ex.toString());
         }
 
         return true;
     }
 
-    /**
-     * Log the user out.
-     *
-     * @return true if the user was logged out without any problems.
-     */
-    @Override
-	public boolean logout() {
-        DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
-        subject.getPrincipals().remove(principal);
-        loginOK = false;
-        commitOK = false;
-
-        return true;
-    }
-
-    /**
-     * Initialise the login module.
-     *
-     * @param newSubject
-     *            The subject being authorised.
-     * @param newCallbackHandler
-     *            The calklback handler which will obtain the login information.
-     * @param newSharedState
-     *            The shared state between LoginModules
-     * @param newOptions
-     *            The options for this LoginModule.
-     */
     @Override
 	public void initialize(final Subject newSubject,
             final CallbackHandler newCallbackHandler,
