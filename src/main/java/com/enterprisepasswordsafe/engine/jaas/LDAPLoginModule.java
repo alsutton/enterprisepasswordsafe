@@ -16,43 +16,21 @@
 
 package com.enterprisepasswordsafe.engine.jaas;
 
-import java.io.IOException;
-import java.security.Principal;
+import javax.naming.Context;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import javax.security.auth.login.FailedLoginException;
+import javax.security.auth.login.LoginException;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.naming.Context;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.FailedLoginException;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.spi.LoginModule;
-
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
-
-/**
- * JAAS module for handling logging in a user.
- */
 public final class LDAPLoginModule
         extends BaseLDAPLoginModule
 	    implements AuthenticationSourceModule {
 
-    /**
-     * Abort the login attempt.
-     *
-     * @return true if this module performed some work, false if not.
-     */
     public boolean abort() {
         // If we didn't log in ignore this module
         if (!loginOK) {
@@ -71,51 +49,24 @@ public final class LDAPLoginModule
         return true;
     }
 
-    /**
-     * Attempt to log the user in.
-     *
-     * @return true if the login went well, false if not.
-     *
-     * @throws LoginException
-     *             Thrown if there is a problem with the login.
-     */
     public boolean login() throws LoginException {
         loginOK = false;
         if (callbackHandler == null) {
             throw new LoginException("Callback handler not defined.");
         }
 
-        // Get the information.
-        Callback[] callbacks = new Callback[2];
-        NameCallback nameCallback = new NameCallback("Username");
-        callbacks[0] = nameCallback;
-        PasswordCallback passwordCallback = new PasswordCallback("Password",
-                false);
-        callbacks[1] = passwordCallback;
+        UserDetails userDetails = getUserDetailsFromCallbacks();
         try {
-            callbackHandler.handle(callbacks);
-        } catch (IOException ioe) {
-            throw new LoginException(ioe.toString());
-        } catch (UnsupportedCallbackException uce) {
-            throw new LoginException(uce.toString());
-        }
-
-        try {
-            Hashtable<String,Object> env = new Hashtable<String,Object>();
-            env.put(Context.INITIAL_CONTEXT_FACTORY,
-                    "com.sun.jndi.ldap.LdapCtxFactory");
-            env.put(Context.PROVIDER_URL, options.get("url"));
-            env.put(Context.SECURITY_AUTHENTICATION, "simple");
+            Hashtable<String,Object> env = getSimpleAuthEnvironment();
 
             StringBuffer principal = new StringBuffer();
             principal.append(options.get("prefix"));
             principal.append('=');
-            principal.append(nameCallback.getName());
+            principal.append(userDetails.username);
             principal.append(',');
             principal.append(options.get("base"));
             env.put(Context.SECURITY_PRINCIPAL, principal.toString());
-            env.put(Context.SECURITY_CREDENTIALS, new String(passwordCallback
-                    .getPassword()));
+            env.put(Context.SECURITY_CREDENTIALS, userDetails.password);
 
             DirContext ctx = new InitialDirContext(env);
             ctx.close();
@@ -123,78 +74,28 @@ public final class LDAPLoginModule
             loginOK = true;
             return true;
         } catch (Exception ex) {
-            Logger.
-                getLogger(LDAPSearchAndBindLoginModule.class.getName()).
+            Logger.getLogger(LDAPSearchAndBindLoginModule.class.getName()).
                     log(Level.WARNING, "Problem during authentication ", ex);
         }
 
         throw new FailedLoginException("Your LDAP Server did not authenticate you.");
     }
 
-    /**
-     * Initialise the login module.
-     *
-     * @param newSubject
-     *            The subject being authorised.
-     * @param newCallbackHandler
-     *            The calklback handler which will obtain the login information.
-     * @param newSharedState
-     *            The shared state between LoginModules
-     * @param newOptions
-     *            The options for this LoginModule.
-     */
-    public void initialize(final Subject newSubject,
-            final CallbackHandler newCallbackHandler,
-            final Map<String,?> newSharedState, final Map<String,?> newOptions) {
-        subject = newSubject;
-        callbackHandler = newCallbackHandler;
-        loginOK = false;
-        commitOK = false;
-        options = newOptions;
-    }
-
-    /**
-     * Get the configuration options for this module.
-     * 
-     * @return The set of configuration options
-     */
-    
 	public Set<AuthenticationSourceConfigurationOption> getConfigurationOptions() {
-    	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions = 
-    		new TreeSet<AuthenticationSourceConfigurationOption>();
+    	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions = new TreeSet<>();
     	
-    	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					1,
-    					"Directory URL",
-    					"url",
-    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
-    					null,
-    					"ldap://[machine_name]:389/"  
-    				)
-    		);
+    	newConfigurationOptions.add(new AuthenticationSourceConfigurationOption(1,
+    					"Directory URL", "url",
+    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX, null,
+    					"ldap://[machine_name]:389/"));
 
-    	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					2,
-    					"User Base",
-    					"base",
-    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
-    					null,
-    					null  
-    				)
-    		);
+    	newConfigurationOptions.add(new AuthenticationSourceConfigurationOption(2,
+    					"User Base","base",
+    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX, null,null));
 
-    	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					3,
-    					"Username Prefix",
-    					"prefix",
-    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
-    					null,
-    					"cn"  
-    				)
-    		);
+    	newConfigurationOptions.add(new AuthenticationSourceConfigurationOption(3,
+    					"Username Prefix", "prefix",
+    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX, null,"cn"));
     	
     	return newConfigurationOptions;
 	}

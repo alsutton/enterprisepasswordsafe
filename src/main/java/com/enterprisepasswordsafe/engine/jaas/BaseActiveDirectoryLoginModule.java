@@ -4,7 +4,9 @@ import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.Set;
 
-public abstract class BaseActiveDirectoryLoginModule extends BaseLDAPLoginModule{
+public abstract class BaseActiveDirectoryLoginModule extends BaseLDAPLoginModule {
+
+    public static final String LDAPS_PARAMETERNAME = "ad.ldaps";
 
     public boolean abort() {
         // If we didn't log in ignore this module
@@ -24,4 +26,13 @@ public abstract class BaseActiveDirectoryLoginModule extends BaseLDAPLoginModule
         return true;
     }
 
+    String getBindUrl(String domainController) {
+        return getLdapProtocol() + domainController + '/';
+    }
+
+    private String getLdapProtocol() {
+        String sslFlag = (String) options.get(LDAPS_PARAMETERNAME);
+        boolean sslOff = sslFlag == null || sslFlag.charAt(0) == 'N';
+        return sslOff ? "ldap://" : "ldaps://";
+    }
 }

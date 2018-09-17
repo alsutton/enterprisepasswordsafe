@@ -44,29 +44,12 @@ public final class LDAPSearchAndBindLoginModule
     extends BaseLDAPLoginModule
 	implements LoginModule, AuthenticationSourceModule {
 
-    /**
-     * The parameter name in the options for the LDAP provider base.
-     */
-
     public static final String PROVIDER_URL_PARAMETERNAME = "jndi.url";
-
-    /**
-     * The parameter name in the options for the search base.
-     */
 
     public static final String SEARCH_BASE_PARAMETERNAME = "jndi.search.base";
 
-    /**
-     * The parameter name in the options for the search attribute.
-     */
-
     public static final String SEARCH_ATTRIBUTE_PARAMETERNAME = "jndi.search.attr";
 
-    /**
-     * Abort the login attempt.
-     *
-     * @return true if this module performed some work, false if not.
-     */
     public boolean abort() {
         // If we didn't log in ignore this module
         if (!loginOK) {
@@ -86,25 +69,6 @@ public final class LDAPSearchAndBindLoginModule
     }
 
     /**
-     * Commit the authentication attempt.
-     *
-     * @return true if the commit was OK, false if not.
-     */
-    public boolean commit() {
-        commitOK = false;
-        if (!loginOK) {
-            return false;
-        }
-
-        DatabaseLoginPrincipal principal = DatabaseLoginPrincipal.getInstance();
-        Set<Principal> principals = subject.getPrincipals();
-        principals.add(principal);
-
-        commitOK = true;
-        return true;
-    }
-
-    /**
      * Attempt to log the user in.
      *
      * @return true if the login went well, false if not.
@@ -118,17 +82,7 @@ public final class LDAPSearchAndBindLoginModule
             throw new LoginException("Callback handler not defined.");
         }
 
-        // Get the information.
-        Callback[] callbacks = new Callback[2];
-        NameCallback nameCallback = new NameCallback("Username");
-        callbacks[0] = nameCallback;
-        PasswordCallback passwordCallback = new PasswordCallback("Password", false);
-        callbacks[1] = passwordCallback;
-        try {
-            callbackHandler.handle(callbacks);
-        } catch (IOException | UnsupportedCallbackException e) {
-            throw new LoginException(e.toString());
-        }
+        UserDetails userDetails = getUserDetailsFromCallbacks();
 
         try {
             Hashtable<String,Object> env = new Hashtable<>();
@@ -138,8 +92,6 @@ public final class LDAPSearchAndBindLoginModule
             DirContext context = new InitialDirContext(env);
             try {
                 String searchAttribute = (String) options.get(SEARCH_ATTRIBUTE_PARAMETERNAME);
-
-                String password = new String(passwordCallback.getPassword());
 
                 Hashtable<String,Object> rebindEnvironment = new Hashtable<>();
                 rebindEnvironment.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -151,13 +103,11 @@ public final class LDAPSearchAndBindLoginModule
                 SearchControls searchControls = new SearchControls();
                 searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
                 NamingEnumeration<SearchResult> matches =
-                    context.search( searchBase, "(" + searchAttribute + '=' + nameCallback.getName() + ')',
+                    context.search( searchBase, "(" + searchAttribute + '=' + userDetails.username + ')',
                         searchControls);
 
                 while (matches.hasMore() && !loginOK) {
-                    SearchResult thisResult = matches.next();
-                    String dn = thisResult.getName();
-                    if(canBindToServer(rebindEnvironment, searchBase, dn, password)) {
+                    if(canBindToServer(rebindEnvironment, searchBase, matches.next().getName(), userDetails.password)) {
                         return true;
                     }
                 }
@@ -174,69 +124,25 @@ public final class LDAPSearchAndBindLoginModule
     }
 
     /**
-     * Initialise the login module.
-     *
-     * @param newSubject
-     *            The subject being authorised.
-     * @param newCallbackHandler
-     *            The calklback handler which will obtain the login information.
-     * @param newSharedState
-     *            The shared state between LoginModules
-     * @param newOptions
-     *            The options for this LoginModule.
-     */
-    public void initialize(final Subject newSubject,
-            final CallbackHandler newCallbackHandler,
-            final Map<String, ?> newSharedState, final Map<String,?> newOptions) {
-        subject = newSubject;
-        callbackHandler = newCallbackHandler;
-        loginOK = false;
-        commitOK = false;
-        options = newOptions;
-    }
-
-    /**
      * Get the configuration options for this module.
      * 
      * @return The set of configuration options
      */
     
 	public Set<AuthenticationSourceConfigurationOption> getConfigurationOptions() {
-    	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions = 
-    		new TreeSet<AuthenticationSourceConfigurationOption>();
+    	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions = new TreeSet<>();
 
-    	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					1,
-    					"Directory URL",
-    					"jndi.url",
-    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
-    					null,
-    					"ldap://[machine_name]:389/"  
-    				)
-    		);
+    	newConfigurationOptions.add(new AuthenticationSourceConfigurationOption(1,
+    					"Directory URL", "jndi.url",
+    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,null, "ldap://[machine_name]:389/"));
 
-    	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					2,
-    					"Search Base",
-    					"jndi.search.base",
-    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
-    					null,
-    					null  
-    				)
-    		);
+    	newConfigurationOptions.add(new AuthenticationSourceConfigurationOption(2,
+    					"Search Base", "jndi.search.base",
+    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,null,null));
 
-    	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption(
-    					3,
-    					"Search Prefix",
-    					"jndi.search.attr",
-    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,
-    					null,
-    					"cn"  
-    				)
-    		);
+    	newConfigurationOptions.add(new AuthenticationSourceConfigurationOption(3,
+    					"Search Prefix", "jndi.search.attr",
+    					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,null,"cn"));
     	
     	return newConfigurationOptions;
 	}
