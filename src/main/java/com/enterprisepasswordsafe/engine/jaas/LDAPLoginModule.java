@@ -31,24 +31,6 @@ public final class LDAPLoginModule
         extends BaseLDAPLoginModule
 	    implements AuthenticationSourceModule {
 
-    public boolean abort() {
-        // If we didn't log in ignore this module
-        if (!loginOK) {
-            return false;
-        }
-
-        if (!commitOK) {
-            // If the commit hasn't happened clear out any stored info
-            loginOK = false;
-        } else {
-            // If the login was OK, and the commit was OK we need to log out
-            // again.
-            logout();
-        }
-
-        return true;
-    }
-
     public boolean login() throws LoginException {
         loginOK = false;
         if (callbackHandler == null) {

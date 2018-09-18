@@ -18,27 +18,19 @@ package com.enterprisepasswordsafe.engine.jaas;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.*;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import java.io.IOException;
-import java.security.Principal;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-/**
- * JAAS module for handling logging in a user.
- */
 
 public final class LDAPSearchAndBindLoginModule
     extends BaseLDAPLoginModule
@@ -50,32 +42,6 @@ public final class LDAPSearchAndBindLoginModule
 
     public static final String SEARCH_ATTRIBUTE_PARAMETERNAME = "jndi.search.attr";
 
-    public boolean abort() {
-        // If we didn't log in ignore this module
-        if (!loginOK) {
-            return false;
-        }
-
-        if (!commitOK) {
-            // If the commit hasn't happened clear out any stored info
-            loginOK = false;
-        } else {
-            // If the login was OK, and the commit was OK we need to log out
-            // again.
-            logout();
-        }
-
-        return true;
-    }
-
-    /**
-     * Attempt to log the user in.
-     *
-     * @return true if the login went well, false if not.
-     *
-     * @throws LoginException
-     *             Thrown if there is a problem with the login.
-     */
     public boolean login() throws LoginException {
         loginOK = false;
         if (callbackHandler == null) {
@@ -91,25 +57,8 @@ public final class LDAPSearchAndBindLoginModule
 
             DirContext context = new InitialDirContext(env);
             try {
-                String searchAttribute = (String) options.get(SEARCH_ATTRIBUTE_PARAMETERNAME);
-
-                Hashtable<String,Object> rebindEnvironment = new Hashtable<>();
-                rebindEnvironment.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-                rebindEnvironment.put(Context.PROVIDER_URL, options.get(PROVIDER_URL_PARAMETERNAME));
-                rebindEnvironment.put(Context.SECURITY_AUTHENTICATION, "simple");
-
-                String searchBase = (String) options.get(SEARCH_BASE_PARAMETERNAME);
-
-                SearchControls searchControls = new SearchControls();
-                searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-                NamingEnumeration<SearchResult> matches =
-                    context.search( searchBase, "(" + searchAttribute + '=' + userDetails.username + ')',
-                        searchControls);
-
-                while (matches.hasMore() && !loginOK) {
-                    if(canBindToServer(rebindEnvironment, searchBase, matches.next().getName(), userDetails.password)) {
-                        return true;
-                    }
+                if(canBind(userDetails, context)) {
+                    return true;
                 }
             } finally {
                 context.close();
@@ -123,12 +72,29 @@ public final class LDAPSearchAndBindLoginModule
         throw new FailedLoginException("Your LDAP Server did not authenticate you.");
     }
 
-    /**
-     * Get the configuration options for this module.
-     * 
-     * @return The set of configuration options
-     */
-    
+    private boolean canBind(UserDetails userDetails, DirContext context)
+            throws NamingException {
+        String searchAttribute = (String) options.get(SEARCH_ATTRIBUTE_PARAMETERNAME);
+
+        Hashtable<String,Object> rebindEnvironment =
+                getSimpleAuthEnvironment(options.get(PROVIDER_URL_PARAMETERNAME).toString());
+
+        String searchBase = (String) options.get(SEARCH_BASE_PARAMETERNAME);
+
+        SearchControls searchControls = new SearchControls();
+        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration<SearchResult> matches =
+                context.search( searchBase, "(" + searchAttribute + '=' + userDetails.username + ')',
+                        searchControls);
+
+        while (matches.hasMore() && !loginOK) {
+            if(canBindToServer(rebindEnvironment, searchBase, matches.next().getName(), userDetails.password)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 	public Set<AuthenticationSourceConfigurationOption> getConfigurationOptions() {
     	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions = new TreeSet<>();
 
@@ -146,12 +112,6 @@ public final class LDAPSearchAndBindLoginModule
     	
     	return newConfigurationOptions;
 	}
-
-	/**
-	 * Get the configuration notes for this source.
-	 * 
-	 * @return The notes for the configuration page for this source.
-	 */
 
 	public String getConfigurationNotes() {
 		return 		

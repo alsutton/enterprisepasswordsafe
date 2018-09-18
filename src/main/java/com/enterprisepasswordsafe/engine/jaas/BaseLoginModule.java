@@ -42,6 +42,21 @@ public abstract class BaseLoginModule implements LoginModule {
         return true;
     }
 
+    @Override
+    public boolean abort() {
+        if (!loginOK) {
+            return false;
+        }
+
+        if (commitOK) {
+            logout();
+        }
+        loginOK = false;
+
+        return true;
+    }
+
+
     UserDetails getUserDetailsFromCallbacks() throws LoginException {
         Callback[] callbacks = new Callback[2];
         NameCallback nameCallback = new NameCallback("Username");

@@ -52,30 +52,37 @@ public final class ActiveDirectoryDomainLoginModule
 
         final Control[] contextControls = { new LDAPADControl() };
         while( domainControllers.hasMoreTokens() ) {
-        	try {
-				Hashtable<String, Object> bindEnvironment = getBindingEnvironment(userDetails, domainControllers.nextToken());
-
-	            LdapContext context = null;
-	            try {
-		            context = new InitialLdapContext(bindEnvironment, contextControls);
-		            loginOK = true;
-	            } catch (NamingException e) {
-	            	loginOK = false;
-	            } finally {
-	            	if( context != null ) {
-	            		context.close();
-	            	}
-	            }
-
-	            return true;
-	        } catch (Exception ex) {
-	            Logger.getLogger(ActiveDirectoryDomainLoginModule.class.getName()).
-	                    log(Level.WARNING, "Problem during authentication ", ex);
-	        }
+        	if(canBindTo(userDetails, contextControls, domainControllers.nextToken())) {
+        		return true;
+			}
     	}
 
         throw new FailedLoginException("Your Active Directory Server did not authenticate you.");
     }
+
+    private boolean canBindTo(UserDetails userDetails, Control[] contextControls, String domainController) {
+		try {
+			Hashtable<String, Object> bindEnvironment = getBindingEnvironment(userDetails, domainController);
+
+			LdapContext context = null;
+			try {
+				context = new InitialLdapContext(bindEnvironment, contextControls);
+				loginOK = true;
+			} catch (NamingException e) {
+				loginOK = false;
+			} finally {
+				if( context != null ) {
+					context.close();
+				}
+			}
+
+			return true;
+		} catch (Exception ex) {
+			Logger.getLogger(ActiveDirectoryDomainLoginModule.class.getName()).
+					log(Level.WARNING, "Problem during authentication ", ex);
+		}
+		return false;
+	}
 
 	private Hashtable<String,Object> getBindingEnvironment(UserDetails userDetails, String domainController) {
 		Hashtable<String,Object> env = new Hashtable<>();

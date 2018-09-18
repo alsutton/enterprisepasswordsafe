@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.engine.jaas;
 
-import javax.naming.Context;
 import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
@@ -54,49 +54,8 @@ public final class ActiveDirectoryLoginModule
         UserDetails userDetails = getUserDetailsFromCallbacks();
         String providerUrl = getBindUrl(options.get(DOMAIN_CONTROLLER_PARAMETERNAME).toString());
         try {
-            Hashtable<String,Object> env = new Hashtable<>();
-            env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-            env.put(Context.PROVIDER_URL, providerUrl);
-
-            DirContext context = new InitialDirContext(env);
-            try {
-                String searchFilter = "(&(objectClass=user)(sAMAccountName=" + userDetails.username + "))";
-                Hashtable<String,Object> rebindEnv = new Hashtable<>();
-                rebindEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-                rebindEnv.put(Context.PROVIDER_URL, providerUrl);
-                rebindEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
-
-                // Construct the search base
-                String userRelativePath = (String) options.get(USERS_OU_LOCATION);
-                if( userRelativePath == null ) {
-                	userRelativePath = DEFAULT_USER_OU;
-                }
-
-                StringBuilder searchBaseBuffer = new StringBuilder(userRelativePath);
-                searchBaseBuffer.append(", ");
-                StringTokenizer tokenizer = new StringTokenizer((String) options.get(DOMAIN_PARAMETERNAME), ".");
-                while (tokenizer.hasMoreTokens()) {
-                    searchBaseBuffer.append("dc=");
-                    searchBaseBuffer.append(tokenizer.nextToken());
-                    searchBaseBuffer.append(", ");
-                }
-                // Remove the last comma.
-                searchBaseBuffer.delete(searchBaseBuffer.length() - 2, searchBaseBuffer.length());
-
-                String searchBase = searchBaseBuffer.toString();
-                SearchControls searchControls = new SearchControls();
-                searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-                NamingEnumeration<SearchResult> matches = context.search( searchBase, searchFilter, searchControls);
-
-                while (matches.hasMore() && !loginOK) {
-                    SearchResult thisResult = matches.next();
-                    String dn = thisResult.getName();
-                    if(canBindToServer(rebindEnv, searchBase, dn, userDetails.password)) {
-                        return true;
-                    }
-                }
-            } finally {
-                context.close();
+            if(canBind(providerUrl, userDetails)) {
+                return true;
             }
         } catch (Exception ex) {
             Logger.
@@ -105,6 +64,55 @@ public final class ActiveDirectoryLoginModule
         }
 
         throw new FailedLoginException("Your Active Directory Server did not authenticate you.");
+    }
+
+    private String constructSearchBase() {
+        String userRelativePath = (String) options.get(USERS_OU_LOCATION);
+        if( userRelativePath == null ) {
+            userRelativePath = DEFAULT_USER_OU;
+        }
+
+        StringBuilder searchBaseBuffer = new StringBuilder(userRelativePath);
+        searchBaseBuffer.append(", ");
+        StringTokenizer tokenizer = new StringTokenizer((String) options.get(DOMAIN_PARAMETERNAME), ".");
+        while (tokenizer.hasMoreTokens()) {
+            searchBaseBuffer.append("dc=");
+            searchBaseBuffer.append(tokenizer.nextToken());
+            searchBaseBuffer.append(", ");
+        }
+        // Remove the last comma.
+        searchBaseBuffer.delete(searchBaseBuffer.length() - 2, searchBaseBuffer.length());
+        return searchBaseBuffer.toString();
+    }
+
+    private boolean canBind(String providerUrl, UserDetails userDetails)
+            throws NamingException {
+        DirContext context = new InitialDirContext(getNoAuthEnvironment(providerUrl));
+        try {
+            return canBind(providerUrl, userDetails, context);
+        } finally {
+            context.close();
+        }
+    }
+
+    private boolean canBind(String providerUrl, UserDetails userDetails, DirContext context)
+            throws NamingException {
+        String searchFilter = "(&(objectClass=user)(sAMAccountName=" + userDetails.username + "))";
+        Hashtable<String,Object> rebindEnv = getSimpleAuthEnvironment(providerUrl);
+
+        String searchBase = constructSearchBase();
+        SearchControls searchControls = new SearchControls();
+        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration<SearchResult> matches = context.search( searchBase, searchFilter, searchControls);
+
+        while (matches.hasMore() && !loginOK) {
+            SearchResult thisResult = matches.next();
+            String dn = thisResult.getName();
+            if(canBindToServer(rebindEnv, searchBase, dn, userDetails.password)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 	@Override
