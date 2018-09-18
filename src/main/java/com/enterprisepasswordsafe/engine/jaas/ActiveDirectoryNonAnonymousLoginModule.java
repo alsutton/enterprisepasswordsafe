@@ -16,18 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.jaas;
 
-import java.io.IOException;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -35,17 +23,12 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * JAAS module for handling logging in a user.
@@ -82,12 +65,6 @@ public final class ActiveDirectoryNonAnonymousLoginModule
      * The parameter name in the options for the LDAP provider base.
      */
 
-    public static final String LDAPS_PARAMETERNAME = "ad.ldaps";
-
-    /**
-     * The parameter name in the options for the LDAP provider base.
-     */
-
     public static final String DOMAIN_USER_PASS_PARAMETERNAME = "ad.userpass";
 
     /**
@@ -102,26 +79,6 @@ public final class ActiveDirectoryNonAnonymousLoginModule
 
     public static final String DOMAIN_PARAMETERNAME = "ad.domain";
 
-    /**
-     * The options passed to this module.
-     */
-
-    private Map<String,?> options;
-
-    /**
-     * The callback handler.
-     */
-
-    private CallbackHandler callbackHandler;
-
-    /**
-     * Attempt to log the user in.
-     *
-     * @return true if the login went well, false if not.
-     *
-     * @throws LoginException
-     *             Thrown if there is a problem with the login.
-     */
     @Override
 	public boolean login() throws LoginException {
         loginOK = false;
@@ -129,89 +86,16 @@ public final class ActiveDirectoryNonAnonymousLoginModule
             throw new LoginException("Callback handler not defined.");
         }
 
-        // Get the information.
-        Callback[] callbacks = new Callback[2];
-        NameCallback nameCallback = new NameCallback("Username");
-        callbacks[0] = nameCallback;
-        PasswordCallback passwordCallback = new PasswordCallback("Password",false);
-        callbacks[1] = passwordCallback;
+        UserDetails userDetails = getUserDetailsFromCallbacks();
+        String providerUrl = getBindUrl(options.get(DOMAIN_CONTROLLER_PARAMETERNAME).toString());
         try {
-            callbackHandler.handle(callbacks);
-        } catch (IOException | UnsupportedCallbackException e) {
-            throw new LoginException(e.toString());
-        }
-
-        String sslFlag = (String) options.get(LDAPS_PARAMETERNAME);
-        boolean sslOff = sslFlag == null || sslFlag.charAt(0) == 'N';
-        String ldapProtocol = sslOff ? "ldap://" : "ldaps://";
-        StringBuffer providerUrlBuffer = new StringBuffer();
-        providerUrlBuffer.append(ldapProtocol);
-        providerUrlBuffer.append(options.get(DOMAIN_CONTROLLER_PARAMETERNAME));
-        providerUrlBuffer.append('/');
-        String providerUrl = providerUrlBuffer.toString();
-
-        try {
-        	String bindpassword = (String) options.get(DOMAIN_USER_PASS_PARAMETERNAME);
-            Hashtable<String,Object> env = new Hashtable<String,Object>();
-            env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-            env.put(Context.PROVIDER_URL, providerUrl);
-
-            String bindUserFQDN = (String) options.get(DOMAIN_USER_PARAMETERNAME);
-            if( bindUserFQDN.startsWith("cn=") == false
-            &&  bindUserFQDN.indexOf("\\") == -1 ) {
-            	StringBuffer bindUser = new StringBuffer();
-            	bindUser.append("cn=");
-            	bindUser.append(bindUserFQDN);
-            	bindUser.append(',');
-            	constructUserLDAPBase(bindUser);
-            	bindUserFQDN = bindUser.toString();
-            }
-
-			env.put(Context.SECURITY_AUTHENTICATION, "simple");
-            env.put(Context.SECURITY_PRINCIPAL, bindUserFQDN);
-            env.put(Context.SECURITY_CREDENTIALS, bindpassword);
-
-			List<String> userCNs = new ArrayList<String>();
-            DirContext context = new InitialDirContext(env);
-            try {
-                SearchControls searchControls = new SearchControls();
-                searchControls.setReturningAttributes(NEEDED_ATTRIBUTES);
-                searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-
-                StringBuffer searchFilter = new StringBuffer();
-                searchFilter.append("(&(objectClass=user)(sAMAccountName=");
-                searchFilter.append(nameCallback.getName());
-                searchFilter.append("))");
-
-				NamingEnumeration<SearchResult> matches =
-                        context.search(constructLDAPSearchBase(), searchFilter.toString(), searchControls);
-
-	            while (matches.hasMore() && !loginOK) {
-                	SearchResult thisResult = matches.next();
-                	String userCN = thisResult.getAttributes().get("cn").get().toString();
-                	userCNs.add(userCN);
-                }
-            } finally {
-                context.close();
-            }
-
+            List<String> userCNs = getCandidateUserCNs(providerUrl, userDetails);
             if( userCNs.size() > 0 ) {
-                Hashtable<String,Object> rebindEnv = new Hashtable<String,Object>();
-                rebindEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-                rebindEnv.put(Context.PROVIDER_URL, providerUrl);
-                rebindEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
-
-                String password = new String(passwordCallback.getPassword());
-
+                Hashtable<String,Object> rebindEnv = getSimpleAuthEnvironment(providerUrl);
                 for(String userCN : userCNs) {
-                    StringBuffer bindDNBuffer = new StringBuffer("CN=");
-                	bindDNBuffer.append(userCN);
-                	bindDNBuffer.append(',');
-                	constructUserLDAPBase(bindDNBuffer);
-
-                	String bindDN = bindDNBuffer.toString();
+                	String bindDN = constructUserDN(userCN);
                     try {
-                        attemptBind(rebindEnv, bindDN, password);
+                        attemptBind(rebindEnv, bindDN, userDetails.password);
                         loginOK = true;
                         return true;
                     } catch (Exception ex) {
@@ -221,8 +105,7 @@ public final class ActiveDirectoryNonAnonymousLoginModule
                 }
             } else {
                 Logger.getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
-                    log(Level.WARNING, "No matches for " + nameCallback.getName() + " in " +
-                    		constructLDAPSearchBase());
+                    log(Level.WARNING, "No matches for " + userDetails.username + " in " + constructLDAPSearchBase());
             }
         } catch (Exception ex) {
             Logger.getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
@@ -232,11 +115,19 @@ public final class ActiveDirectoryNonAnonymousLoginModule
         throw new FailedLoginException("Your Active Directory Server did not authenticate you.");
     }
 
-    /**
-     * Constructs the LDAP representation of the AD domain location.
-     *
-     * @return the LDAP location of the domain.
-     */
+    private void addAuthenticationDetails(Hashtable<String, Object> environment) {
+        String bindUserFQDN = (String) options.get(DOMAIN_USER_PARAMETERNAME);
+        if( !bindUserFQDN.startsWith("cn=") &&  !bindUserFQDN.contains("\\") ) {
+            StringBuffer bindUser = new StringBuffer();
+            bindUser.append("cn=").append(bindUserFQDN).append(',');
+            constructUserLDAPBase(bindUser);
+            bindUserFQDN = bindUser.toString();
+        }
+
+        environment.put(Context.SECURITY_AUTHENTICATION, "simple");
+        environment.put(Context.SECURITY_PRINCIPAL, bindUserFQDN);
+        environment.put(Context.SECURITY_CREDENTIALS, options.get(DOMAIN_USER_PASS_PARAMETERNAME).toString());
+    }
 
     private String constructLDAPSearchBase() {
     	StringBuffer ldapBase = new StringBuffer();
@@ -244,9 +135,13 @@ public final class ActiveDirectoryNonAnonymousLoginModule
         return ldapBase.toString();
     }
 
-    /**
-     * Constructs the LDAP representation of the AD domain location.
-     */
+    private String constructUserDN(String userCN) {
+        StringBuffer bindDNBuffer = new StringBuffer("CN=");
+        bindDNBuffer.append(userCN);
+        bindDNBuffer.append(',');
+        constructUserLDAPBase(bindDNBuffer);
+        return bindDNBuffer.toString();
+    }
 
     private void constructUserLDAPBase(StringBuffer userLDAPBase) {
         // Construct the search base
@@ -260,12 +155,6 @@ public final class ActiveDirectoryNonAnonymousLoginModule
         constructLDAPBase(userLDAPBase);
     }
 
-    /**
-     * Constructs the LDAP representation of the AD domain location.
-     *
-     * @param ldapBase The StringBuffer to construct the base in.
-     */
-
     private void constructLDAPBase(StringBuffer ldapBase) {
         StringTokenizer tokenizer =
             new StringTokenizer((String) options.get(DOMAIN_PARAMETERNAME), ".");
@@ -278,20 +167,34 @@ public final class ActiveDirectoryNonAnonymousLoginModule
         ldapBase.delete(ldapBase.length() - 1, ldapBase.length());
     }
 
-    @Override
-	public void initialize(final Subject newSubject,
-            final CallbackHandler newCallbackHandler,
-            final Map<String,?> newSharedState, final Map<String,?> newOptions) {
-        subject = newSubject;
-        callbackHandler = newCallbackHandler;
-        loginOK = false;
-        commitOK = false;
-        options = newOptions;
+    private List<String> getCandidateUserCNs(String providerUrl, UserDetails userDetails)
+            throws NamingException {
+        Hashtable<String,Object> env = getNoAuthEnvironment(providerUrl);
+        addAuthenticationDetails(env);
+
+        List<String> userCNs = new ArrayList<>();
+        DirContext context = new InitialDirContext(env);
+        try {
+            SearchControls searchControls = new SearchControls();
+            searchControls.setReturningAttributes(NEEDED_ATTRIBUTES);
+            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+            String searchFilter = "(&(objectClass=user)(sAMAccountName=" + userDetails.username + "))";
+            NamingEnumeration<SearchResult> matches = context.search(constructLDAPSearchBase(), searchFilter, searchControls);
+            while (matches.hasMore() && !loginOK) {
+                SearchResult thisResult = matches.next();
+                String userCN = thisResult.getAttributes().get("cn").get().toString();
+                userCNs.add(userCN);
+            }
+        } finally {
+            context.close();
+        }
+        return userCNs;
     }
 
 	@Override
 	public Set<AuthenticationSourceConfigurationOption> getConfigurationOptions() {
-    	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions = new TreeSet<AuthenticationSourceConfigurationOption>();
+    	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions = new TreeSet<>();
 
     	newConfigurationOptions.add(
     			new AuthenticationSourceConfigurationOption(1, "Domain Controller Server Name",
@@ -315,7 +218,7 @@ public final class ActiveDirectoryNonAnonymousLoginModule
     					"ad.userpass", AuthenticationSourceConfigurationOption.PASSWORD_INPUT_BOX,
     					null, "null"));
 
-    	Set<AuthenticationSourceConfigurationOptionValue> yesNoOptions = new TreeSet<AuthenticationSourceConfigurationOptionValue>();
+    	Set<AuthenticationSourceConfigurationOptionValue> yesNoOptions = new TreeSet<>();
     	yesNoOptions.add(new AuthenticationSourceConfigurationOptionValue("Yes", "Y"));
     	yesNoOptions.add(new AuthenticationSourceConfigurationOptionValue("No", "N"));
     	newConfigurationOptions.add(
@@ -325,12 +228,6 @@ public final class ActiveDirectoryNonAnonymousLoginModule
 
     	return newConfigurationOptions;
 	}
-
-	/**
-	 * Get the configuration notes for this source.
-	 *
-	 * @return The notes for the configuration page for this source.
-	 */
 
 	@Override
 	public String getConfigurationNotes() {

@@ -48,10 +48,22 @@ abstract class BaseLDAPLoginModule extends BaseLoginModule{
         ctx.close();
     }
 
-    Hashtable<String,Object> getSimpleAuthEnvironment() {
+    Hashtable<String,Object> getNoAuthEnvironment(final Object url) {
         Hashtable<String,Object> env = new Hashtable<String,Object>();
         env.put(Context.INITIAL_CONTEXT_FACTORY,"com.sun.jndi.ldap.LdapCtxFactory");
-        env.put(Context.PROVIDER_URL, options.get("url"));
+        env.put(Context.PROVIDER_URL, url);
+        return env;
+    }
+
+    Hashtable<String,Object> getSimpleAuthEnvironment() {
+        Hashtable<String,Object> env = getNoAuthEnvironment(options.get("url"));
+        env.put(Context.SECURITY_AUTHENTICATION, "simple");
+        return env;
+    }
+
+
+    Hashtable<String,Object> getSimpleAuthEnvironment(String url) {
+        Hashtable<String,Object> env = getNoAuthEnvironment(url);
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
         return env;
     }
