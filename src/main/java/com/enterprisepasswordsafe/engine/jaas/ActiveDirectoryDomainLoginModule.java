@@ -120,14 +120,7 @@ public final class ActiveDirectoryDomainLoginModule
     	newConfigurationOptions.add(new AuthenticationSourceConfigurationOption(
     					2, "Domain Controllers", "ad.domaincontroller",
     					AuthenticationSourceConfigurationOption.TEXT_INPUT_BOX,null,"pdc01;bdc01"));
-
-    	Set<AuthenticationSourceConfigurationOptionValue> yesNoOptions = new TreeSet<>();
-    	yesNoOptions.add(new AuthenticationSourceConfigurationOptionValue("Yes", "Y"));
-    	yesNoOptions.add(new AuthenticationSourceConfigurationOptionValue("No", "N"));
-    	newConfigurationOptions.add(new AuthenticationSourceConfigurationOption(
-    			3, "Connect using SSL", "ad.ldaps",
-				AuthenticationSourceConfigurationOption.RADIO_BOX, yesNoOptions,"N"));
-
+    	addSSLOption(newConfigurationOptions);
     	return newConfigurationOptions;
 	}
 

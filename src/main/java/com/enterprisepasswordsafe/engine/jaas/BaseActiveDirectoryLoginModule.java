@@ -3,6 +3,7 @@ package com.enterprisepasswordsafe.engine.jaas;
 import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.Set;
+import java.util.TreeSet;
 
 public abstract class BaseActiveDirectoryLoginModule extends BaseLDAPLoginModule {
 
@@ -34,5 +35,17 @@ public abstract class BaseActiveDirectoryLoginModule extends BaseLDAPLoginModule
         String sslFlag = (String) options.get(LDAPS_PARAMETERNAME);
         boolean sslOff = sslFlag == null || sslFlag.charAt(0) == 'N';
         return sslOff ? "ldap://" : "ldaps://";
+    }
+
+    void addSSLOption(Set<AuthenticationSourceConfigurationOption> configurationOption) {
+        Set<AuthenticationSourceConfigurationOptionValue> yesNoOptions = new TreeSet<>();
+        yesNoOptions.add(new AuthenticationSourceConfigurationOptionValue("Yes", "Y"));
+        yesNoOptions.add(new AuthenticationSourceConfigurationOptionValue("No", "N"));
+        configurationOption.add(
+                new AuthenticationSourceConfigurationOption( 6, "Connect using SSL",
+                        "ad.ldaps", AuthenticationSourceConfigurationOption.RADIO_BOX,
+                        yesNoOptions, "N"));
+
+
     }
 }

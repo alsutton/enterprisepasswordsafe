@@ -89,23 +89,8 @@ public final class ActiveDirectoryNonAnonymousLoginModule
         UserDetails userDetails = getUserDetailsFromCallbacks();
         String providerUrl = getBindUrl(options.get(DOMAIN_CONTROLLER_PARAMETERNAME).toString());
         try {
-            List<String> userCNs = getCandidateUserCNs(providerUrl, userDetails);
-            if( userCNs.size() > 0 ) {
-                Hashtable<String,Object> rebindEnv = getSimpleAuthEnvironment(providerUrl);
-                for(String userCN : userCNs) {
-                	String bindDN = constructUserDN(userCN);
-                    try {
-                        attemptBind(rebindEnv, bindDN, userDetails.password);
-                        loginOK = true;
-                        return true;
-                    } catch (Exception ex) {
-                        Logger.getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
-                                log(Level.WARNING, "Failed to bind with " + bindDN, ex);
-                    }
-                }
-            } else {
-                Logger.getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
-                    log(Level.WARNING, "No matches for " + userDetails.username + " in " + constructLDAPSearchBase());
+            if( attemptToBindWithCNs(userDetails, providerUrl, getCandidateUserCNs(providerUrl, userDetails)) ) {
+                return true;
             }
         } catch (Exception ex) {
             Logger.getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
@@ -113,6 +98,28 @@ public final class ActiveDirectoryNonAnonymousLoginModule
         }
 
         throw new FailedLoginException("Your Active Directory Server did not authenticate you.");
+    }
+
+    private boolean attemptToBindWithCNs(UserDetails userDetails, String providerUrl, List<String> userCNs) {
+        if(userCNs.isEmpty()) {
+            Logger.getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
+                    log(Level.WARNING,
+                            "No matches for " + userDetails.username + " in " + constructLDAPSearchBase());
+            return false;
+        }
+        Hashtable<String,Object> rebindEnv = getSimpleAuthEnvironment(providerUrl);
+        for(String userCN : userCNs) {
+            String bindDN = constructUserDN(userCN);
+            try {
+                attemptBind(rebindEnv, bindDN, userDetails.password);
+                loginOK = true;
+                return true;
+            } catch (Exception ex) {
+                Logger.getLogger(ActiveDirectoryNonAnonymousLoginModule.class.getName()).
+                        log(Level.WARNING, "Failed to bind with " + bindDN, ex);
+            }
+        }
+        return false;
     }
 
     private void addAuthenticationDetails(Hashtable<String, Object> environment) {
@@ -217,15 +224,7 @@ public final class ActiveDirectoryNonAnonymousLoginModule
     			new AuthenticationSourceConfigurationOption( 5, "Password to connect with",
     					"ad.userpass", AuthenticationSourceConfigurationOption.PASSWORD_INPUT_BOX,
     					null, "null"));
-
-    	Set<AuthenticationSourceConfigurationOptionValue> yesNoOptions = new TreeSet<>();
-    	yesNoOptions.add(new AuthenticationSourceConfigurationOptionValue("Yes", "Y"));
-    	yesNoOptions.add(new AuthenticationSourceConfigurationOptionValue("No", "N"));
-    	newConfigurationOptions.add(
-    			new AuthenticationSourceConfigurationOption( 6, "Connect using SSL",
-    					"ad.ldaps", AuthenticationSourceConfigurationOption.RADIO_BOX,
-    					yesNoOptions, "N"));
-
+        addSSLOption(newConfigurationOptions);
     	return newConfigurationOptions;
 	}
 
