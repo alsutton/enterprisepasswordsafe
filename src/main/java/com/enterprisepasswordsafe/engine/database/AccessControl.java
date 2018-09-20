@@ -62,7 +62,7 @@ public abstract class AccessControl
      * The number of columns from a ResultSet needed to create this object.
      */
 
-    public static final int ACCESS_CONTROL_FIELD_COUNT = 3;
+    public static final int ACCESS_CONTROL_FIELD_COUNT = 4;
 
     /**
      * The first level encryption algorithm

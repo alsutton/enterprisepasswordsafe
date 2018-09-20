@@ -39,8 +39,6 @@ public final class UserAccessControlDAO
 
     public static final String UAC_FIELDS = " uac.item_id, uac.mkey, uac.rkey, uac.user_id ";
 
-    public static final int UAC_FIELD_COUNT = 1 + AccessControl.ACCESS_CONTROL_FIELD_COUNT;
-
     private static final String WRITE_UAC_SQL =
               "INSERT INTO user_access_control(user_id, item_id, rkey, mkey) VALUES( ?, ?, ?, ?)";
 

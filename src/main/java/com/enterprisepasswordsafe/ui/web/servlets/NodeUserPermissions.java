@@ -27,20 +27,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-/**
- * Servlet to direct the user to the hierarchy editing screen.
- */
-
 public final class NodeUserPermissions extends HttpServlet {
-	private static final long serialVersionUID = -3829184507016986232L;
-
 	private static final AccessApprover accessApprover =
 		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
+
+	private final HierarchyTools hierarchyTools = new HierarchyTools();
 
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -53,7 +50,7 @@ public final class NodeUserPermissions extends HttpServlet {
 
 	        HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
 	        HierarchyNode node = hnDAO.getById(nodeId);
-	        List<HierarchyNode> parentage = hnDAO.getParentage(node);
+	        List<HierarchyNode> parentage = hierarchyTools.getParentage(node);
 
 	        request.setAttribute(BaseServlet.NODE, node);
 	        request.setAttribute(BaseServlet.NODE_PARENTAGE, parentage);
@@ -63,18 +60,13 @@ public final class NodeUserPermissions extends HttpServlet {
 	            request.setAttribute("users", UserSummaryDAO.getInstance().getSummaryListExcludingAdmin());
 	            request.setAttribute("perms", HierarchyNodeAccessRuleDAO.getInstance().getAccessibilityRules(node, adminGroup));
 	        }
-    	} catch(GeneralSecurityException gse) {
-    		throw new ServletException("There was a problem obtaining the user permissions.", gse);
-    	} catch(SQLException sqle) {
-    		throw new ServletException("There was a problem obtaining the user permissions.", sqle);
+    	} catch(GeneralSecurityException | SQLException e) {
+    		throw new ServletException("There was a problem obtaining the user permissions.", e);
     	}
 
     	request.getRequestDispatcher("/subadmin/edit_subnodes_upermissions.jsp").forward(request, response);
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Displays the user permissions for a node.";

@@ -18,6 +18,7 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -44,6 +45,7 @@ public final class Explorer extends HttpServlet {
     private static final String INCLUDE_EMPTY_ATTRIBUTE = "_include_empty";
 
 	private UserClassifier userClassifier = new UserClassifier();
+	private HierarchyTools hierarchyTools = new HierarchyTools();
 
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -69,7 +71,7 @@ public final class Explorer extends HttpServlet {
 	        determineHierarchyEditability(request, user);
 
 	        request.setAttribute(BaseServlet.NODE, node);
-	        request.setAttribute(BaseServlet.NODE_PARENTAGE, hnDAO.getParentage(node));
+	        request.setAttribute(BaseServlet.NODE_PARENTAGE, hierarchyTools.getParentage(node));
 	        request.setAttribute(BaseServlet.NODE_CHILDREN, getVisibleChildren(request, user, node));
         } catch( GeneralSecurityException | SQLException e ) {
         	throw new ServletException("The password explorer encountered an error.", e);
@@ -98,7 +100,7 @@ public final class Explorer extends HttpServlet {
 
         ServletUtils.getInstance().generateErrorMessage(request, "You are not allowed access to the folder "+
                 "you requested. You have been diverted to a folder you can access.");
-        for(HierarchyNode thisNode : hnDAO.getParentage(node)) {
+        for(HierarchyNode thisNode : hierarchyTools.getParentage(node)) {
             if(hnarDAO.getAccessibilityForUser(thisNode, user) != HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
                 return thisNode;
             }
@@ -139,7 +141,7 @@ public final class Explorer extends HttpServlet {
 
         HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
         HierarchyNodeChildren children =
-                hnDAO.getChildrenValidForUser(node, user,
+                hierarchyTools.getChildrenValidForUser(node, user,
                         ((Boolean)request.getAttribute(INCLUDE_EMPTY_ATTRIBUTE)), null, objectComparator);
         if(userClassifier.isNonViewingUser(user)) {
             children.setObjects(null);

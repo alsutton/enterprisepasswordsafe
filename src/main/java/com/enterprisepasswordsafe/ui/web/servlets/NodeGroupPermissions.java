@@ -27,45 +27,23 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-
-/**
- * Servlet to direct the user to the hierarchy editing screen.
- */
-
 public final class NodeGroupPermissions extends HttpServlet {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -9126307844781159465L;
-
-	/**
-	 * The access authenticator
-	 */
 
 	private static final AccessApprover accessApprover =
 		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
 
-	/**
-	 * The parameter for storing the access list
-	 */
-
 	public static final String PERMISSION_LIST_PARAMETER = "perms";
-
-	/**
-	 * The parameter for the group list.
-	 */
 
 	public static final String GROUP_LIST = "groups";
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
+	private final HierarchyTools hierarchyTools = new HierarchyTools();
+
     @Override
 	protected void doGet(final HttpServletRequest request,
     		final HttpServletResponse response)
@@ -79,7 +57,7 @@ public final class NodeGroupPermissions extends HttpServlet {
 
 	        HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
 	        HierarchyNode node = hnDAO.getById(nodeId);
-	        List<HierarchyNode> parentage = hnDAO.getParentage(node);
+	        List<HierarchyNode> parentage = hierarchyTools.getParentage(node);
 
 	        request.setAttribute(BaseServlet.NODE, node);
 	        request.setAttribute(BaseServlet.NODE_PARENTAGE, parentage);
@@ -90,10 +68,8 @@ public final class NodeGroupPermissions extends HttpServlet {
 	            request.setAttribute(PERMISSION_LIST_PARAMETER,
 	            		HierarchyNodeAccessRuleDAO.getInstance().getGroupAccessibilityRules(node));
 	        }
-    	} catch(GeneralSecurityException gse) {
-    		throw new ServletException("There was a problem obtaining the group permissions.", gse);
-    	} catch(SQLException sqle) {
-    		throw new ServletException("There was a problem obtaining the group permissions.", sqle);
+    	} catch(GeneralSecurityException | SQLException e) {
+    		throw new ServletException("There was a problem obtaining the group permissions.", e);
     	}
     	request.getRequestDispatcher("/subadmin/edit_subnodes_gpermissions.jsp").forward(request, response);
     }

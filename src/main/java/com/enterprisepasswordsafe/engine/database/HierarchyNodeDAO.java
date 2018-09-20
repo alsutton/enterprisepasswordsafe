@@ -340,82 +340,6 @@ public final class HierarchyNodeDAO
         }
     }
 
-    /**
-     * Gets the list of nodes which are the parentage of a node in order
-     * (i.e. first is top level, ..., last-1 is nodes parent, last is node).
-     *
-     * @param node The node to get the parentage of.
-     *
-     * @return a List of the nodes ancestors.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
-    public List<HierarchyNode> getParentage(final HierarchyNode node)
-        throws SQLException {
-        final List<HierarchyNode> parentage = new ArrayList<HierarchyNode>();
-        String currentNodeId = node.getParentId();
-        while (currentNodeId != null ) {
-            HierarchyNode thisNode = getById(currentNodeId);
-            parentage.add(0, thisNode);
-            currentNodeId = thisNode.getParentId();
-        }
-
-        return parentage;
-    }
-
-    /**
-     * Gets the a string representation of the parentage of a node.
-     *
-     * @param node The node to get the parentage of.
-     *
-     * @return A String representation of the parentage.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
-
-    public String getParentageAsText(final HierarchyNode node)
-    	throws SQLException {
-		StringBuilder parentageText = new StringBuilder();
-
-		for( HierarchyNode thisNode : getParentage(node) ) {
-			parentageText.append(thisNode.getName());
-			parentageText.append(" \\ ");
-		}
-	    parentageText.append(node.getName());
-
-	    return parentageText.toString();
-    }
-
-    /**
-     * Gets the summary for a node.
-     *
-     * @param node The node to get the summary of.
-     */
-
-    public HierarchyNodeSummary getSummary( final HierarchyNode node )
-    	throws SQLException {
-    	String nodeId = node.getNodeId();
-
-    	HierarchyNodeSummary summary = summaryCache.get(nodeId);
-    	if( summary == null ) {
-    		summary = new HierarchyNodeSummary(nodeId, getParentageAsText(node));
-    		summaryCache.put(nodeId, summary);
-    	}
-    	return summary;
-    }
-
-    /**
-     * Get the summary for a node given its' ID.
-     *
-     * @param nodeId The node to get the summary of.
-     */
-
-    public HierarchyNodeSummary getSummary( final String nodeId )
-            throws SQLException {
-        return getSummary(getById(nodeId));
-    }
-
     public String getNodeIDForObject(final String testParentId, final String id)
         throws SQLException {
         HierarchyNode node = fetchObjectIfExists(GET_NODE_ID_FOR_CHILD_OBJECT_ID_SQL, testParentId, id);
@@ -448,23 +372,23 @@ public final class HierarchyNodeDAO
             ps.setString(2, user.getUserId());
 
             try(ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    String passwordId = rs.getString(UserAccessControlDAO.UAC_FIELD_COUNT + 1);
-                    if (results.containsKey(passwordId)) {
-                        continue;
-                    }
-
-                    UserAccessControl ac = new UserAccessControl(rs, 1, user);
-                    try {
-                        Password password = new Password(passwordId, rs.getBytes(UserAccessControlDAO.UAC_FIELD_COUNT + 2), ac);
-                        results.put(passwordId, password);
-                    } catch (IOException e) {
-                        Logger.getAnonymousLogger().log(Level.SEVERE, "Unable to decrypt password " + passwordId, e);
-                    }
-                }
+                processObjectResults(user, results, rs);
             }
         }
     }
+
+    private void processObjectResults(User user, Map<String, Password> results, ResultSet rs)
+            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        while (rs.next()) {
+            String passwordId = rs.getString(AccessControl.ACCESS_CONTROL_FIELD_COUNT + 1);
+            if (results.containsKey(passwordId)) {
+                continue;
+            }
+
+            addPasswordToResults(results, passwordId, rs, new UserAccessControl(rs, 1, user));
+        }
+    }
+
 
     private void addGroupAccessControlAccessibleObjects(final HierarchyNode node, final User user,
                                                         Map<String,Password> results)
@@ -488,15 +412,20 @@ public final class HierarchyNodeDAO
 
     private void processGroupAccessControlResult(Map<String,Password> results, User user, ResultSet rs)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        String passwordId = rs.getString(GroupAccessControlDAO.GAC_FIELD_COUNT + 1);
+        String passwordId = rs.getString(AccessControl.ACCESS_CONTROL_FIELD_COUNT + 1);
         if (results.containsKey(passwordId)) {
             return;
         }
 
         Group group =  GroupDAO.getInstance().getByIdDecrypted(rs.getString(4), user);
-        GroupAccessControl ac = new GroupAccessControl(rs, 1, group);
+        addPasswordToResults(results, passwordId, rs, new GroupAccessControl(rs, 1, group));
+    }
+
+    private void addPasswordToResults(Map<String,Password> results, String passwordId,
+                                      ResultSet rs, AccessControl ac)
+            throws SQLException, GeneralSecurityException {
         try {
-            Password password = new Password(passwordId, rs.getBytes(GroupAccessControlDAO.GAC_FIELD_COUNT + 2), ac);
+            Password password = new Password(passwordId, rs.getBytes(AccessControl.ACCESS_CONTROL_FIELD_COUNT + 2), ac);
             results.put(passwordId, password);
         } catch (IOException e) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Unable to decrypt password " + passwordId, e);
@@ -531,30 +460,6 @@ public final class HierarchyNodeDAO
             }
         }
         return blockedNodes;
-    }
-
-    /**
-     * Gets the children of specific node which are valid for a given user.
-     *
-     * @param node The node to get the children of.
-     * @param theUser The user for which the nodes must be valid.
-     * @param includeEmpty Whether or not to include folders which have no user
-     *  accessible content (true = include them).
-     *
-     * @return The requested node, or null if it doesn't exist.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws UnsupportedEncodingException
-     */
-
-    public HierarchyNodeChildren getChildrenValidForUser(final HierarchyNode node, final User theUser,
-    		boolean includeEmpty, final Comparator<HierarchyNode> nodeComparator, final Comparator<Password> objectComparator)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        Collection<HierarchyNode> containers = getChildrenContainerNodesForUser(node, theUser, includeEmpty, nodeComparator);
-        Set<Password> objects = getAllChildrenObjects(node, theUser, objectComparator);
-
-        return new HierarchyNodeChildren(containers, objects);
     }
 
     /**
@@ -626,60 +531,6 @@ public final class HierarchyNodeDAO
     public List<HierarchyNode> getAllChildren(final HierarchyNode node)
         throws SQLException {
         return getMultiple(GET_ALL_CHILDREN_NODES_SQL, node.getNodeId());
-    }
-
-    /**
-     * Perform an action on all the objects in this node, and optional recurse
-     * into the child nodes..
-     *
-     * @param node The start point for performing the action.
-     * @param theUser The user to search for.
-     * @param action The action to perform.
-     */
-
-    public void processObjectNodes( final HierarchyNode node, final User theUser,
-            final NodeObjectAction action, final boolean recurse)
-        throws Exception {
-        if(recurse) {
-        	for( HierarchyNode thisNode : getChildrenContainerNodesForUser(node, theUser, true, null)) {
-                processObjectNodes(thisNode, theUser, action, true);
-            }
-        }
-
-        for(AccessControledObject aco: getAllChildrenObjects(node, theUser, null)) {
-            action.process(node, aco);
-        }
-    }
-
-    /**
-     * Check to see if a node with the specified name is a personal node or not.
-     *
-     * @param name The name of the node to check.
-     * @return true if the node is a personal node, false if not.
-     */
-
-    public boolean isPersonalByName(final String name) throws SQLException {
-    	return isPersonalById( getByName(name).getNodeId() );
-    }
-
-    /**
-     * Check to see if a node with the specified id is a personal node or not.
-     *
-     * @param id The id of the node to check.
-     * @return true if the node is a personal node, false if not.
-     * @throws SQLException
-     */
-
-    public boolean isPersonalById(final String id) throws SQLException {
-    	HierarchyNode node = getById(id);
-    	boolean result;
-    	if( node.getParentId() != null ) {
-    		result = isPersonalById(node.getParentId());
-    	} else {
-    		result = (!node.getNodeId().equals(HierarchyNode.ROOT_NODE_ID));
-    	}
-
-    	return result;
     }
 
     //------------------------

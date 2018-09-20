@@ -16,38 +16,27 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
+import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.engine.database.LocationDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
-import com.enterprisepasswordsafe.engine.database.PasswordRestrictionDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
-
-
-/**
- * Directs the user to the create password screen.
- */
-
 public final class CreatePassword extends HttpServlet {
 
 	private final UserClassifier userClassifier = new UserClassifier();
+
+	private HierarchyTools hierarchyTools = new HierarchyTools();
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -68,8 +57,8 @@ public final class CreatePassword extends HttpServlet {
 	        boolean accessApproved = true;
 	        if( !userClassifier.isPriviledgedUser(theUser) ) {
 	        	if( node.getType() == HierarchyNode.USER_CONTAINER_NODE
-	        	&&  node.getNodeId().equals(theUser.getUserId()) == false ) {
-	        		accessApproved = true;
+	        	&& !node.getNodeId().equals(theUser.getUserId())) {
+	        		accessApproved = false;
 	        	}
 	        }
 
@@ -78,14 +67,14 @@ public final class CreatePassword extends HttpServlet {
 	        }
 
 	        Calendar cal = Calendar.getInstance();
-	        Integer year = Integer.valueOf(cal.get(Calendar.YEAR));
+	        Integer year = cal.get(Calendar.YEAR);
 	        request.setAttribute("year", year);
 
 	        ConfigurationDAO cDAO = ConfigurationDAO.getInstance();
 
 	        request.setAttribute("enabled", "y");
 	        request.setAttribute(BaseServlet.NODE, node);
-	        request.setAttribute(BaseServlet.NODE_PARENTAGE, hnDAO.getParentageAsText(node));
+	        request.setAttribute(BaseServlet.NODE_PARENTAGE, hierarchyTools.getParentageAsText(node));
 	        request.setAttribute("password_history",cDAO.get(ConfigurationOption.STORE_PASSWORD_HISTORY));
 	        request.setAttribute("password_audit",cDAO.get(ConfigurationOption.PASSWORD_AUDIT_LEVEL));
 
@@ -142,7 +131,7 @@ public final class CreatePassword extends HttpServlet {
 	    	}
 
 	    	if( request.getAttribute("cfields") == null ) {
-	    		Map<String,String> customFields = new TreeMap<String,String>();
+	    		Map<String,String> customFields = new TreeMap<>();
 		    	int i = 0;
 		    	String fieldName, fieldValue;
 		    	while( (fieldName = cDAO.get("custom_fn"+i, null)) != null ) {

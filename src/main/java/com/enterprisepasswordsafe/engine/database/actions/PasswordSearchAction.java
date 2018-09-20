@@ -16,9 +16,13 @@
 
 package com.enterprisepasswordsafe.engine.database.actions;
 
-import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.database.AccessControledObject;
+import com.enterprisepasswordsafe.engine.database.HierarchyNode;
+import com.enterprisepasswordsafe.engine.database.Password;
+import com.enterprisepasswordsafe.engine.database.User;
 import com.enterprisepasswordsafe.engine.database.actions.search.SearchTest;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeSummary;
+import com.enterprisepasswordsafe.engine.hierarchy.Summaries;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 
 import java.sql.SQLException;
@@ -29,40 +33,17 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * PasswordAction to handle password search requests.
- */
 public class PasswordSearchAction implements NodeObjectAction {
-
-    /**
-     * The list of tests to be performed.
-     */
 
     private final List<SearchTest> tests;
 
-    /**
-     * The matching passwords.
-     */
-
     private final Map<String,List<Password>> results;
-
-    /**
-     * The number of matches for the search
-     */
 
     private int resultCount;
 
     private boolean userIsAdministrator;
 
-    /**
-     * Constructor. Stores the user performing the search and the search chain
-     * to be matched.
-     *
-     * @param theUser
-     *            The user performing the test.
-     * @param testList
-     *            The list of tests to check.
-     */
+    private final Summaries summaries = new Summaries();
 
     public PasswordSearchAction( final User theUser, final List<SearchTest> testList)
             throws SQLException {
@@ -98,11 +79,9 @@ public class PasswordSearchAction implements NodeObjectAction {
 
     public final Map<HierarchyNodeSummary,List<Password>> getResults() {
         Map<HierarchyNodeSummary,List<Password>> expandedResults = new HashMap<>();
-
-        HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
         for(Map.Entry<String, List<Password>> entry : results.entrySet()) {
             try {
-                HierarchyNodeSummary summary = hnDAO.getSummary(entry.getKey());
+                HierarchyNodeSummary summary = summaries.getSummary(entry.getKey());
                 expandedResults.put(summary, entry.getValue());
             } catch( SQLException e ) {
                 Logger.getAnonymousLogger().log(Level.SEVERE, "Problem getting summary for "+entry.getKey(), e);

@@ -29,20 +29,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-
-/**
- * Servlet to direct the user to the password defaults editing screen
- */
-
 public final class NodePasswordDefaults extends HttpServlet {
 
 	private static final AccessApprover accessApprover =
 		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
+
+	private final HierarchyTools hierarchyTools = new HierarchyTools();
 
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -56,7 +54,7 @@ public final class NodePasswordDefaults extends HttpServlet {
 
 	        HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
 	        HierarchyNode node = hnDAO.getById(nodeId);
-	        List<HierarchyNode> parentage = hnDAO.getParentage(node);
+	        List<HierarchyNode> parentage = hierarchyTools.getParentage(node);
 
 	        request.setAttribute(BaseServlet.NODE, node);
 	        request.setAttribute(BaseServlet.NODE_PARENTAGE, parentage);
@@ -96,17 +94,10 @@ public final class NodePasswordDefaults extends HttpServlet {
     	request.getRequestDispatcher("/subadmin/edit_subnodes_pdefaults.jsp").forward(request, response);
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Displays the group permissions for a node.";
     }
-
-    /**
-     * Class representing the permissions for an actor.
-     */
 
     public class ActorPermissions
     	implements Comparable<ActorPermissions> {
@@ -119,9 +110,6 @@ public final class NodePasswordDefaults extends HttpServlet {
 
     	private final String permission;
 
-    	/**
-    	 * Constructor. Stores information.
-    	 */
     	public ActorPermissions(final String newActorId, final String newActorName,
     			final String newParentPermission, final String newPermission) {
     		actorId = newActorId;

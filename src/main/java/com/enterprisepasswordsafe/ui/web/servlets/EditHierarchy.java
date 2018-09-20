@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSession;
 
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.nodes.HierarchyManipulator;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
@@ -91,6 +92,7 @@ public final class EditHierarchy extends HttpServlet {
     public static final String PASTE_ACTION = "p";
 
     private UserClassifier userClassifier = new UserClassifier();
+    private HierarchyTools hierarchyTools = new HierarchyTools();
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -134,7 +136,7 @@ public final class EditHierarchy extends HttpServlet {
 		    }
 
 		    HierarchyNodeChildren children =
-                    HierarchyNodeDAO.getInstance().getChildrenValidForUser(node, user, includeEmpty, null, null);
+                    hierarchyTools.getChildrenValidForUser(node, user, includeEmpty, null, null);
 		    request.setAttribute(BaseServlet.NODE_CHILDREN, children);
 		    servletUtils.setCurrentNodeId(request, node.getNodeId());
     	} catch(SQLException | GeneralSecurityException e) {
@@ -148,7 +150,7 @@ public final class EditHierarchy extends HttpServlet {
         HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
         HierarchyNode node = getValidNode(request, hnDAO);
         HierarchyNodeAccessRuleDAO hnarDAO = HierarchyNodeAccessRuleDAO.getInstance();
-        List<HierarchyNode> parentage = hnDAO.getParentage(node);
+        List<HierarchyNode> parentage = hierarchyTools.getParentage(node);
         if( !userClassifier.isAdministrator(user)
                 &&	hnarDAO.getAccessibilityForUser(node, user) == HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
             for( HierarchyNode thisNode : parentage ) {
@@ -160,7 +162,7 @@ public final class EditHierarchy extends HttpServlet {
             ServletUtils.getInstance().generateErrorMessage(request,
                     "You are not allowed access to the folder you requested. You have been diverted to a folder you can access."
             );
-            parentage = hnDAO.getParentage(node);
+            parentage = hierarchyTools.getParentage(node);
         }
         request.setAttribute(BaseServlet.NODE_PARENTAGE, parentage);
         return node;

@@ -33,28 +33,19 @@ import com.enterprisepasswordsafe.engine.database.actions.search.NotesContainsSe
 import com.enterprisepasswordsafe.engine.database.actions.search.SearchTest;
 import com.enterprisepasswordsafe.engine.database.actions.search.SystemContainsSearchTest;
 import com.enterprisepasswordsafe.engine.database.actions.search.UsernameContainsSearchTest;
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
-/**
- * Perform a search on the password database using the criteria supplied
- * by the user.
- */
-
 public class SearchServlet extends HttpServlet {
-    /**
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
+
+    private final HierarchyTools hierarchyTools = new HierarchyTools();
+
+    @Override
     protected void doGet(final HttpServletRequest request,
                          final HttpServletResponse response) throws ServletException, IOException {
         request.getRequestDispatcher("/system/adv_search.jsp").forward(request, response);
     }
 
-    /**
-     * Perform a search on the passwords.
-     *
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected final void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -77,7 +68,7 @@ public class SearchServlet extends HttpServlet {
                 node = hnDAO.getById(HierarchyNode.ROOT_NODE_ID);
             }
 
-            hnDAO.processObjectNodes(node, thisUser, search, true);
+            hierarchyTools.processObjectNodes(node, thisUser, search, true);
 
             request.setAttribute("passwordmap", search.getResults());
             request.setAttribute("resultcount", Integer.toString(search.getResultCount()));
@@ -89,11 +80,9 @@ public class SearchServlet extends HttpServlet {
         request.getRequestDispatcher("/system/adv_search.jsp").forward(request, response);
     }
 
-    /**
-     * Get the list of tests to perform on the passwords.
-     */
+
     protected List<SearchTest> getSearchTests(final HttpServletRequest request) {
-        List<SearchTest> tests = new ArrayList<SearchTest>();
+        List<SearchTest> tests = new ArrayList<>();
 
         String searchString = request.getParameter("username");
         if (searchString != null && searchString.length() > 0) {
@@ -113,9 +102,6 @@ public class SearchServlet extends HttpServlet {
         return tests;
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     public String getServletInfo() {
         return "Searches for a password given a specified set of criteria.";
     }

@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.actions.ChangePermissionsAction;
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -37,6 +38,8 @@ public final class UpdateNodePasswordDefaults extends HttpServlet {
 
 	private static final AccessApprover accessApprover =
 		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
+
+	private final HierarchyTools hierarchyTools = new HierarchyTools();
 
     @Override
 	protected void doPost( final HttpServletRequest request, final HttpServletResponse response)
@@ -88,7 +91,7 @@ public final class UpdateNodePasswordDefaults extends HttpServlet {
     		final Map<String, String> uPerms, final Map<String, String> gPerms, final ChangePermissionsAction action)
     	throws Exception {
     	new HierarchyNodePermissionDAO().setDefaultPermissionsForNode(node.getNodeId(), uPerms, gPerms);
-    	hnDAO.processObjectNodes(node, remoteUser, action, false);
+    	hierarchyTools.processObjectNodes(node, remoteUser, action, false);
     	for(HierarchyNode thisNode : hnDAO.getChildrenContainerNodesForUser(node, remoteUser, true, null)) {
     		applyPermissions(remoteUser, hnDAO, thisNode, uPerms, gPerms, action);
     	}

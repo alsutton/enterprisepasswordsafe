@@ -29,6 +29,7 @@ import com.enterprisepasswordsafe.engine.database.GroupDAO;
 import com.enterprisepasswordsafe.engine.database.HierarchyNode;
 import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
 import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.passwords.PasswordImporter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -60,9 +61,10 @@ public final class ImportPasswords extends ImporterServlet {
         String nodeId = ServletUtils.getInstance().getNodeId(request);
 
         HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
+		HierarchyTools hierarchyTools = new HierarchyTools();
         try {
 	        HierarchyNode node = hnDAO.getById(nodeId);
-	        List<HierarchyNode> parentage = hnDAO.getParentage(node);
+	        List<HierarchyNode> parentage = hierarchyTools.getParentage(node);
 	        request.setAttribute(BaseServlet.NODE, node);
 	        request.setAttribute(BaseServlet.NODE_PARENTAGE, parentage);
         } catch(SQLException sqle) {

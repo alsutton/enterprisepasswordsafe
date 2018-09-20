@@ -44,12 +44,6 @@ public class GroupAccessControlDAO
     public static final String GAC_FIELDS = " gac.item_id, gac.mkey, gac.rkey, gac.group_id ";
 
     /**
-     * The number of columns in the group access control data.
-     */
-
-    public static final int GAC_FIELD_COUNT = 1 + AccessControl.ACCESS_CONTROL_FIELD_COUNT;
-
-    /**
      * The SQL to delete a GAC.
      */
 

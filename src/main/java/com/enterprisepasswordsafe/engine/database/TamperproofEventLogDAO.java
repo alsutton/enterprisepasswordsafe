@@ -23,24 +23,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.logging.LogEventHasher;
 import com.enterprisepasswordsafe.engine.logging.LogEventMailer;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 import com.enterprisepasswordsafe.proguard.JavaBean;
 
-/**
- * Data access object for the tamperproof event logs.
- *
- * @author Compaq_Owner
- */
-
 public class TamperproofEventLogDAO
 	implements ExternalInterface {
-
-    /**
-     * SQL Statement to get all the log entries for a given date.
-     */
 
     private static final String GET_BY_DATE_RANGE_SQL =
         	"SELECT evl.dt_l, evl.user_id, evl.item_id, evl.event, evl.stamp_b, usr.user_name, pass.password_data, pass.history_stored"
@@ -49,22 +40,12 @@ public class TamperproofEventLogDAO
             + "  LEFT OUTER JOIN passwords pass        ON evl.item_id = pass.password_id"
             + " WHERE evl.dt_l >= ? AND evl.dt_l <= ? ORDER BY evl.dt_l ASC";
 
-    /**
-     * SQL Statement to get all the log entries for a given date for a given
-     * user.
-     */
-
     private static final String GET_BY_DATE_RANGE_AND_USER_SQL =
               "SELECT evl.dt_l, evl.user_id, evl.item_id, evl.event, evl.stamp_b, usr.user_name, pass.password_data, pass.history_stored"
             + "  FROM event_log evl "
             + "  LEFT OUTER JOIN application_users usr ON evl.user_id = usr.user_id"
             + "  LEFT OUTER JOIN passwords pass        ON evl.item_id = pass.password_id"
             + " WHERE evl.dt_l >= ? AND evl.dt_l <= ? AND evl.user_id = ? ORDER BY evl.dt_l ASC";
-
-    /**
-     * SQL Statement to get all the log entries for a given date for a given
-     * item.
-     */
 
     private static final String GET_BY_DATE_RANGE_AND_ITEM_SQL =
     		  "SELECT evl.dt_l, evl.user_id, evl.item_id, evl.event, evl.stamp_b, usr.user_name, pass.password_data, pass.history_stored"
@@ -73,11 +54,6 @@ public class TamperproofEventLogDAO
             + "  LEFT OUTER JOIN passwords pass        ON evl.item_id = pass.password_id"
             + " WHERE evl.dt_l >= ? AND evl.dt_l <= ? AND evl.item_id = ? ORDER BY evl.datetime ASC";
 
-    /**
-     * SQL Statement to get all the log entries for a given date for a given
-     * user.
-     */
-
     private static final String GET_BY_DATE_RANGE_AND_USER_AND_ITEM_SQL =
 		    "SELECT evl.dt_l, evl.user_id, evl.item_id, evl.event, evl.stamp_b, usr.user_name, pass.password_data, pass.history_stored"
             + "  FROM event_log evl "
@@ -85,19 +61,14 @@ public class TamperproofEventLogDAO
             + "  LEFT OUTER JOIN passwords pass        ON evl.item_id = pass.password_id"
             + " WHERE evl.dt_l >= ? AND evl.dt_l <= ? AND evl.user_id = ? AND evl.item_id = ? ORDER BY evl.datetime ASC";
 
-    /**
-     * SQL statement to write the event to the log.
-     */
-
     private static final String WRITE_SQL =
               "INSERT INTO event_log(dt_l, item_id, event, user_id, stamp_b) VALUES (?, ?, ?, ?, ?)";
 
-	/**
-	 * Private constructor to prevent instantiation.
-	 */
+    private HierarchyTools hierarchyTools;
 
 	private TamperproofEventLogDAO( ) {
 		super();
+		hierarchyTools = new HierarchyTools();
 	}
 
 	public void create( final User theUser, final AccessControledObject item,
@@ -129,15 +100,6 @@ public class TamperproofEventLogDAO
 		create(theUser, null, message, true, logLevel, true);
 	}
 
-    /**
-     * Write a log entry to the log.
-     *
-     * @param logLevel The log level for the event.
-     * @param eventLogEntry The entry to write.
-     *
-     * @throws SQLException Thrown if there is a storing retrieving the information.
-     */
-
     private void write(final String logLevel, TamperproofEventLog eventLogEntry,
     		final AccessControledObject item, boolean sendEmail)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
@@ -157,8 +119,7 @@ public class TamperproofEventLogDAO
     private void sendEmail(final PreparedStatement writePreparedStatement, final String logLevel,
                            TamperproofEventLog eventLogEntry, final AccessControledObject item )
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        String sendEmails =
-                ConfigurationDAO.getValue(
+        String sendEmails = ConfigurationDAO.getValue(
                         ConfigurationOption.SMTP_ENABLED + "." + logLevel, null);
         if(sendEmails == null || sendEmails.charAt(0) != 'N') {
             try {
@@ -174,12 +135,11 @@ public class TamperproofEventLogDAO
 
     private void writeEntry(PreparedStatement ps, String userId, TamperproofEventLog eventLogEntry)
             throws SQLException {
-        int idx = 1;
-        ps.setLong(idx++, eventLogEntry.getDateTime());
-        ps.setString(idx++, eventLogEntry.getItemId());
-        ps.setString(idx++, eventLogEntry.getEvent());
-        ps.setString(idx++, userId);
-        ps.setBytes(idx, eventLogEntry.getTamperStamp());
+        ps.setLong(1, eventLogEntry.getDateTime());
+        ps.setString(2, eventLogEntry.getItemId());
+        ps.setString(3, eventLogEntry.getEvent());
+        ps.setString(4, userId);
+        ps.setBytes(5, eventLogEntry.getTamperStamp());
         ps.executeUpdate();
     }
 
@@ -273,17 +233,12 @@ public class TamperproofEventLogDAO
                                Group adminGroup, final boolean includePersonal, final boolean validateTamperstamp)
             throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
         String itemId = rs.getString(3);
-        if (!includePersonal && (rs.wasNull() || itemId == null)
-            && HierarchyNodeDAO.getInstance().isPersonalByName(itemId)) {
+        if (!includePersonal && (rs.wasNull() || itemId == null) && hierarchyTools.isPersonalByName(itemId)) {
             return;
         }
 
         daysEvents.add( new ExpandedTamperproofEventLogEntry( rs, fetchingUser, adminGroup, validateTamperstamp));
     }
-
-    /**
-     * Class holding a list of events for a specific day.
-     */
 
     public static class EventsForDay
         implements JavaBean {
