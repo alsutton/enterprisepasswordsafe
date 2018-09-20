@@ -41,12 +41,6 @@ public class SimpleTerminalInteractor {
 	private static final long WAIT_TIMEOUT = 60 * 1000;	// 60s
 	
 	/**
-	 * The size of the pushback buffer
-	 */
-	
-	private static final int PUSHBACK_SIZE = 1024;
-	
-	/**
 	 * The stdin stream from the endpoint.
 	 */
 	
@@ -230,9 +224,9 @@ public class SimpleTerminalInteractor {
 		throws IOException {		
 		InputWaiter waiter;
 		if			( theString.startsWith("stdout") ) {
-			waiter = new InputWaiter(stdout, theString.substring(7, theString.length()));
+			waiter = new InputWaiter(stdout, theString.substring(7, theString.length()), WAIT_TIMEOUT);
 		} else if	(theString.startsWith("stderr") ) {
-			waiter = new InputWaiter(stderr, theString.substring(7, theString.length()));			
+			waiter = new InputWaiter(stderr, theString.substring(7, theString.length()), WAIT_TIMEOUT);
 		} else {
 			throw new IOException ("Unknown stream");
 		}		
@@ -252,117 +246,9 @@ public class SimpleTerminalInteractor {
 		
 		IOException theException = waiter.getException();
 		if(theException == null ) {
-			theException = new IOException( 
-					"The string \""+
-					theString.substring(7)+
-					"\" was not found on "+
-					theString.substring(0,6));
+			theException = new IOException("The string \"" + theString.substring(7)+
+					"\" was not found on "+ theString.substring(0,6));
 		}
-		
 		throw theException;
-	}
-	
-	/**
-	 * Class which waits for a particular string on a Reader.
-	 */
-	
-	private class InputWaiter extends Thread {
-
-		/**
-		 * The reader which is being read.
-		 */
-		
-		private PushbackInputStream reader;
-		
-		/**
-		 * The text being waited for.
-		 */
-		
-		private String text;
-		
-		/**
-		 * Flag to say if the text has been found.
-		 */
-		
-		private boolean textFound = false;
-		
-		/**
-		 * Storage for any IOExceptions which occur.
-		 */
-		
-		private IOException ioException;
-		
-		/**
-		 * Constructor
-		 */
-		
-		InputWaiter( InputStream theInput, String theText ) {
-			reader = new PushbackInputStream(theInput, PUSHBACK_SIZE);
-			text = theText;
-		}
-		
-		/**
-		 * The method to read the reader and look for the text.
-		 */
-		
-		public void run() {
-			long startTime = System.currentTimeMillis();
-			
-			int searchTextLength = text.length();
-			StringBuffer textHold = new StringBuffer( searchTextLength );
-			int currentFoundIdx = 0;
-			try {
-				int thisChar;
-				while( true ) {
-					if( (thisChar = reader.read()) == -1 ) {
-						if( System.currentTimeMillis() - startTime < WAIT_TIMEOUT) {
-							Thread.sleep(100);
-							continue;						
-						} else {
-							return;
-						}
-					}
-					char thisCharacter = (char) thisChar;
-					if(thisCharacter == text.charAt(currentFoundIdx)) {
-						textHold.insert(0, thisCharacter);					
-						currentFoundIdx++;
-						if( currentFoundIdx == searchTextLength ) {
-							textFound = true;
-							break;
-						}
-					} else {
-						if( textHold.length() > 0 ) {
-							reader.unread(textHold.toString().getBytes(), 1, textHold.length()-1);
-							textHold.setLength(0);
-						}
-						currentFoundIdx = 0;
-					}
-				}
-			} catch( IOException ioe ) {
-				ioException = ioe;
-			} catch( InterruptedException ie ) {
-				
-			}
-		}
-		
-		/**
-		 * Return a flag to see if the text was found or not.
-		 * 
-		 * @return true if the text was found. False if not.
-		 */
-		
-		boolean textFound() {
-			return textFound;
-		}
-		
-		/**
-		 * Returns any IOException thrown during processing.
-		 * 
-		 * @return Any exception thrown, or null if no exception was thrown.
-		 */
-		
-		IOException getException() {
-			return ioException;
-		}
 	}
 }
