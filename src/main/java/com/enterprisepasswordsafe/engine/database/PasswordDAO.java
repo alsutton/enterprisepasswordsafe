@@ -18,155 +18,58 @@ package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.database.actions.password.ExpiringAccessiblePasswordsAction;
 import com.enterprisepasswordsafe.engine.database.derived.ExpiringAccessiblePasswords;
-import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
+import com.enterprisepasswordsafe.engine.passwords.PasswordPermissionApplier;
 import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-/**
- * Data access object for passwords.
- */
 public final class PasswordDAO
         extends PasswordStoreManipulator
         implements ExternalInterface {
 
-	/**
-	 * Empty string used for null password summaries.
-	 */
-
-	private static final String EMPTY_STRING = "";
-
-    /**
-     * The default number of days before expiry when a warning is produced.
-     */
-
     private static final int DEFAULT_PASSWORD_EXPIRY_WARNING_DAYS = 7;
-
-    /**
-     * SQL to check if the restriction is in use.
-     */
 
     private static final String USE_CHECK_SQL =
     		"SELECT " + PASSWORD_FIELDS + " FROM passwords pass WHERE pass.restriction_id = ?";
-
-    /**
-     * The SQL statement to get a password from an ID.
-     */
 
     private static final String GET_BY_ID_SQL = "SELECT " + PASSWORD_FIELDS
             + "  FROM passwords pass" + " WHERE pass.password_id = ? "
             + "   AND (pass.enabled is null OR pass.enabled = 'Y')";
 
-    /**
-     * Selects all of the available locations from the database.
-     */
-
-    private static final String GET_ALL_FOR_LOCATION_SQL =
-            "SELECT  "+ PASSWORD_FIELDS + "  FROM passwords pass " +
-            " WHERE (pass.enabled is null OR pass.enabled = 'Y')" +
-            "   AND pass.ptype = 0" +
-            "   AND location_id = ?";
-
-    /**
-     * The SQL to search for password ids and usernames which match a search location
-     */
-
     private static final String SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_USER_SQL =
-            "SELECT   " + PASSWORD_FIELDS
-            + "  FROM passwords             pass, "
-            + "       user_access_control   uac "
-            + " WHERE uac.user_id = ?"
-            + "   AND uac.item_id = pass.password_id"
-            + "   AND (pass.enabled is null OR pass.enabled = 'Y')"
-            + "   AND pass.location_id = ? ";
-
-    /**
-     * The SQL to get all the active passwords to be acted on.
-     */
+            "SELECT " + PASSWORD_FIELDS + " FROM passwords pass, user_access_control uac "
+            + " WHERE uac.user_id = ? AND uac.item_id = pass.password_id"
+            + "  AND (pass.enabled is null OR pass.enabled = 'Y') AND pass.location_id = ? ";
 
     private static final String SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_GROUP_SQL =
-            "SELECT   " + PASSWORD_FIELDS
-            + "  FROM passwords             pass, "
-            + "       group_access_control  gac, "
-            + "       membership            mem "
-            + " WHERE mem.user_id  = ?"
-            + "   AND mem.group_id    = gac.group_id "
-            + "   AND gac.item_id = pass.password_id "
-            + "   AND (pass.enabled is null OR pass.enabled = 'Y')"
-    		+ "   AND pass.location_id = ? ";
-
-    /**
-     * Get all of the passwords summary details in the database with the
-     * associated admin gac key.
-     */
-
-    private static final String GET_ALL_SUMMARY_DETAILS =
-    	"SELECT pass.password_id, pass.password_data, " +
-    	"        gac.item_id, gac.mkey, gac.rkey, gac.group_id "+
-    	"  FROM passwords pass, " +
-    	"		group_access_control gac "+
-    	" WHERE pass.password_id = gac.item_id " +
-    	"   AND gac.group_id = '"+Group.ADMIN_GROUP_ID+"'";
-
-    /**
-     * The SQL to get the email addresses of users who have access to this
-     * password.
-     */
+            "SELECT " + PASSWORD_FIELDS + " FROM passwords pass, group_access_control  gac, membership mem "
+            + " WHERE mem.user_id  = ? AND mem.group_id    = gac.group_id AND gac.item_id = pass.password_id "
+            + " AND (pass.enabled is null OR pass.enabled = 'Y') AND pass.location_id = ? ";
 
     private static final String EMAILS_WITH_ACCESS_VIA_UAC = "SELECT users.email "
-            + "  FROM application_users users, "
-            + "       user_access_control uac "
-            + " WHERE uac.item_id = ? "
-            + "   AND uac.rkey IS NOT NULL "
-            + "   AND uac.user_id = users.user_id "
-            + "   AND users.disabled is null ";
-
-    /**
-     * The SQL to get the email addresses of users in groups which have access
-     * to this password.
-     */
+            + "  FROM application_users users, user_access_control uac "
+            + " WHERE uac.item_id = ? AND uac.rkey IS NOT NULL AND uac.user_id = users.user_id AND users.disabled is null ";
 
     private static final String EMAILS_WITH_ACCESS_VIA_GAC = "SELECT users.email "
-            + "  FROM application_users users, "
-            + "       group_access_control gac, "
-            + "       membership mem, "
-            + "       groups grp "
-            + " WHERE gac.item_id = ? "
-            + "   AND gac.rkey IS NOT NULL "
-            + "   AND gac.group_id = grp.group_id "
-            + "  AND  grp.status = " + Group.STATUS_ENABLED
-            + "   AND gac.group_id = mem.group_id "
-            + "   AND mem.user_id = users.user_id "
-            + "   AND users.disabled is null ";
-
-    /**
-     * The SQL to write a new password into the database.
-     */
+            + "  FROM application_users users, group_access_control gac, membership mem, groups grp "
+            + " WHERE gac.item_id = ? AND gac.rkey IS NOT NULL AND gac.group_id = grp.group_id "
+            + "  AND  grp.status = " + Group.STATUS_ENABLED + " AND gac.group_id = mem.group_id "
+            + "  AND mem.user_id = users.user_id AND users.disabled is null ";
 
     private static final String WRITE_PASSWORD_SQL =
-            "INSERT INTO passwords"
-            + "(password_id, enabled, audited, history_stored, restriction_id, ra_enabled, "
+            "INSERT INTO passwords(password_id, enabled, audited, history_stored, restriction_id, ra_enabled, "
             + "		ra_approvers, ra_blockers, ptype, location_id, password_data  )"
             + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
-    /**
-     * SQL to fetch the id and expiry date for the passwords.
-     */
-
     private static final String GET_EXPIRY_DETAILS_SQL =
     	"SELECT password_id, password_data FROM passwords";
-
-	/**
-	 * private constructor to prevent instantiation.
-	 */
 
 	private PasswordDAO( ) {
 		super(GET_BY_ID_SQL, null, null);
@@ -187,19 +90,6 @@ public final class PasswordDAO
         gacDAO.write(adminGroup, gac);
         return UserAccessControlDAO.getInstance().create(creator, thePassword, true, true);
 	}
-
-    public String getSummaryById(AccessControl ac, final String id)
-            throws SQLException, IOException, GeneralSecurityException {
-        if( ac == null )
-        	return EMPTY_STRING;
-
-        Password password = getById(id, ac);
-        if(password != null) {
-        	return password.toString();
-        }
-
-        return EMPTY_STRING;
-    }
 
 	public Password getById(final User user, final String id)
             throws SQLException, IOException, GeneralSecurityException {
@@ -264,7 +154,7 @@ public final class PasswordDAO
 
         if( adminGroup != null ) {
             GroupAccessControlDAO.getInstance().create(adminGroup, newPassword, true, true);
-        	setDefaultPermissions(newPassword, parentNode, adminGroup);
+            new PasswordPermissionApplier().setDefaultPermissions(newPassword, parentNode, adminGroup);
 
 	    	boolean sendEmail = ((newPassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
 	        TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
@@ -274,54 +164,6 @@ public final class PasswordDAO
         return newPassword;
     }
 
-    private void setDefaultPermissions(final Password newPassword, final String parentNodeId, final Group adminGroup)
-    		throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-        Map<String,String> uPerms = new HashMap<>();
-        Map<String,String> gPerms = new HashMap<>();
-        new HierarchyNodePermissionDAO().getCombinedDefaultPermissionsForNode(parentNodeId, uPerms, gPerms);
-
-        UserAccessControlDAO uacDAO = UserAccessControlDAO.getInstance();
-        for(Map.Entry<String, String> thisEntry : uPerms.entrySet()) {
-        	String userId = thisEntry.getKey();
-        	User theUser = UserDAO.getInstance().getByIdDecrypted(userId, adminGroup);
-        	if( theUser == null ) {
-        		continue;
-        	}
-        	addPermission(theUser, newPassword, uacDAO, thisEntry.getValue());
-        }
-
-        final User adminUser = UserDAO.getInstance().getAdminUser(adminGroup);
-        for(Map.Entry<String,String> thisEntry : gPerms.entrySet()) {
-        	final String groupId = thisEntry.getKey();
-        	Group theGroup = GroupDAO.getInstance().getByIdDecrypted(groupId, adminUser);
-        	if( theGroup == null ) {
-        		continue;
-        	}
-            addPermission(theGroup, newPassword, uacDAO, thisEntry.getValue());
-        }
-    }
-
-    private void addPermission(EntityWithAccessRights entity, Password newPassword,
-            AccessControlDAOInterface acDAO, String permissions)
-            throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-        boolean allowRead = "1".equals(permissions) || "2".equals(permissions);
-        boolean allowModify = "2".equals(permissions);
-        acDAO.create(entity, newPassword, allowRead, allowModify);
-    }
-
-
-    /**
-     * Stores a password in the database and creates a GAC for the admin group
-     * to access it.
-     *
-     * @param password The password to store.
-     * @param group The group for which the GAC should be created allow access.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws IOException Thrown if there is an IOException
-     */
-
     public void write(final Password password, final Group group)
             throws SQLException, GeneralSecurityException, IOException {
     	GroupAccessControl gac = GroupAccessControlDAO.getInstance().create(group, password, true, true);
@@ -330,33 +172,20 @@ public final class PasswordDAO
         write(password, gac);
     }
 
-    /**
-     * Stores a password in the database using the given AccessControl.
-     *
-     * @param password The password to store.
-     * @param ac The access control to store the password with.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws IOException Thrown if there is an IOException
-     */
-
     public void write(final Password password, final AccessControl ac)
         throws SQLException, GeneralSecurityException, IOException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_PASSWORD_SQL)) {
-            int idx = 1;
-            ps.setString(idx++, password.getId());
-            ps.setString(idx++, password.isEnabled() ? "Y" : "N");
-            ps.setString(idx++, getAuditingLevelRepresentation(password));
-            ps.setString(idx++, password.isHistoryStored() ? "Y" : "N");
-            ps.setString(idx++, password.getRestrictionId());
-            ps.setString(idx++, password.isRaEnabled() ? "Y" : "N");
-            ps.setInt(idx++, password.getRaApprovers());
-            ps.setInt(idx++, password.getRaBlockers());
-            ps.setInt(idx++, password.getPasswordType());
-            ps.setString(idx++, LocationDAO.getInstance().getId(password.getLocation()));
-            ps.setBytes(idx, PasswordUtils.encrypt(password, ac));
-
+            ps.setString(1, password.getId());
+            ps.setString(2, password.isEnabled() ? "Y" : "N");
+            ps.setString(3, getAuditingLevelRepresentation(password));
+            ps.setString(4, password.isHistoryStored() ? "Y" : "N");
+            ps.setString(5, password.getRestrictionId());
+            ps.setString(6, password.isRaEnabled() ? "Y" : "N");
+            ps.setInt(7, password.getRaApprovers());
+            ps.setInt(8, password.getRaBlockers());
+            ps.setInt(9, password.getPasswordType());
+            ps.setString(10, LocationDAO.getInstance().getId(password.getLocation()));
+            ps.setBytes(11, PasswordUtils.encrypt(password, ac));
             ps.executeUpdate();
 
             // Write the password with the data encrypted
@@ -366,31 +195,10 @@ public final class PasswordDAO
         }
     }
 
-    /**
-     * Get a list of passwords a restriction applies to.
-     *
-     * @param user The user getting the restriction.
-     * @param restrictionId The ID of the restriction to get.
-     *
-     * @return A List of passwords htat have this restriction associated with them.
-     *
-     * @throws SQLException
-     *             Thrown if there is problem talking to the database.
-     */
-
-    public List<Password> getPasswordsRestrictionAppliesTo(final User user, final String restrictionId)
+    public List<Password> getPasswordsRestrictionAppliesTo(final String restrictionId)
             throws SQLException {
         return getMultiple(USE_CHECK_SQL, restrictionId);
     }
-
-    /**
-     * Method to determine if there are any expiring passwords accessible
-     * by this user.
-     *
-     * @param user The user accessing the passwords.
-     *
-     * @return true if the password is expiring, false if not.
-     */
 
     public boolean hasExpiringPasswords(final User user)
             throws SQLException, GeneralSecurityException, IOException {
@@ -417,34 +225,12 @@ public final class PasswordDAO
         return false;
     }
 
-    /**
-     * Gets the list of passwords this user has access to that are expiring or
-     * have expired.
-     *
-     * @param user The user getting the list of expired passwords.
-     *
-     * @return The expiring passwords the user has access to.
-     *
-     * @throws Exception Thrown if there is an error during the search.
-     */
-
     public ExpiringAccessiblePasswords getExpiringPasswords(final User user)
             throws Exception {
         ExpiringAccessiblePasswordsAction expiryTester = new ExpiringAccessiblePasswordsAction(user);
         new PasswordProcessor().processAllPasswords(user, expiryTester);
         return expiryTester;
     }
-
-    /**
-     * Get the list of email addresses for users who have access to a
-     * password.
-     *
-     * @param  password The password to get the list of users with access.
-     *
-     * @return The Set of email addresses.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
 
     public final Set<String> getEmailsOfUsersWithAccess(final Password password)
         throws SQLException {
@@ -455,17 +241,6 @@ public final class PasswordDAO
 
         return emailAddresses;
     }
-
-    /**
-     * Runs the SQL responsible for getting a set of email addresses for users with access
-     * to a password.
-     *
-     * @param password The password to get the list for.
-     * @param sql The SQL to execute to get the user list.
-     * @param emailAddresses The Set containing email addresses.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     */
 
     private void getEmailAddressesWork(final Password password, final String sql,
             final Set<String> emailAddresses)
@@ -483,18 +258,13 @@ public final class PasswordDAO
         }
     }
 
-    /**
-     * Returns a list of the password IDs which match he given search criteria.
-     *
-     * @param user The user the search is being performed for.
-     * @param searchUsername The username being searched for.
-     * @param searchLocation The location being searched for.
-     *
-     * @return The list of Ids.
-     */
 	public Set<String> performRawAPISearch(User user, String searchUsername, String searchLocation)
             throws SQLException, IOException, GeneralSecurityException {
 		Set<String> ids = new TreeSet<>();
+		if (searchUsername == null) {
+		    return ids;
+        }
+
         String locationId = LocationDAO.getInstance().getId(searchLocation);
 
 		performRawAPIUserSearch(user, searchUsername, locationId, ids);
@@ -502,53 +272,32 @@ public final class PasswordDAO
 		return ids;
 	}
 
-    /**
-     * Returns a list of the password IDs which match he given search criteria.
-     *
-     * @param user The user the search is being performed for.
-     * @param searchUsername The username being searched for.
-     * @param searchLocation The location being searched for.
-     * @param ids The list of ids which match.
-     */
-	public void performRawAPIUserSearch(final User user, final String searchUsername,
+	private void performRawAPIUserSearch(final User user, final String searchUsername,
 			final String searchLocation, final Set<String> ids)
             throws SQLException, IOException, GeneralSecurityException {
-	    for(Password password:
-                getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_USER_SQL, user.getUserId(), searchLocation)) {
-            UserAccessControl ac = UserAccessControlDAO.getInstance().getUac(user, password.getId());
-            if(ac == null) {
-                continue;
-            }
-            password.decryptPasswordProperties(ac);
-            if (searchUsername != null && searchUsername.equals(password.getUsername())) {
-                ids.add(password.getId());
-            }
+	    for(Password password: getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_USER_SQL, user.getUserId(), searchLocation)) {
+            addIdIfMatches(ids, password, UserAccessControlDAO.getInstance().getUac(user, password.getId()), searchUsername);
         }
 	}
 
-    /**
-     * Returns a list of the password IDs which match he given search criteria.
-     *
-     * @param user The user the search is being performed for.
-     * @param searchUsername The username being searched for.
-     * @param searchLocation The location being searched for.
-     * @param ids The list of ids which match.
-     */
-	public void performRawAPIGroupSearch(final User user, final String searchUsername,
+	private void performRawAPIGroupSearch(final User user, final String searchUsername,
 			final String searchLocation, final Set<String> ids)
             throws SQLException, IOException, GeneralSecurityException {
-        for(Password password:
-                getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_GROUP_SQL, user.getUserId(), searchLocation)) {
-            GroupAccessControl ac = GroupAccessControlDAO.getInstance().getGac(user, password.getId());
-            if(ac == null) {
-                continue;
-            }
-            password.decryptPasswordProperties(ac);
-            if (searchUsername != null && searchUsername.equals(password.getUsername())) {
-                ids.add(password.getId());
-            }
+        for(Password password: getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_GROUP_SQL, user.getUserId(), searchLocation)) {
+            addIdIfMatches(ids, password, GroupAccessControlDAO.getInstance().getGac(user, password.getId()), searchUsername);
         }
 	}
+
+	private void addIdIfMatches(Set<String> ids, Password password, AccessControl ac, String searchUsername)
+            throws GeneralSecurityException, IOException, SQLException {
+        if(ac == null) {
+            return;
+        }
+        password.decryptPasswordProperties(ac);
+        if (searchUsername.equals(password.getUsername())) {
+            ids.add(password.getId());
+        }
+    }
 
     //------------------------
 

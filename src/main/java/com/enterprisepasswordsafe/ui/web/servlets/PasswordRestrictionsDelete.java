@@ -33,16 +33,8 @@ import com.enterprisepasswordsafe.engine.database.User;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-
-/**
- * Servlet to send the user to the page to list the password restrictions.
- */
-
 public final class PasswordRestrictionsDelete extends HttpServlet {
 
-    /**
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -50,9 +42,8 @@ public final class PasswordRestrictionsDelete extends HttpServlet {
 	    	User user = SecurityUtils.getRemoteUser(request);
 	    	String id = request.getParameter("id");
 
-	    	List<Password> inUseBy =
-                    PasswordDAO.getInstance().getPasswordsRestrictionAppliesTo(user, id);
-	    	if( inUseBy.size() > 0 ) {
+	    	List<Password> inUseBy = PasswordDAO.getInstance().getPasswordsRestrictionAppliesTo(id);
+	    	if( !inUseBy.isEmpty() ) {
 	    		request.setAttribute("block_list", inUseBy);
 	    		request.getRequestDispatcher("/admin/pr_cant_delete.jsp").forward(request, response);
 	    		return;
@@ -69,10 +60,6 @@ public final class PasswordRestrictionsDelete extends HttpServlet {
 
     	request.getRequestDispatcher("/admin/PasswordRestrictions").forward(request, response);
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {
