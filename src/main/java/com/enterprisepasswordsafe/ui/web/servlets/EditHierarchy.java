@@ -16,27 +16,26 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
-import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
+import com.enterprisepasswordsafe.engine.hierarchy.NodeDeleter;
 import com.enterprisepasswordsafe.engine.nodes.HierarchyManipulator;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Servlet to direct the user to the hierarchy editing screen.
@@ -153,12 +152,7 @@ public final class EditHierarchy extends HttpServlet {
         List<HierarchyNode> parentage = hierarchyTools.getParentage(node);
         if( !userClassifier.isAdministrator(user)
                 &&	hnarDAO.getAccessibilityForUser(node, user) == HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
-            for( HierarchyNode thisNode : parentage ) {
-                if(hnarDAO.getAccessibilityForUser(thisNode, user) == HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
-                    break;
-                }
-                node = thisNode;
-            }
+            node = findAccessibleAncestor(user, parentage);
             ServletUtils.getInstance().generateErrorMessage(request,
                     "You are not allowed access to the folder you requested. You have been diverted to a folder you can access."
             );
@@ -166,6 +160,19 @@ public final class EditHierarchy extends HttpServlet {
         }
         request.setAttribute(BaseServlet.NODE_PARENTAGE, parentage);
         return node;
+    }
+
+    private HierarchyNode findAccessibleAncestor(User user, List<HierarchyNode> parentage)
+            throws SQLException, GeneralSecurityException {
+        HierarchyNodeAccessRuleDAO hnarDAO = HierarchyNodeAccessRuleDAO.getInstance();
+        HierarchyNode node;
+        for( HierarchyNode thisNode : parentage ) {
+            node = thisNode;
+            if(hnarDAO.getAccessibilityForUser(thisNode, user) != HierarchyNodeAccessRuleDAO.ACCESIBILITY_DENIED) {
+                return node;
+            }
+        }
+        return HierarchyNodeDAO.getInstance().getById(HierarchyNode.ROOT_NODE_ID);
     }
 
     private HierarchyNode getValidNode(final HttpServletRequest request,
@@ -219,7 +226,12 @@ public final class EditHierarchy extends HttpServlet {
                 break;
             }
             case EditHierarchy.DELETE_ACTION: {
-                processDelete(request, user, node);
+                String[] nodes = request.getParameterValues(BaseServlet.NODE_LIST_PARAMETER);
+                if (nodes == null || nodes.length == 0) {
+                    ServletUtils.getInstance().generateErrorMessage(request, "Delete failed, No items were selected.");
+                } else {
+                    new NodeDeleter().deleteNodes(user, node, nodes);
+                }
                 break;
             }
         }
@@ -299,69 +311,6 @@ public final class EditHierarchy extends HttpServlet {
 
         session.removeAttribute(BaseServlet.ACTION_PARAMETER);
         session.removeAttribute(BaseServlet.NODE_LIST_PARAMETER);
-    }
-
-    private void processDelete(final HttpServletRequest request, final User viewingUser, final HierarchyNode node)
-            throws SQLException, GeneralSecurityException, IOException {
-        String[] nodes = request.getParameterValues(BaseServlet.NODE_LIST_PARAMETER);
-        if (nodes == null || nodes.length == 0) {
-            ServletUtils.getInstance().generateErrorMessage(request, "Delete failed, No items were selected.");
-            return;
-        }
-
-        HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
-        // TODO : Check permissions of subnodes, and block if
-        // the user can not access a specific subnode.
-        for (String thisNodeId : nodes) {
-            // Skip deletiong of any non-existant nodes
-            if (thisNodeId != null && thisNodeId.startsWith("p_")) {
-                thisNodeId = hnDAO.getNodeIDForObject(node.getNodeId(), thisNodeId.substring(2));
-            }
-            if (thisNodeId == null) {
-                continue;
-            }
-            HierarchyNode thisNode = hnDAO.getById(thisNodeId);
-            if (thisNode == null) {
-                continue;
-            }
-
-            if (isNotDeletableByUser(viewingUser, thisNode)) {
-                ServletUtils.getInstance().generateErrorMessage(request,
-                        "Delete failed, You do not have the permissions needed to delete all the objects specified.");
-                return ;
-            }
-        }
-
-        // Now the permissions have been checked we can perform the delete.
-        for (String thisNodeId : nodes) {
-            if (thisNodeId != null && thisNodeId.startsWith("p_")) {
-                thisNodeId = hnDAO.getNodeIDForObject(node.getNodeId(), thisNodeId.substring(2));
-            }
-            if (thisNodeId == null) {
-                continue;
-            }
-
-            HierarchyNode thisNode = hnDAO.getById(thisNodeId);
-            if (thisNode != null) {
-                hnDAO.deleteNode(thisNode, viewingUser);
-            }
-        }
-    }
-
-    private boolean isNotDeletableByUser(final User user, final HierarchyNode node)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        if(node.getType() == HierarchyNode.OBJECT_NODE) {
-            AccessControl ac = AccessControlDAO.getInstance().getAccessControl(user, node.getName());
-            return (ac != null && ac.getModifyKey() != null);
-        }
-
-        for(HierarchyNode thisNode : HierarchyNodeDAO.getInstance().getAllChildren(node)) {
-            if(isNotDeletableByUser(user,thisNode)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private void pasteCutNodes(final HierarchyNodeDAO hnDAO, final HierarchyNode newParent, final String[] nodes)
