@@ -116,8 +116,8 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
 
         boolean found = false;
         for(PasswordRestriction.Summary summary : passwordRestrictionDAO.getAll()) {
-            if(summary.getId().equals(createdRestriction.getId())
-            && summary.getName().equals(runId)) {
+            if(summary.id.equals(createdRestriction.getId())
+            && summary.name.equals(runId)) {
                 found = true;
                 break;
             }
