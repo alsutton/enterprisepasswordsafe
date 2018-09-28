@@ -25,8 +25,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
 import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
 
 public class Login extends HttpServlet {

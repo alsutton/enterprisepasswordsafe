@@ -16,16 +16,18 @@
 
 package com.enterprisepasswordsafe.engine.dbpool;
 
-import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
+import com.enterprisepasswordsafe.engine.Repositories;
+import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
+import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
 public final class DatabasePoolFactory implements ExternalInterface {
 
     private static DatabasePool mSharedInstance;
 
-    private static void initialise(final JDBCConfiguration configuration)
+    private static void initialise(final JDBCConnectionInformation configuration)
         throws SQLException, ClassNotFoundException {
     	if(mSharedInstance != null) {
             mSharedInstance.close();
@@ -34,7 +36,7 @@ public final class DatabasePoolFactory implements ExternalInterface {
         mSharedInstance = new DatabasePool(configuration);
     }
 
-    public static synchronized void setConfiguration(JDBCConfiguration configuration)
+    public static synchronized void setConfiguration(JDBCConnectionInformation configuration)
             throws SQLException, ClassNotFoundException {
         if (mSharedInstance != null && mSharedInstance.isUsingConfiguration(configuration)) {
             return;
@@ -44,9 +46,9 @@ public final class DatabasePoolFactory implements ExternalInterface {
     }
 
     public static synchronized DatabasePool getInstance()
-            throws SQLException, ClassNotFoundException {
+            throws SQLException, ClassNotFoundException, GeneralSecurityException {
         if(mSharedInstance == null) {
-            setConfiguration(JDBCConfiguration.getConfiguration());
+            setConfiguration(Repositories.jdbcConfigurationRepository.load());
         }
         return mSharedInstance;
     }

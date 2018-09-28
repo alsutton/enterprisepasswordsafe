@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.enterprisepasswordsafe.engine.Repositories;
+import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
 import com.enterprisepasswordsafe.engine.dbabstraction.DALInterface;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
@@ -48,15 +50,18 @@ public final class BOMFactory
 			return currentInstance;
 		}
 
+		JDBCConnectionInformation connectionInformation;
+		try {
+			connectionInformation = Repositories.jdbcConfigurationRepository.load();
+		} catch (GeneralSecurityException e) {
+			return null;
+		}
+
 		int retries = 3;
 		while(retries-- > 0) {
-			try {
-				currentInstance = new DatabaseAccessManager();
-		        localInstance.set(currentInstance);
-		        return currentInstance;
-			} catch(SQLException | GeneralSecurityException e) {
-				Logger.getAnonymousLogger().log(Level.WARNING, "Error getting database connection", e);
-			}
+			currentInstance = new DatabaseAccessManager(connectionInformation);
+			localInstance.set(currentInstance);
+			return currentInstance;
 		}
 
 		return null;

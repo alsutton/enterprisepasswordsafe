@@ -24,35 +24,25 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
-
-
-/**
- * Servlet to configure the JDBC connection information.
- */
+import com.enterprisepasswordsafe.engine.Repositories;
+import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
+import com.enterprisepasswordsafe.engine.configuration.PropertyBackedJDBCConfigurationRepository;
 
 public class SetupJDBCConfiguration extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 3409824844847523882L;
-
-    /**
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
     @Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setAttribute(VerifyJDBCConfiguration.JDBC_CONFIG_PROPERTY, JDBCConfiguration.getConfiguration());
-        request.setAttribute("dbTypes", JDBCConfiguration.DATABASE_TYPES);
-    	request.getRequestDispatcher("/admin/configure_jdbc.jsp").forward(request, response);
+        try {
+            JDBCConnectionInformation connectionInformation = Repositories.jdbcConfigurationRepository.load();
+            request.setAttribute(VerifyJDBCConfiguration.JDBC_CONFIG_PROPERTY, connectionInformation);
+            request.setAttribute("dbTypes", PropertyBackedJDBCConfigurationRepository.DATABASE_TYPES);
+            request.getRequestDispatcher("/admin/configure_jdbc.jsp").forward(request, response);
+        } catch(GeneralSecurityException e) {
+            throw new ServletException(e);
+        }
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to set the JDBC connection information";

@@ -16,12 +16,11 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
+import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
 import com.enterprisepasswordsafe.engine.database.exceptions.DatabaseUnavailableException;
 import com.enterprisepasswordsafe.engine.dbabstraction.DALFactory;
 import com.enterprisepasswordsafe.engine.dbabstraction.DALInterface;
 
-import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -36,37 +35,17 @@ import java.util.logging.Logger;
  */
 public class DatabaseAccessManager {
 
-	/**
-	 * The type of database we're dealing with.
-	 */
-
 	private final String dbType;
-
-	/**
-	 * The connection to the database.
-	 */
 
 	private Connection connection;
 
-	/**
-	 * The database abstraction layer in use
-	 */
-
 	private DALInterface databaseAbstractionLayer;
-
-	/**
-	 * A temporary cache for objects which last the lifetime of this BOM.
-	 */
 
 	private Map<String,Object> cache;
 
-	public DatabaseAccessManager() throws SQLException, GeneralSecurityException {
-		dbType = JDBCConfiguration.getConfiguration().getDBType();
+	public DatabaseAccessManager(JDBCConnectionInformation jdbcConnectionInformation) {
+		dbType =jdbcConnectionInformation.dbType;
 	}
-
-	/**
-	 * Close this BOM, closing all the closable DAOs.
-	 */
 
 	public void close() {
 		if(connection == null) {
@@ -106,11 +85,6 @@ public class DatabaseAccessManager {
 		}
 	}
 
-	/**
-	 * Get the connection object used
-	 * @throws SQLException
-	 */
-
 	public Connection getConnection() throws SQLException {
 		if(connection == null || connection.isClosed()) {
 			try {
@@ -124,14 +98,6 @@ public class DatabaseAccessManager {
 	}
 
 
-	/**
-	 * Gets a Database Abstraction Layer object for direct database manipulation.
-	 *
-	 * @throws ClassNotFoundException
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
-	 */
-
 	public synchronized DALInterface getDatabaseAbstractionLayer()
 		throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		if(databaseAbstractionLayer != null )
@@ -141,13 +107,6 @@ public class DatabaseAccessManager {
         databaseAbstractionLayer.setConnection(connection);
         return databaseAbstractionLayer;
 	}
-
-	/**
-	 * Put a value in the bom cache.
-	 *
-	 * @param name The name for the value.
-	 * @param value The value itself.
-	 */
 
 	public synchronized Object cacheValue(String name, Object value){
 		if( cache == null ) {

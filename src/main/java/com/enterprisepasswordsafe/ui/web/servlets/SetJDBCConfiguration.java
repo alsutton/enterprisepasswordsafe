@@ -16,19 +16,19 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.enterprisepasswordsafe.engine.Repositories;
+import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
+import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
+import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -37,29 +37,19 @@ import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 public class SetJDBCConfiguration extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 3409824844847523882L;
-
-    /**
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
     @Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
     	request.setAttribute("error_page", "/");
 
     	try {
-            final JDBCConfiguration jdbcConfig = JDBCConfiguration.getConfiguration();
-            final String databaseType = request.getParameter("database");
-            jdbcConfig.setDatabaseType(databaseType);
-            jdbcConfig.setDriver(request.getParameter("jdbcdriver"));
-            jdbcConfig.setURL(request.getParameter("jdbcurl"));
-            jdbcConfig.setUsername(request.getParameter("jdbcusername"));
-            jdbcConfig.setPassword(request.getParameter("jdbcpassword"));
-            jdbcConfig.store();
+            JDBCConnectionInformation jdbcConfig = Repositories.jdbcConfigurationRepository.load();
+            jdbcConfig.dbType = request.getParameter("database");
+            jdbcConfig.driver = request.getParameter("jdbcdriver");
+            jdbcConfig.url = request.getParameter("jdbcurl");
+            jdbcConfig.username = request.getParameter("jdbcusername");
+            jdbcConfig.password = request.getParameter("jdbcpassword");
+            Repositories.jdbcConfigurationRepository.store(jdbcConfig);
 
             // Initialise the database if so requested.
             final String initialise = request.getParameter("initialise");

@@ -30,7 +30,7 @@
 
 	<context-param>
 		<param-name>jdbc.config.class</param-name>
-		<param-value>com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration</param-value>
+		<param-value>com.enterprisepasswordsafe.engine.configuration.PropertyBackedJDBCConfigurationRepository</param-value>
 	</context-param>
 
 	<filter>

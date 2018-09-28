@@ -29,16 +29,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration;
+import com.enterprisepasswordsafe.engine.Repositories;
+import com.enterprisepasswordsafe.engine.configuration.PropertyBackedJDBCConfigurationRepository;
+import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
 import com.enterprisepasswordsafe.engine.database.schema.SchemaVersion;
 import com.enterprisepasswordsafe.engine.dbabstraction.SupportedDatabase;
 import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
 import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
-
-/**
- * Servlet to verify the JDBC connection information is valid.
- */
 
 public class VerifyJDBCConfiguration extends HttpServlet {
 
@@ -48,20 +46,19 @@ public class VerifyJDBCConfiguration extends HttpServlet {
 
     private static final String LOGIN_PAGE = "/Login";
 
-    private static JDBCConfiguration verifiedConfiguration = null;
+    private static JDBCConnectionInformation verifiedConfiguration = null;
 
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        JDBCConfiguration jdbcConfig = JDBCConfiguration.getConfiguration();
-
-        if (verifiedConfiguration != null && verifiedConfiguration.equals(jdbcConfig)) {
-            response.sendRedirect(request.getContextPath() + LOGIN_PAGE);
-            return;
-        }
-
         try {
-            String type = jdbcConfig.getDBType();
-            if( type == null || type.length() == 0 ) {
+            JDBCConnectionInformation jdbcConfig = Repositories.jdbcConfigurationRepository.load();
+
+            if (verifiedConfiguration != null && verifiedConfiguration.equals(jdbcConfig)) {
+                response.sendRedirect(request.getContextPath() + LOGIN_PAGE);
+                return;
+            }
+
+            if( jdbcConfig.dbType == null || jdbcConfig.dbType.length() == 0 ) {
                 setJdbcConnectionInformationToDefaults();
                 initialiseDatabase();
                 doGet(request, response);
@@ -76,15 +73,14 @@ public class VerifyJDBCConfiguration extends HttpServlet {
                 return;
             }
 
+            request.setAttribute(JDBC_CONFIG_PROPERTY, jdbcConfig);
 	    } catch (Exception e) {
         	Logger.getAnonymousLogger().log(Level.SEVERE, "Error setting JDBC configuration", e);
             ServletUtils.getInstance().generateErrorMessage( request,
                     "An error occurred whilst configuring your database.\n("+e.toString()+")");
         }
-
-        request.setAttribute(JDBC_CONFIG_PROPERTY, jdbcConfig);
         request.setAttribute("verifyOK", "X");
-        request.setAttribute("dbTypes", JDBCConfiguration.DATABASE_TYPES);
+        request.setAttribute("dbTypes", PropertyBackedJDBCConfigurationRepository.DATABASE_TYPES);
 		request.getRequestDispatcher(CONFIGURATION_PAGE).forward(request, response);
     }
 
@@ -95,22 +91,22 @@ public class VerifyJDBCConfiguration extends HttpServlet {
     }
 
     private void setJdbcConnectionInformationToDefaults()
-            throws ClassNotFoundException, GeneralSecurityException, BackingStoreException, SQLException {
-        JDBCConfiguration jdbcConfiguration = new JDBCConfiguration();
+            throws GeneralSecurityException, BackingStoreException {
 
-        jdbcConfiguration.setDatabaseType(SupportedDatabase.APACHE_DERBY.getType());
-        jdbcConfiguration.setDriver("org.apache.derby.jdbc.EmbeddedDriver");
+        JDBCConnectionInformation newConnectionInformation = new JDBCConnectionInformation();
+
+        newConnectionInformation.dbType = SupportedDatabase.APACHE_DERBY.getType();
+        newConnectionInformation.driver = "org.apache.derby.jdbc.EmbeddedDriver";
 
         String userHome = System.getProperty("user.home");
         if( userHome == null ) {
             userHome = "eps-db";
         }
-        jdbcConfiguration.setURL("jdbc:derby:/" + userHome + "/pwsafe-hsqldb");
+        newConnectionInformation.url = "jdbc:derby:/" + userHome + "/pwsafe-hsqldb";
+        newConnectionInformation.username = "";
+        newConnectionInformation.password = "";
 
-        jdbcConfiguration.setUsername("");
-        jdbcConfiguration.setPassword("");
-
-        jdbcConfiguration.store();
+        Repositories.jdbcConfigurationRepository.store(newConnectionInformation);
     }
 
     private void initialiseDatabase()
