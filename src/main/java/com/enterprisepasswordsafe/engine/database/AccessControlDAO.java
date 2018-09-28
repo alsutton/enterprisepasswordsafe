@@ -16,6 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.io.UnsupportedEncodingException;
@@ -25,89 +26,26 @@ import java.sql.SQLException;
 public abstract class AccessControlDAO
 	implements ExternalInterface {
 
-    /**
-     * Checks to see if a user has explicit access rights, if they don't
-     * check if they have access via a group.
-     *
-     * @param user The user to get the access rights for.
-     * @param item The item to get the rights for.
-     *
-     * @return The access control for the user to access the item.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting
-     *  the access control data.
-     * @throws SQLException Thrown if there is a problem getting the access control
-     *  data from the database.
-     * @throws UnsupportedEncodingException
-     */
+    private UserClassifier userClassifier = new UserClassifier();
 
     public abstract AccessControl getAccessControl(final User user, final AccessControledObject item)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException;
 
-    /**
-     * Checks to see if a user has explicit access rights, if they don't
-     * check if they have access via a group.
-     *
-     * @param user The user to get the access rights for.
-     * @param itemId The item ID to get the rights for.
-     *
-     * @return The access control for the user to access the item.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting
-     *  the access control data.
-     * @throws SQLException Thrown if there is a problem getting the access control
-     *  data from the database.
-     * @throws UnsupportedEncodingException
-     */
-
     public abstract AccessControl getAccessControl(final User user, final String itemId)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException;
-
-    /**
-     * Checks to see if a user has explicit access rights, if they don't
-     * check if they have access via a group.
-     *
-     * @param user The user to get the access rights for.
-     * @param itemId The item ID to get the rights for.
-     *
-     * @return The access control for the user to access the item.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting
-     *  the access control data.
-     * @throws SQLException Thrown if there is a problem getting the access control
-     *  data from the database.
-     * @throws UnsupportedEncodingException
-     */
 
     public abstract AccessControl getReadAccessControl(final User user, final String itemId)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException;
 
-    /**
-     * Checks to see if a user has explicit access rights, if they don't
-     * check if they have access via a group.
-     *
-     * @param user The user to get the access rights for.
-     * @param itemId The item ID to get the rights for.
-     *
-     * @return The access control for the user to access the item.
-     *
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting
-     *  the access control data.
-     * @throws SQLException Thrown if there is a problem getting the access control
-     *  data from the database.
-     * @throws UnsupportedEncodingException
-     */
-
     public abstract AccessControl getAccessControlEvenIfDisabled(final User user, final String itemId)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException;
 
-    /**
-     * Delete all the access controls for an item except for the admin group access control.
-     *
-     * @param item The item to delete the GACs and UACs for.
-     *
-     * @throws SQLException Thrown if there is a problem with the deletion
-     */
+    public AccessControl getAccessControlUnlockedIfAdmin(final User user, final String itemId)
+            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        return userClassifier.isPriviledgedUser(user) ?
+                AccessControlDAO.getInstance().getAccessControlEvenIfDisabled(user, itemId) :
+                AccessControlDAO.getInstance().getAccessControl(user, itemId);
+    }
 
     public abstract void deleteAllForItem(final AccessControledObject item)
     	throws SQLException;
