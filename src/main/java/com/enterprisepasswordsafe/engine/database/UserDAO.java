@@ -43,23 +43,17 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
  */
 public final class UserDAO extends StoredObjectManipulator<User> implements ExternalInterface {
 
+    public static final String USER_FIELDS = "appusers.user_id, "
+            + "appusers.user_name, appusers.user_pass_b, appusers.email, appusers.full_name, "
+            + "appusers.akey, appusers.aakey, appusers.last_login_l, "
+            + "appusers.auth_source, appusers.disabled, appusers.pwd_last_changed_l";
+
+
     /**
      * The SQL to get a count of the number of enabled users.
      */
 
     static final String GET_COUNT_SQL = "SELECT count(*) FROM application_users WHERE disabled is null OR disabled = 'N'";
-
-    /**
-     * The fields relating to the user.
-     */
-
-    public static final String USER_FIELDS = "appusers.user_id, "
-            + "appusers.user_name, appusers.user_pass_b, "
-            + "appusers.email, appusers.full_name, "
-            + "appusers.akey, appusers.aakey, "
-            + "appusers.last_login_l, "
-            + "appusers.auth_source, appusers.disabled, "
-            + "appusers.pwd_last_changed_l";
 
     /**
      * The SQL to get a particular user by their ID.
@@ -113,10 +107,16 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
               " WHERE	user_id = ?";
 
     private static final String GROUP_MEMBER_LIST_SQL =
-            "SELECT " + User.USER_FIELDS + " FROM application_users appusers, membership m "
+            "SELECT " + USER_FIELDS + " FROM application_users appusers, membership m "
                     + " WHERE m.group_id = ? AND m.user_id = appusers.user_id AND appusers.user_id <> '0' "
                     + " AND (appusers.disabled is null OR appusers.disabled = 'N') ORDER BY appusers.user_name ASC";
 
+    private static final String GET_LOGIN_ATTEMPTS_SQL =
+            "SELECT	appusers.login_attempts FROM application_users appusers WHERE appusers.user_id = ? ";
+
+
+    private static final String SET_LOGIN_FAILURE_COUNT =
+            "UPDATE application_users SET login_attempts = ? WHERE user_id = ? ";
 
     /**
      * The SQL to see if a user is member of a particular group.
@@ -147,6 +147,9 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
      */
 
     private static final String UPDATE_ADMIN_ACCESS_KEY = "UPDATE application_users SET aakey = ? WHERE user_id = ?";
+
+    private static final String UPDATE_LOGIN_PASSWORD_SQL =
+            "UPDATE application_users SET user_pass_b = ?, pwd_last_changed_l = ?, akey = ? WHERE user_id = ?";
 
     /**
      * The array of SQL statements run to delete a user.
@@ -222,34 +225,19 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
         }
     }
 
-    /**
-     * Increase the number of failed logins.
-     *
-     * @param theUser The user to increase the failed login count for.
-     */
-    public void zeroFailedLogins( User theUser )
-        throws SQLException {
-    	theUser.setFailedLogins(0);
-    }
-
-    /**
-     * Increase the number of failed logins.
-     *
-     * @param theUser The user to increase the failed login count for.
-     */
-    public void increaseFailedLogins( User theUser )
+    public void increaseFailedLogins( User user )
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	int loginAttempts = theUser.getLoginAttempts()+1;
-    	theUser.setFailedLogins(loginAttempts);
+    	int loginAttempts = getFailedLoginAttempts(user)+1;
+    	setFailedLogins(user, loginAttempts);
 
         String maxAttempts = ConfigurationDAO.getValue(ConfigurationOption.LOGIN_ATTEMPTS);
         int maxAttemptsInt = Integer.parseInt(maxAttempts);
         if( loginAttempts >= maxAttemptsInt ) {
         	TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                    theUser, "The user "+ theUser.getUserName() +
+                    user, "The user "+ user.getUserName() +
                     " has been disabled to due too many failed login attempts ("+loginAttempts+").", false );
-            theUser.setEnabled(false);
-            update(theUser);
+            user.setEnabled(false);
+            update(user);
         }
     }
 
@@ -285,7 +273,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
 	            updateAdminKey(theUser, adminGroup);
 	    	}
 
-	    	theUser.updateLoginPassword(newPassword);
+	    	updateLoginPassword(theUser, newPassword);
 	    	connection.commit();
 	    	committed = true;
     	} finally {
@@ -328,7 +316,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
         write(createdUser, adminGroup, password);
 
         // Write to the database and log creation
-        zeroFailedLogins(createdUser);
+        setFailedLogins(createdUser, 0);
         TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
                 creatingUser, "Created the user {user:"+ createdUser.getId() + "}", true);
 
@@ -347,6 +335,30 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
         return createdUser;
     }
 
+
+    public int getFailedLoginAttempts(User user)
+            throws SQLException {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_LOGIN_ATTEMPTS_SQL)) {
+            ps.setString(1, user.getId());
+            try(ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return 0;
+                }
+
+                int fetchedAttempts = rs.getInt(1);
+                return rs.wasNull() ? 0 : fetchedAttempts;
+            }
+        }
+    }
+
+    public void setFailedLogins(User user, int count)
+            throws SQLException {
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(SET_LOGIN_FAILURE_COUNT)) {
+            ps.setInt(1, count);
+            ps.setString(2, user.getId());
+            ps.executeUpdate();
+        }
+    }
 
     /**
      * Writes a user to the database.
@@ -429,7 +441,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
      */
 
 	public User getByIdDecrypted(String userId, Group adminGroup)
-		throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+		throws SQLException, GeneralSecurityException {
 		User encryptedUser = getById(userId);
 		if(encryptedUser == null) {
 			return null;
@@ -469,6 +481,27 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
 	        }
         }
     }
+
+
+    public void updateLoginPassword(final User user, final String newPassword)
+            throws SQLException, GeneralSecurityException {
+        user.setLoginPassword(newPassword);
+
+        UserPasswordEncryptionHandler upe = new UserPasswordEncryptionHandler(newPassword);
+        byte[] encryptedKey = KeyUtils.encryptKey(user.getAccessKey(), upe);
+
+        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_LOGIN_PASSWORD_SQL)) {
+            int idx = 1;
+            ps.setBytes(idx++, user.getPassword());
+
+            Calendar now = Calendar.getInstance();
+            ps.setLong(idx++, now.getTimeInMillis());
+            ps.setBytes(idx++, encryptedKey);
+            ps.setString(idx, user.getId());
+            ps.executeUpdate();
+        }
+    }
+
 
     public List<User> getGroupMembers(Group group)
             throws SQLException {

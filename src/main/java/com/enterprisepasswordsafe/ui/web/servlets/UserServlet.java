@@ -117,7 +117,7 @@ public final class UserServlet extends HttpServlet {
             String enabled = request.getParameter("user_enabled");
             if (enabled.equals("Y")) {
                 if( ! user.isEnabled() ) {
-                    uDAO.zeroFailedLogins(user);
+                    uDAO.setFailedLogins(user, 0);
                 }
                 user.setEnabled(true);
             } else {

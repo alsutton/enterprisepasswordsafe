@@ -30,6 +30,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.enterprisepasswordsafe.engine.UserAccessControlDecryptor;
+import com.enterprisepasswordsafe.engine.users.PasswordHasher;
 import com.enterprisepasswordsafe.engine.users.UserAccessKeyEncryptionHandler;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.users.UserPasswordEncryptionHandler;
@@ -73,42 +74,6 @@ public final class User
      */
 
     static public final String USER_KEY_ALGORITHM = "AES";
-
-    /**
-     * The algorithm used for the password hash.
-     */
-
-    private static final String PASSWORD_HASH_ALGORITHM = "MD5";
-
-    /**
-     * The fields relating to the user.
-     */
-
-    public static final String USER_FIELDS = "appusers.user_id, "
-            + "appusers.user_name, appusers.user_pass_b, appusers.email, appusers.full_name, "
-            + "appusers.akey, appusers.aakey, appusers.last_login_l, "
-            + "appusers.auth_source, appusers.disabled, appusers.pwd_last_changed_l";
-
-    /**
-     * The SQL to get the number of login attempts for a user.
-     */
-
-    private static final String GET_LOGIN_ATTEMPTS_SQL =
-            "SELECT	appusers.login_attempts FROM application_users appusers WHERE appusers.user_id = ? ";
-
-    /**
-     * The SQL to update the login password.
-     */
-
-    private static final String UPDATE_LOGIN_PASSWORD_SQL =
-        "UPDATE application_users SET user_pass_b = ?, pwd_last_changed_l = ?, akey = ? WHERE user_id = ?";
-
-    /**
-     * Set the number of failed login attempts.
-     */
-
-    private static final String SET_LOGIN_FAILURE_COUNT =
-        "UPDATE application_users SET login_attempts = ? WHERE user_id = ? ";
 
     /**
      * The ID of this user.
@@ -182,7 +147,7 @@ public final class User
 
     private boolean disabled;
 
-    private static ThreadLocal<Cipher> sEncryptionCipherThreadLocal = new ThreadLocal<Cipher>();
+    private PasswordHasher passwordHasher = new PasswordHasher();
 
     /**
      * Creates a new User object.
@@ -324,61 +289,10 @@ public final class User
         }
     }
 
-    /**
-     * Creates the password hash from a password.
-     *
-     * @param salt The salt to use for the has creation
-     * @param userPassword The password to create the hash string for.
-     *
-     * @return the hash value for the password.
-     *
-     * @throws NoSuchAlgorithmException Thrown if the hash algorithm is unavailable.
-     * @throws UnsupportedEncodingException
-     */
-
-    private byte[] createHash(final byte[] salt, final String userPassword)
-            throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        MessageDigest digester = MessageDigest.getInstance(PASSWORD_HASH_ALGORITHM);
-
-        byte[] passwordBytes = userPassword.getBytes();
-        if(salt != null) {
-            byte[] saltedBytes = new byte[salt.length + passwordBytes.length];
-            System.arraycopy(passwordBytes, 0, saltedBytes, 0, passwordBytes.length);
-            System.arraycopy(salt, 0, saltedBytes, passwordBytes.length, salt.length);
-            passwordBytes = saltedBytes;
-        }
-
-        digester.update(passwordBytes);
-        return digester.digest();
-    }
-
-    /**
-     * Sets the users login password.
-     *
-     * @param newPassword
-     *            The password to set it to.
-     *
-     * @throws NoSuchAlgorithmException Thrown if the hash algorithm is unavailable.
-     * @throws UnsupportedEncodingException
-     */
-
     public void setLoginPassword(final String newPassword)
-            throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        byte[] salt = new byte[4];
-        SecureRandom sr = new SecureRandom();
-        sr.nextBytes(salt);
-
-        byte[] hash = createHash(salt, newPassword);
-
-        byte[] newPasswordBytes = new byte[2 + salt.length + hash.length];
-        newPasswordBytes[0] = 2;
-        newPasswordBytes[1] = (byte) salt.length;
-        System.arraycopy(salt, 0, newPasswordBytes, 2, salt.length);
-        System.arraycopy(hash, 0, newPasswordBytes, 2+salt.length, hash.length);
-
-        password = newPasswordBytes;
+            throws NoSuchAlgorithmException {
+        password = passwordHasher.createHashWithRandomSalt(newPassword);
     }
-
 
     /**
      * Update the users login password.
@@ -389,25 +303,6 @@ public final class User
      * @throws GeneralSecurityException Thrown if there is a problem re-encrypting the users data.
      * @throws UnsupportedEncodingException
      */
-
-    public void updateLoginPassword(final String newPassword)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        setLoginPassword(newPassword);
-
-        UserPasswordEncryptionHandler upe = new UserPasswordEncryptionHandler(newPassword);
-        byte[] encryptedKey = KeyUtils.encryptKey(accessKey, upe);
-
-        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_LOGIN_PASSWORD_SQL)) {
-            int idx = 1;
-            ps.setBytes(idx++, password);
-
-        	Calendar now = Calendar.getInstance();
-            ps.setLong(idx++, now.getTimeInMillis());
-            ps.setBytes(idx++, encryptedKey);
-            ps.setString(idx, userId);
-            ps.executeUpdate();
-        }
-    }
 
     /**
      * Forces the user to change their password at the next login.
@@ -434,47 +329,12 @@ public final class User
         return checkPassword(new String(userPassword));
     }
 
-    /**
-     * Whether or not the password given is the users password.
-     *
-     * @param userPassword
-     *            The password to test.
-     *
-     * @return true if the password is correct, false if not.
-     *
-     * @throws NoSuchAlgorithmException Thrown if the password hashing algorithm is unavailable.
-     * @throws UnsupportedEncodingException
-     */
-
-    public boolean checkPassword(final String userPassword)
+    public boolean checkPassword(final String password)
             throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        if (userPassword == null) {
+        if (password == null) {
             return false;
         }
-
-        byte[] salt;
-        byte[] hash;
-        byte[] password = getPassword();
-        switch (password[0]) {
-            case 1:
-                salt = null;
-                hash = new byte[password.length-1];
-                System.arraycopy(password, 1, hash, 0, hash.length);
-                break;
-            case 2:
-                int saltLength = (int)password[1];
-                salt = new byte[saltLength];
-                System.arraycopy(password,2,salt,0,saltLength);
-                hash = new byte[password.length - (saltLength+2)];
-                System.arraycopy(password,2+saltLength,hash,0,hash.length);
-                break;
-            default:
-                throw new RuntimeException("Unknown password encoding");
-        }
-
-        byte[] calculatedHash = createHash(salt, userPassword);
-
-        return Arrays.equals(calculatedHash, hash);
+        return passwordHasher.equalsSaltedHash(password, getPassword());
     }
 
     /**
@@ -564,24 +424,6 @@ public final class User
         return lastLogin;
     }
 
-    /**
-     * @return Returns the loginAttempts.
-     */
-    public int getLoginAttempts()
-    	throws SQLException {
-    	try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_LOGIN_ATTEMPTS_SQL)) {
-    		ps.setString(1, getId());
-    		try(ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    return 0;
-                }
-
-                int fetchedAttempts = rs.getInt(1);
-                return rs.wasNull() ? 0 : fetchedAttempts;
-            }
-    	}
-    }
-
     public byte[] getPassword() {
         return password;
     }
@@ -643,21 +485,6 @@ public final class User
      */
     public void setFullName(final String newFullName) {
         fullName = newFullName;
-    }
-
-    /**
-     * Method to set the number of failed login attempts.
-     *
-     * @param count The number of failed login attempts.
-     */
-
-    public void setFailedLogins( int count )
-    	throws SQLException {
-        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(SET_LOGIN_FAILURE_COUNT)) {
-            ps.setInt(1, count);
-            ps.setString(2, getId());
-            ps.executeUpdate();
-        }
     }
 
     /**

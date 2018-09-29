@@ -123,7 +123,7 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
         }
         checkLoginRestrictions(request, user);
         user.decryptAccessKey(password);
-        UserDAO.getInstance().zeroFailedLogins(user);
+        UserDAO.getInstance().setFailedLogins(user, 0);
     }
 
     private void handleAuthenticationFailure(HttpServletRequest request, User user, String password,
