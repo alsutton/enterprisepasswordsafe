@@ -104,7 +104,7 @@ public class ChangePermissionsAction implements NodeObjectAction {
         	UserAccessControl uac = new UserAccessControl();
     		uac.setItemId(password.getId());
     		uac.setReadKey(ac.getReadKey());
-        	uac.setAccessorId(user.getUserId());
+        	uac.setAccessorId(user.getId());
         	if (thisPermission.getValue().equals("2")) {
         		uac.setModifyKey(ac.getModifyKey());
         	} else {

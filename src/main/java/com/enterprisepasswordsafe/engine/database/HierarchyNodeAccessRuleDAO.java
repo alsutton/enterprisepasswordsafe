@@ -139,7 +139,7 @@ public abstract class HierarchyNodeAccessRuleDAO implements ExternalInterface {
         throws SQLException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_USER_NODE_RULE_SQL)) {
             ps.setString(1, nodeId);
-            ps.setString(2, user.getUserId());
+            ps.setString(2, user.getId());
 
 	        try(ResultSet rs = ps.executeQuery()) {
 	            return rs.next() ? rs.getBytes(1) : null;
@@ -151,7 +151,7 @@ public abstract class HierarchyNodeAccessRuleDAO implements ExternalInterface {
         throws SQLException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_USERS_GROUP_NODE_RULES_SQL)) {
             ps.setString(1, nodeId);
-            ps.setString(2, user.getUserId());
+            ps.setString(2, user.getId());
             try(ResultSet rs = ps.executeQuery()) {
 	        	List<byte[]> ruleList = new ArrayList<>();
 	            while(rs.next()) {
@@ -247,7 +247,7 @@ public abstract class HierarchyNodeAccessRuleDAO implements ExternalInterface {
             	ps.setBytes(idx++, user.getKeyEncrypter().encrypt(rule));
             }
             ps.setString(idx++, node.getNodeId());
-            ps.setString(idx,   user.getUserId());
+            ps.setString(idx,   user.getId());
             ps.executeUpdate();
         }
     }

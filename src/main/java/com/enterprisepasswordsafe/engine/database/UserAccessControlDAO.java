@@ -88,7 +88,7 @@ public final class UserAccessControlDAO
     		modifyKey = item.getModifyKey();
     	}
 
-        UserAccessControl newUac = new UserAccessControl(theUser.getUserId(), item.getId(), modifyKey, item.getReadKey());
+        UserAccessControl newUac = new UserAccessControl(theUser.getId(), item.getId(), modifyKey, item.getReadKey());
         if( writeToDB ) {
         	write( newUac, theUser.getKeyEncrypter() );
         }
@@ -129,7 +129,7 @@ public final class UserAccessControlDAO
         }
 
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_UAC_SQL)) {
-            ps.setString(1, user.getUserId());
+            ps.setString(1, user.getId());
             ps.setString(2, itemId);
             ps.setMaxRows(1);
             try(ResultSet rs = ps.executeQuery()) {
@@ -163,7 +163,7 @@ public final class UserAccessControlDAO
 
         List<UserAccessControl> encryptionList = new ArrayList<UserAccessControl>();
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_ALL_UAC_FOR_USER_SQL)) {
-            ps.setString(1, user.getUserId());
+            ps.setString(1, user.getId());
             try(ResultSet rs = ps.executeQuery()) {
 	            while(rs.next()) {
 	            	try {
@@ -195,7 +195,7 @@ public final class UserAccessControlDAO
 	    		for(User thisUser : UserDAO.getInstance().getAll()) {
 		    		boolean canRead = false;
 		    		boolean canModify = false;
-		    		uacPS.setString(2, thisUser.getUserId());
+		    		uacPS.setString(2, thisUser.getId());
 		    		uacPS.setMaxRows(1);
 		    		try(ResultSet rs = uacPS.executeQuery()) {
 		    			if( rs.next() ) {
@@ -208,7 +208,7 @@ public final class UserAccessControlDAO
 
 		    		boolean canApproveRARequest = false;
 		    		boolean canViewHistory = false;
-		    		uarPS.setString(2, thisUser.getUserId());
+		    		uarPS.setString(2, thisUser.getId());
 		    		try(ResultSet rs = uarPS.executeQuery()) {
 		    			while( rs.next() ) {
 		    				String role = rs.getString(1);
@@ -224,7 +224,7 @@ public final class UserAccessControlDAO
 		    			}
 		    		}
 
-	            	AccessSummary gas = new AccessSummary(thisUser.getUserId(), thisUser.getUserName(),
+	            	AccessSummary gas = new AccessSummary(thisUser.getId(), thisUser.getUserName(),
 	            				canRead, canModify, canApproveRARequest, canViewHistory);
 	            	summaries.add(gas);
 		    	}

@@ -60,7 +60,7 @@ public abstract class LoginAuthenticationServlet extends HttpServlet {
             name = theUser.getUserName();
         }
         session.setAttribute(AuthenticationFilter.USER_NAME_PARAMETER, name );
-        session.setAttribute(SecurityUtils.USER_ID_PARAMETER, theUser.getUserId());
+        session.setAttribute(SecurityUtils.USER_ID_PARAMETER, theUser.getId());
         session.setAttribute(USER_OBJECT_SESSION_ATTRIBUTE, theUser);
 
         SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");

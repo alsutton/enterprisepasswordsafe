@@ -570,7 +570,7 @@ public final class User
     public int getLoginAttempts()
     	throws SQLException {
     	try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_LOGIN_ATTEMPTS_SQL)) {
-    		ps.setString(1, getUserId());
+    		ps.setString(1, getId());
     		try(ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     return 0;
@@ -582,24 +582,13 @@ public final class User
     	}
     }
 
-    /**
-     * @return Returns the password.
-     */
     public byte[] getPassword() {
         return password;
     }
 
-    /**
-     * @return Returns the userId.
-     */
-    public String getUserId() {
-        return userId;
-    }
-
     @Override
     public String getId() {
-        // TODO: Unify ID getters
-        return getUserId();
+        return userId;
     }
 
     /**
@@ -666,7 +655,7 @@ public final class User
     	throws SQLException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(SET_LOGIN_FAILURE_COUNT)) {
             ps.setInt(1, count);
-            ps.setString(2, getUserId());
+            ps.setString(2, getId());
             ps.executeUpdate();
         }
     }

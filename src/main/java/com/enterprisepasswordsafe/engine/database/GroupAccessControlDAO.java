@@ -207,7 +207,7 @@ public class GroupAccessControlDAO
     private GroupAccessControl getGac(final String sql, final User theUser, final String itemId)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
-            ps.setString(1, theUser.getUserId());
+            ps.setString(1, theUser.getId());
             ps.setString(2, itemId);
             ps.setMaxRows(1);
             try(ResultSet rs = ps.executeQuery()) {

@@ -213,7 +213,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
 
     public void delete( final User user )
             throws SQLException {
-        String userId = user.getUserId();
+        String userId = user.getId();
         for(String statement : DELETE_SQL_STATEMENTS) {
             try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(statement)) {
                 ps.setString(1, userId);
@@ -304,7 +304,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
         try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(UPDATE_ADMIN_ACCESS_KEY)) {
         	final byte[] encryptedKey = KeyUtils.encryptKey(user.getAccessKey(), adminGroup.getKeyEncrypter());
         	ps.setBytes(1, encryptedKey);
-        	ps.setString(2, user.getUserId());
+        	ps.setString(2, user.getId());
         	ps.execute();
         }
     }
@@ -330,7 +330,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
         // Write to the database and log creation
         zeroFailedLogins(createdUser);
         TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                creatingUser, "Created the user {user:"+ createdUser.getUserId() + "}", true);
+                creatingUser, "Created the user {user:"+ createdUser.getId() + "}", true);
 
         Group allUsersGroup = GroupDAO.getInstance().getById(Group.ALL_USERS_GROUP_ID);
         if( allUsersGroup != null ) {
@@ -359,7 +359,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
     public void write(final User theUser, final Group adminGroup, final String initialPassword)
         throws SQLException, GeneralSecurityException {
         try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement( WRITE_SQL)) {
-            ps.setString(1, theUser.getUserId());
+            ps.setString(1, theUser.getId());
             ps.setString(2, theUser.getUserName());
             ps.setBytes (3, theUser.getPassword());
             ps.setString(4, theUser.getFullName());
@@ -392,7 +392,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
             ps.setString(6, theUser.isEnabled() ? "N" : "Y");
             ps.setLong  (7, theUser.getPasswordLastChanged());
             ps.setString(8, theUser.getAuthSource());
-            ps.setString(9, theUser.getUserId());
+            ps.setString(9, theUser.getId());
             ps.executeUpdate();
         }
     }
@@ -451,7 +451,7 @@ public final class UserDAO extends StoredObjectManipulator<User> implements Exte
             throw new LoginException("User unknown");
         }
 
-        synchronized( theUser.getUserId().intern() )
+        synchronized( theUser.getId().intern() )
         {
 	        try {
 	            AuthenticationSource authSource = theUser.getAuthenticationSource();

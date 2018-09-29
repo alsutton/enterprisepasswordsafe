@@ -171,7 +171,7 @@ public final class MembershipDAO implements ExternalInterface {
 
         create(user, theGroup);
         TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-			remoteUser, null,"Added {user:" + remoteUser.getUserId()
+			remoteUser, null,"Added {user:" + remoteUser.getId()
 				+ "} to the group {group:" + theGroup.getGroupId() + "}",true);
 
         return create(user, GroupDAO.getInstance().getById(groupId));
@@ -215,7 +215,7 @@ public final class MembershipDAO implements ExternalInterface {
 	    }
 
 	    try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_MEMBERSHIP_SQL)) {
-	        ps.setString(1, user.getUserId());
+	        ps.setString(1, user.getId());
 	        ps.setString(2, groupId);
 	        try(ResultSet rs = ps.executeQuery()) {
 		        return rs.next() ? new Membership(rs, 1, user) : null;
@@ -262,7 +262,7 @@ public final class MembershipDAO implements ExternalInterface {
 
 	public void delete(final User user, final Group group)
 	    throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        delete(user.getUserId(), group.getGroupId());
+        delete(user.getId(), group.getGroupId());
 	}
 
     /**
@@ -294,7 +294,7 @@ public final class MembershipDAO implements ExternalInterface {
 
     public void delete(final User user, final String groupId)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        delete(user.getUserId(), groupId);
+        delete(user.getId(), groupId);
     }
 
     /**
@@ -337,7 +337,7 @@ public final class MembershipDAO implements ExternalInterface {
 
         List<Membership> memberships = new ArrayList<Membership>();
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_MEMBERSHIPS_FOR_USER_SQL)) {
-            ps.setString(1, user.getUserId());
+            ps.setString(1, user.getId());
             try(ResultSet rs = ps.executeQuery()) {
 	            while(rs.next()) {
 		            final Membership membership = new Membership( rs, 1, user);

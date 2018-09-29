@@ -133,7 +133,7 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
         if (user.getAuthSource() != null
                 && !user.getAuthSource().equals(AuthenticationSource.DEFAULT_SOURCE.getSourceId())) {
             if (user.checkPassword(password)) {
-                request.setAttribute(SecurityUtils.USER_ID_PARAMETER, user.getUserId());
+                request.setAttribute(SecurityUtils.USER_ID_PARAMETER, user.getId());
                 throw new ForwardException(PASSWORD_SYNC_PAGE);
             }
         }
@@ -156,7 +156,7 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
             return;
         }
 
-        request.setAttribute(SecurityUtils.USER_ID_PARAMETER, user.getUserId());
+        request.setAttribute(SecurityUtils.USER_ID_PARAMETER, user.getId());
         throw new ForwardException(PASSWORD_SYNC_PAGE);
     }
 
@@ -172,7 +172,7 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
     private void checkLoginRestrictions(HttpServletRequest request, User user)
             throws GeneralSecurityException, SQLException, UnknownHostException, ServletException, RedirectException {
         String address = request.getRemoteAddr();
-        String userId = user.getUserId();
+        String userId = user.getId();
         List<UserIPZoneRestriction> restrictions = UserIPZoneRestrictionDAO.getInstance().getApplicable(userId, address);
         if (restrictions.size() > 0) {
             for (UserIPZoneRestriction thisRestriction : restrictions) {

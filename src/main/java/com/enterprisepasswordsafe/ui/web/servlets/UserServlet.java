@@ -136,7 +136,7 @@ public final class UserServlet extends HttpServlet {
 
             servletUtils.generateMessage(request, newUser ? "The profile has been created." :
                     "The profile has been updated.");
-            response.sendRedirect(request.getContextPath()+"/admin/User?userId="+user.getUserId());
+            response.sendRedirect(request.getContextPath()+"/admin/User?userId="+user.getId());
         } catch(Exception e) {
             throw new ServletException("There was a problem updating the user.", e);
         }
@@ -259,7 +259,7 @@ public final class UserServlet extends HttpServlet {
 
     private void updateRestrictions(final HttpServletRequest request, final User user)
         throws SQLException {
-        String userId = user.getUserId();
+        String userId = user.getId();
         Enumeration<String> parameterNames = request.getParameterNames();
         while(parameterNames.hasMoreElements()) {
             String parameterName = parameterNames.nextElement();

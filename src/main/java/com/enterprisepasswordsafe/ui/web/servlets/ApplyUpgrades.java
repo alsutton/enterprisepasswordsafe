@@ -72,7 +72,7 @@ public final class ApplyUpgrades extends HttpServlet {
 	    			} catch( Exception ex ) {
 	    				Logger.getAnonymousLogger().log(
 	    						Level.WARNING,
-	    						"Error adding "+thisUser.getUserId()+" to all users group",
+	    						"Error adding "+thisUser.getId()+" to all users group",
 	    						ex);
 	    			}
 	    		}

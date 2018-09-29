@@ -133,7 +133,7 @@ public final class RestrictedAccessRequestDAO implements ExternalInterface {
 		try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_OUTSTANDING_REQUESTS)) {
 			ps.setLong  (1, requestCutoff);
 			ps.setLong  (2, requestCutoff);
-			ps.setString(3, user.getUserId());
+			ps.setString(3, user.getId());
 			try(ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
 					rars.add(new RestrictedAccessRequest(rs, rarLifetime));

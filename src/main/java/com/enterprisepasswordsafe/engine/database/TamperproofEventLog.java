@@ -108,7 +108,7 @@ public final class TamperproofEventLog
     	Calendar cal = Calendar.getInstance();
         datetime = cal.getTimeInMillis();
         if( newUser != null ) {
-        	userId = newUser.getUserId();
+        	userId = newUser.getId();
         }
         event = newEvent;
 

@@ -19,7 +19,7 @@ public class UserClassifier {
     }
 
     public boolean isMasterAdmin(User user) {
-        return ADMIN_USER_ID.equals(user.getUserId());
+        return ADMIN_USER_ID.equals(user.getId());
     }
 
     public boolean isPriviledgedUser(User user)
@@ -29,17 +29,17 @@ public class UserClassifier {
 
     public boolean isAdministrator(User user)
             throws SQLException {
-        return membershipDAO.isMemberOf(user.getUserId(), Group.ADMIN_GROUP_ID);
+        return membershipDAO.isMemberOf(user.getId(), Group.ADMIN_GROUP_ID);
     }
 
     public boolean isSubadministrator(User user)
             throws SQLException {
-        return membershipDAO.isMemberOf(user.getUserId(), Group.SUBADMIN_GROUP_ID);
+        return membershipDAO.isMemberOf(user.getId(), Group.SUBADMIN_GROUP_ID);
     }
 
     public boolean isNonViewingUser(User user)
             throws SQLException {
-        return (!user.getUserId().equals(ADMIN_USER_ID))
-                && membershipDAO.isMemberOf(user.getUserId(), Group.NON_VIEWING_GROUP_ID);
+        return (!user.getId().equals(ADMIN_USER_ID))
+                && membershipDAO.isMemberOf(user.getId(), Group.NON_VIEWING_GROUP_ID);
     }
 }

@@ -83,7 +83,7 @@ public class PasswordProcessor {
                                         final List<String> processedIds)
             throws Exception {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
-            ps.setString(1, user.getUserId());
+            ps.setString(1, user.getId());
             try (ResultSet rs = ps.executeQuery()){
                 AccessControlDAO acDAO = AccessControlDAO.getInstance();
                 while (rs.next()) {

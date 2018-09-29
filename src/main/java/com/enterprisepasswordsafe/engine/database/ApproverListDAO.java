@@ -254,7 +254,7 @@ public final class ApproverListDAO implements ExternalInterface {
 		try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_STATE_FOR_USER_SQL)) {
 			int idx = 1;
 			ps.setString(idx++, rar.getApproversListId());
-			ps.setString(idx, user.getUserId());
+			ps.setString(idx, user.getId());
 			try(ResultSet rs = ps.executeQuery()) {
 				if( rs.next() ) {
 					return rs.getString(1);
@@ -281,7 +281,7 @@ public final class ApproverListDAO implements ExternalInterface {
 			ps.setString(idx++, state);
 			ps.setLong(idx++, DateFormatter.getNow());
 			ps.setString(idx++, rar.getApproversListId());
-			ps.setString(idx, user.getUserId());
+			ps.setString(idx, user.getId());
 			ps.executeUpdate();
 		}
 	}

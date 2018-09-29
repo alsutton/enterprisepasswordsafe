@@ -47,7 +47,7 @@ public final class ViewObjectEvents extends HttpServlet {
 	        }
 
 	        boolean allowedAccess = false;
-			if	( AccessRoleDAO.getInstance().hasRole(remoteUser.getUserId(), passwordLimit, AccessRole.HISTORYVIEWER_ROLE) ) {
+			if	( AccessRoleDAO.getInstance().hasRole(remoteUser.getId(), passwordLimit, AccessRole.HISTORYVIEWER_ROLE) ) {
 				allowedAccess = Boolean.TRUE;
 			} else if	( userClassifier.isAdministrator(remoteUser) ) {
 				allowedAccess = Boolean.TRUE;

@@ -107,7 +107,7 @@ public class PasswordImporter {
                 switch (permission.charAt(0)) {
                     case 'U':
                         User user = userDAO.getByName(actorName);
-                        importPermission(userPermissions, user.getUserId(), permission);
+                        importPermission(userPermissions, user.getId(), permission);
                         break;
                     case 'G':
                         Group group = groupDAO.getByName(actorName);
@@ -143,7 +143,7 @@ public class PasswordImporter {
         for(Map.Entry<String,String> thisEntry : userPermissions.entrySet()) {
             User user = uDAO.getByIdDecrypted(thisEntry.getKey(), adminGroup);
             UserAccessControl uac = new UserAccessControl();
-            uac.setAccessorId(user.getUserId());
+            uac.setAccessorId(user.getId());
             uac.setItemId(importedPassword.getId());
             uac.setReadKey(accessControl.getReadKey());
             if(thisEntry.getValue().equals("2")) {

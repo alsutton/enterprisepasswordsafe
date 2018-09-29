@@ -275,7 +275,7 @@ public final class PasswordDAO
 	private void performRawAPIUserSearch(final User user, final String searchUsername,
 			final String searchLocation, final Set<String> ids)
             throws SQLException, IOException, GeneralSecurityException {
-	    for(Password password: getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_USER_SQL, user.getUserId(), searchLocation)) {
+	    for(Password password: getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_USER_SQL, user.getId(), searchLocation)) {
             addIdIfMatches(ids, password, UserAccessControlDAO.getInstance().getUac(user, password.getId()), searchUsername);
         }
 	}
@@ -283,7 +283,7 @@ public final class PasswordDAO
 	private void performRawAPIGroupSearch(final User user, final String searchUsername,
 			final String searchLocation, final Set<String> ids)
             throws SQLException, IOException, GeneralSecurityException {
-        for(Password password: getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_GROUP_SQL, user.getUserId(), searchLocation)) {
+        for(Password password: getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_GROUP_SQL, user.getId(), searchLocation)) {
             addIdIfMatches(ids, password, GroupAccessControlDAO.getInstance().getGac(user, password.getId()), searchUsername);
         }
 	}

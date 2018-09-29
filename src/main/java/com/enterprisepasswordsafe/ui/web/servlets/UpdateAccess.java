@@ -186,7 +186,7 @@ public final class UpdateAccess extends HttpServlet {
 		determineOldAndNewStates(request, accessRolesPresentation, previouslyOn, onNow);
 
 		UserAccessRoleDAO uarDEO = UserAccessRoleDAO.getInstance();
-		String remoteUserId = context.currentUser.getUserId();
+		String remoteUserId = context.currentUser.getId();
     	for(String id : onNow) {
     		if(previouslyOn.contains(id)) {
     			previouslyOn.remove(id);
@@ -258,7 +258,7 @@ public final class UpdateAccess extends HttpServlet {
 			}
 		} else if(modifyOrCreateAccessControl(adminAc, currentUac, uacDAO, theUser, context.password, access)) {
 			logAndEmailIfNeeded(context.password, context.adminUser, "Changed the access permissions on the user {user:"
-					+ theUser.getUserId() + "} to be " + access);
+					+ theUser.getId() + "} to be " + access);
 		}
     }
 

@@ -62,7 +62,7 @@ public final class DeleteUser extends HttpServlet {
                 UserDAO.getInstance().delete(theUser);
                 servletUtils.generateMessage(request, "The user " + theUser + " has been deleted");
                 TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                        thisUser, null, "Deleted the user {user:" + theUser.getUserId() + "}",
+                        thisUser, null, "Deleted the user {user:" + theUser.getId() + "}",
                         true);
             }
         } catch (GeneralSecurityException | SQLException e) {

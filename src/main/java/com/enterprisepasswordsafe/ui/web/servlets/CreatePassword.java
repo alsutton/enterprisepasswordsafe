@@ -57,7 +57,7 @@ public final class CreatePassword extends HttpServlet {
 	        boolean accessApproved = true;
 	        if( !userClassifier.isPriviledgedUser(theUser) ) {
 	        	if( node.getType() == HierarchyNode.USER_CONTAINER_NODE
-	        	&& !node.getNodeId().equals(theUser.getUserId())) {
+	        	&& !node.getNodeId().equals(theUser.getId())) {
 	        		accessApproved = false;
 	        	}
 	        }

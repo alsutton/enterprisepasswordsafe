@@ -40,7 +40,7 @@ public class UserPriviledgeTransitioner {
         mDAO.create(theUser, subadminGroup);
 
         TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                adminUser, null, "{user:" + theUser.getUserId() + "} was given EPS administrator rights.",
+                adminUser, null, "{user:" + theUser.getId() + "} was given EPS administrator rights.",
                 true);
     }
 
@@ -83,7 +83,7 @@ public class UserPriviledgeTransitioner {
                 TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
                 adminUser,
                 null,
-                "{user:" + theUser.getUserId() +
+                "{user:" + theUser.getId() +
                         "} was given password administrator rights",
                 true
         );
@@ -148,7 +148,7 @@ public class UserPriviledgeTransitioner {
         mDAO.delete(theUser, subadminGroup);
 
         TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                adminUser, null, "{user:" + theUser.getUserId() + "} has all administration rights removed.",
+                adminUser, null, "{user:" + theUser.getId() + "} has all administration rights removed.",
                 true);
     }
 }

@@ -64,14 +64,14 @@ public final class ViewRAPassword extends HttpServlet {
 					ConfigurationDAO.getInstance().get(ConfigurationOption.VOTE_ON_OWN_RA_REQUESTS);
 	        String ignoreUserId = null;
 	        if(includeApprover.equals("n")) {
-		        ignoreUserId = thisUser.getUserId();
+		        ignoreUserId = thisUser.getId();
 	        }
 
 	        String reason = request.getParameter(REASON_PARAMETER);
 	        RestrictedAccessRequest raRequest =
 	        	RestrictedAccessRequestDAO.getInstance().create(
 	        			passwordId,
-	        			thisUser.getUserId(),
+	        			thisUser.getId(),
 	        			reason,
 	        			ignoreUserId
 	    			);

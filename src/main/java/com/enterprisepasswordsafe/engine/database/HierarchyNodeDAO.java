@@ -26,8 +26,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.enterprisepasswordsafe.engine.database.actions.NodeObjectAction;
-import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeSummary;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.Cache;
@@ -369,7 +367,7 @@ public final class HierarchyNodeDAO
 
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql.toString())) {
             ps.setString(1, node.getNodeId());
-            ps.setString(2, user.getUserId());
+            ps.setString(2, user.getId());
 
             try(ResultSet rs = ps.executeQuery()) {
                 processObjectResults(user, results, rs);
@@ -400,7 +398,7 @@ public final class HierarchyNodeDAO
 
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql.toString())) {
             ps.setString(1, node.getNodeId());
-            ps.setString(2, user.getUserId());
+            ps.setString(2, user.getId());
 
             try(ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -496,7 +494,7 @@ public final class HierarchyNodeDAO
 
     public HierarchyNode getPersonalNodeForUser(final User user)
             throws  SQLException {
-        return fetchObjectIfExists(GET_USER_CONTAINER_NODE_SQL, user.getUserId());
+        return fetchObjectIfExists(GET_USER_CONTAINER_NODE_SQL, user.getId());
     }
 
     /**
@@ -513,8 +511,8 @@ public final class HierarchyNodeDAO
 
     private boolean hasChildrenValidForUser(final String nodeId, final User theUser)
             throws SQLException, GeneralSecurityException {
-        return exists(GET_VALID_CHILD_OBJECT_IDS_VIA_UAC_SQL, nodeId, theUser.getUserId())
-            || exists(GET_VALID_CHILD_OBJECT_IDS_VIA_GAC_SQL, nodeId, theUser.getUserId())
+        return exists(GET_VALID_CHILD_OBJECT_IDS_VIA_UAC_SQL, nodeId, theUser.getId())
+            || exists(GET_VALID_CHILD_OBJECT_IDS_VIA_GAC_SQL, nodeId, theUser.getId())
             || hasChildrenNodes(nodeId, theUser);
     }
 

@@ -136,7 +136,7 @@ public final class ExpandedTamperproofEventLogEntry
     	}
 
 		byte[] stampHash = new LogEventHasher().createTamperstamp(logUser,
-				datetime, event, itemId, logUser.getUserId());
+				datetime, event, itemId, logUser.getId());
         if (Arrays.equals(tamperstamp, stampHash)) {
         	setTamperstampStatus( TAMPERSTAMP_STATUS_OK );
         } else {

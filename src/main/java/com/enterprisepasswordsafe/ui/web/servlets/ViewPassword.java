@@ -371,7 +371,7 @@ public final class ViewPassword extends HttpServlet {
 
 	private Boolean shouldShowHistory(final User thisUser, final PasswordBase thisPassword)
 			throws SQLException {
-		if	( AccessRoleDAO.getInstance().hasRole(thisUser.getUserId(), thisPassword.getId(), AccessRole.HISTORYVIEWER_ROLE)
+		if	( AccessRoleDAO.getInstance().hasRole(thisUser.getId(), thisPassword.getId(), AccessRole.HISTORYVIEWER_ROLE)
         ||    userClassifier.isAdministrator(thisUser)) {
 			return Boolean.TRUE;
 		}
@@ -400,13 +400,13 @@ public final class ViewPassword extends HttpServlet {
 
    		RestrictedAccessRequest raRequest = (RestrictedAccessRequest) session.getAttribute(RA_REQUEST_ATTRIBUTE);
    		if( raRequest != null
-        && (!raRequest.getItemId().equals(password.getId()) || !raRequest.getRequesterId().equals(requester.getUserId()))) {
+        && (!raRequest.getItemId().equals(password.getId()) || !raRequest.getRequesterId().equals(requester.getId()))) {
             session.removeAttribute(RA_REQUEST_ATTRIBUTE);
             raRequest = null;
    		}
 
    		if( raRequest == null ) {
-   			raRequest = RestrictedAccessRequestDAO.getInstance().getValidRequest(password.getId(), requester.getUserId());
+   			raRequest = RestrictedAccessRequestDAO.getInstance().getValidRequest(password.getId(), requester.getId());
 			session.setAttribute(RA_REQUEST_ATTRIBUTE, raRequest);
    		}
 

@@ -63,7 +63,7 @@ public final class SubmitRAVote extends HttpServlet {
 
 	        final String includeApprover = ConfigurationDAO.getValue(ConfigurationOption.VOTE_ON_OWN_RA_REQUESTS);
 	        if(includeApprover.equals("n")) {
-	        	if(raRequest.getRequesterId() == thisUser.getUserId()) {
+	        	if(raRequest.getRequesterId() == thisUser.getId()) {
 	        		throw new ServletException("You are not allowed to vote on your own requests.");
 	        	}
 	        }

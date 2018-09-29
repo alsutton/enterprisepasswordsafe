@@ -55,7 +55,7 @@ public final class ViewPersonalFolder extends HttpServlet {
 	        HierarchyNodeDAO hnDAO = HierarchyNodeDAO.getInstance();
 	        HierarchyNode node = hnDAO.getPersonalNodeForUser(thisUser);
 	        if( node == null ) {
-	        	node = hnDAO.create(thisUser.getUserId(), null,	HierarchyNode.USER_CONTAINER_NODE);
+	        	node = hnDAO.create(thisUser.getId(), null,	HierarchyNode.USER_CONTAINER_NODE);
 	        }
 
 	        ServletUtils.getInstance().setCurrentNodeId(request, node.getNodeId());

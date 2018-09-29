@@ -82,7 +82,7 @@ public final class CreateNewUser extends HttpServlet {
 	        User newUser = uDAO.createUser(thisUser, new UserSummary(username, fullname), password1, email);
 
 	        ServletUtils.getInstance().generateMessage(request, "The user was successfully created.");
-			response.sendRedirect(request.getContextPath()+"/admin/User?userId="+newUser.getUserId());
+			response.sendRedirect(request.getContextPath()+"/admin/User?userId="+newUser.getId());
     	} catch(SQLException sqle) {
     		throw new ServletException("The user could not be added due to an error.", sqle);
     	} catch(GeneralSecurityException sqle) {

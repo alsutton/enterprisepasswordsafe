@@ -62,7 +62,7 @@ public class AccessReport
 
     private void getDirectlyAccessiblePasswords(Context context, User user)
             throws SQLException, IOException, GeneralSecurityException {
-        context.directlyAccessiblePS.setString(1, user.getUserId());
+        context.directlyAccessiblePS.setString(1, user.getId());
         PasswordDAO passwordDAO = PasswordDAO.getInstance();
         try(ResultSet rsPasswords = context.directlyAccessiblePS.executeQuery()) {
             while (rsPasswords.next()) {
@@ -77,7 +77,7 @@ public class AccessReport
 
     private void getPasswordsAccessibleViaGroup(Context context, User user)
             throws SQLException, GeneralSecurityException, IOException {
-        context.groupAccessiblePS.setString(1, user.getUserId());
+        context.groupAccessiblePS.setString(1, user.getId());
         try(ResultSet resultSet = context.groupAccessiblePS.executeQuery()) {
             while (resultSet.next()) {
                 processGroup(context, user, resultSet);

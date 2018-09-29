@@ -75,7 +75,7 @@ public class Membership implements JavaBean {
      *            The group for the membership.
      */
     public Membership(final User user, final Group group) {
-        userId = user.getUserId();
+        userId = user.getId();
         groupId = group.getGroupId();
         accessKey = group.getAccessKey();
     }
