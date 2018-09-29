@@ -40,6 +40,7 @@ import com.enterprisepasswordsafe.engine.database.PasswordDAO;
 import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
 import com.enterprisepasswordsafe.engine.database.PasswordRestrictionDAO;
 import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -66,7 +67,7 @@ public final class CreateNewPassword extends AbstractPasswordManipulatingServlet
 	            notes = "";
 	        }
 
-	        int audit = getAuditingLevel(request);
+	        AuditingLevel audit = getAuditingLevel(request);
 	        boolean history = getHistorySetting(request);
             long expiryDate = getExpiry(request);
 
@@ -124,27 +125,19 @@ public final class CreateNewPassword extends AbstractPasswordManipulatingServlet
         return new UsernameAndPassword(username, password1);
     }
 
-    private int getAuditingLevel(HttpServletRequest request)
+    private AuditingLevel getAuditingLevel(HttpServletRequest request)
             throws SQLException {
         String auditing = ConfigurationDAO.getInstance().get( ConfigurationOption.PASSWORD_AUDIT_LEVEL );
-        if( auditing == null || auditing.equals(Password.SYSTEM_AUDIT_CREATOR_CHOOSE)) {
+        AuditingLevel auditingLevel = AuditingLevel.fromRepresentation(auditing);
+        if( auditing == null || auditingLevel == AuditingLevel.CREATOR_CHOOSE) {
             return getUserProvidedAuditLevel(request);
         }
-        if ( auditing.equals(Password.SYSTEM_AUDIT_FULL)) {
-            return Password.AUDITING_FULL;
-        }
-        return auditing.equals(Password.SYSTEM_AUDIT_LOG_ONLY) ? Password.AUDITING_LOG_ONLY : Password.AUDITING_NONE;
+        return auditingLevel;
     }
 
-    private int getUserProvidedAuditLevel(HttpServletRequest request) {
-        String auditFlag = request.getParameter("audit");
-        if (auditFlag.charAt(0) == 'L') {
-            return Password.AUDITING_LOG_ONLY;
-        }
-        if (auditFlag.charAt(0) == 'N') {
-            return Password.AUDITING_NONE;
-        }
-        return Password.AUDITING_FULL;
+    private AuditingLevel getUserProvidedAuditLevel(HttpServletRequest request) {
+        AuditingLevel auditingLevel = AuditingLevel.fromRepresentation(request.getParameter("audit"));
+        return auditingLevel == null ? AuditingLevel.FULL : auditingLevel;
     }
 
     private long getExpiry(final HttpServletRequest request )

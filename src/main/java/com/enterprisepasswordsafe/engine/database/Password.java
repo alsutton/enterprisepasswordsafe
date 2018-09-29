@@ -25,9 +25,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
+import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
+import com.enterprisepasswordsafe.engine.passwords.PasswordPropertiesSerializer;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
@@ -37,53 +37,6 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
 public final class Password
 	extends PasswordBase
 	implements Serializable, ExternalInterface {
-
-	/**
-	 * The parameter used to say if this password is enabled or not.
-	 */
-
-	private static final String ENABLED_PARAMETER = "_enabled";
-
-	/**
-	 * The parameter used to determine the auditing level for the password
-	 */
-
-	private static final String AUDIT_PARAMETER = "_audit";
-
-	/**
-	 * The parameter used to determine the history recording level
-	 */
-
-	private static final String HISTORY_RECORDING_PARAMETER = "_historyrecording";
-
-	/**
-	 * The parameter used to hold the restriction ID
-	 */
-
-	private static final String RESTRICTION_PARAMETER = "_restriction";
-
-	/**
-	 * The parameter used to hold the restricted access settings
-	 */
-
-	private static final String RESTRICTED_ACCESS_PARAMETER = "_ra";
-
-	/**
-	 * The parameter used to hold the password type
-	 */
-
-	private static final String TYPE_PARAMETER = "_type";
-
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -2231263119527545643L;
-
-	/**
-     * Object user to represent a user was imported without a problem.
-     */
-
-    public static final Object IMPORTED_OK = new Object();
 
     /**
      * The values for a password type.
@@ -111,16 +64,6 @@ public final class Password
     public static final int AUDITING_EMAIL_ONLY = 0x10;
 
     /**
-     * The values used for setting the system auditing options
-     */
-
-    public static final String	SYSTEM_AUDIT_FULL = "F",
-    							SYSTEM_AUDIT_LOG_ONLY = "L",
-    							SYSTEM_AUDIT_EMAIL_ONLY = "E",
-    							SYSTEM_AUDIT_NONE = "N",
-    							SYSTEM_AUDIT_CREATOR_CHOOSE = "C";
-
-    /**
      * The values used for setting the system password history voptions
      */
 
@@ -137,7 +80,7 @@ public final class Password
     /**
      * The auditing level for this password.
      */
-    private int auditLevel;
+    private AuditingLevel auditLevel;
 
     /**
      * Whether or not this history is stored.
@@ -174,11 +117,9 @@ public final class Password
 
     private int passwordType = TYPE_SYSTEM;
 
-    /*
-     * Encrypted representation of the password properties
-     */
-
     private byte[] encryptedPasswordProperties;
+
+    private PasswordPropertiesSerializer passwordPropertiesSerializer = new PasswordPropertiesSerializer();
 
     public Password() throws NoSuchAlgorithmException, NoSuchProviderException {
     	super();
@@ -230,7 +171,7 @@ public final class Password
 
     public Password(final String newUsername, final String newPassword,
             final String newLocation, final String newNotes,
-            final int newAudited, final boolean newHistoryStored,
+            final AuditingLevel newAudited, final boolean newHistoryStored,
             final long newExpiry)
             throws NoSuchAlgorithmException, NoSuchProviderException {
         this(null, newUsername, newPassword, newLocation, newNotes,
@@ -260,7 +201,7 @@ public final class Password
             final String newNotes)
         throws NoSuchAlgorithmException, NoSuchProviderException {
         this(newPasswordId, newUsername, newPassword, newLocation,
-                newNotes, Password.AUDITING_FULL, false, Long.MAX_VALUE);
+                newNotes, AuditingLevel.FULL, false, Long.MAX_VALUE);
     }
 
     /**
@@ -289,7 +230,7 @@ public final class Password
 
     public Password(final String newPasswordId, final String newUsername,
             final String newPassword, final String newLocation,
-            final String newNotes, final int newAudited,
+            final String newNotes, final AuditingLevel newAudited,
             final boolean newHistoryStored, final long newExpiry)
             throws NoSuchAlgorithmException, NoSuchProviderException {
         super(newPasswordId, newUsername, newPassword, newLocation, newNotes, newExpiry);
@@ -302,8 +243,7 @@ public final class Password
     public Password(final String passwordId, final byte[] data, final AccessControl ac)
             throws IOException, GeneralSecurityException, SQLException {
         super(passwordId);
-        encryptedPasswordProperties = data;
-        decryptPasswordProperties(ac);
+        passwordPropertiesSerializer.decryptPasswordProperties(this, data, ac);
     }
 
     public Password(final String passwordId, final byte[] data) {
@@ -312,54 +252,8 @@ public final class Password
     }
 
     public void decryptPasswordProperties(AccessControl ac)
-            throws IOException, GeneralSecurityException, SQLException {
-        if (encryptedPasswordProperties == null) {
-            // null indicates there's no work to be done to decrypt the properties.
-            return;
-        }
-
-        Properties props = new Properties();
-        PasswordUtils.decrypt(this, ac, encryptedPasswordProperties, props);
-
-        String systemAuditState = ConfigurationDAO.getValue( ConfigurationOption.PASSWORD_AUDIT_LEVEL );
-        if        ( systemAuditState.equals(Password.SYSTEM_AUDIT_NONE) ) {
-            auditLevel = Password.AUDITING_NONE;
-        } else if ( systemAuditState.equals(Password.SYSTEM_AUDIT_FULL) ) {
-            auditLevel = Password.AUDITING_FULL;
-        } else if ( systemAuditState.equals(Password.SYSTEM_AUDIT_LOG_ONLY) ) {
-            auditLevel = Password.AUDITING_LOG_ONLY;
-        } else {
-            auditLevel = Password.AUDITING_FULL;
-
-            String defaultAuditLevel = props.getProperty(AUDIT_PARAMETER);
-            if (defaultAuditLevel != null) {
-                if (defaultAuditLevel.equalsIgnoreCase("L")) {
-                    auditLevel = Password.AUDITING_LOG_ONLY;
-                } else if (defaultAuditLevel.equalsIgnoreCase("N")) {
-                    auditLevel = Password.AUDITING_NONE;
-                }
-            }
-        }
-
-        String booleanFlag = props.getProperty(HISTORY_RECORDING_PARAMETER);
-        isHistoryStored = (booleanFlag != null && booleanFlag.equals("Y"));
-
-        restrictionId = props.getProperty(RESTRICTION_PARAMETER);
-
-        String raState = props.getProperty(RESTRICTED_ACCESS_PARAMETER);
-        if(raState != null && raState.charAt(0) == 'Y') {
-            raEnabled = true;
-            raApprovers = Integer.parseInt(props.getProperty(RESTRICTED_ACCESS_PARAMETER+"_a"));
-            raBlockers = Integer.parseInt(props.getProperty(RESTRICTED_ACCESS_PARAMETER+"_b"));
-        } else {
-            raEnabled = false;
-        }
-
-        String passwordTypeString = props.getProperty(TYPE_PARAMETER);
-        if(passwordTypeString != null) {
-            passwordType = Integer.parseInt(passwordTypeString);
-        }
-
+            throws GeneralSecurityException, IOException, SQLException {
+        passwordPropertiesSerializer.decryptPasswordProperties(this, encryptedPasswordProperties, ac);
         encryptedPasswordProperties = null;
     }
 
@@ -369,7 +263,7 @@ public final class Password
      * @return The audit state.
      */
 
-    public int getAuditLevel() {
+    public AuditingLevel getAuditLevel() {
         return auditLevel;
     }
 
@@ -392,12 +286,7 @@ public final class Password
         return isHistoryStored;
     }
 
-    /**
-     * @param auditLevel The isAudited to set.
-     */
-    public void setAuditLevel(final int auditLevel) {
-
-
+    public void setAuditLevel(final AuditingLevel auditLevel) {
         this.auditLevel = auditLevel;
     }
 

@@ -29,10 +29,6 @@ import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-/**
- * Servlet to enable a specific password.
- */
-
 public final class EnablePassword extends HttpServlet {
 	@Override
     protected void doGet(final HttpServletRequest request, HttpServletResponse response)
@@ -48,15 +44,8 @@ public final class EnablePassword extends HttpServlet {
 	        Password password = UnfilteredPasswordDAO.getInstance().getById(id, ac);
 	        password.setEnabled(true);
 	        PasswordDAO.getInstance().update(password, user, ac);
-
-	    	boolean sendEmail = ((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-	        TamperproofEventLogDAO.getInstance().create(
-					TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-	        		user,
-	        		password,
-	        		"Enabled the password",
-	        		sendEmail
-	    		);
+	        TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+	        		user, password, "Enabled the password", password.getAuditLevel().shouldTriggerEmail());
         } catch(SQLException | GeneralSecurityException e) {
         	throw new ServletException("The password could not be enabled due to an error.", e);
         }

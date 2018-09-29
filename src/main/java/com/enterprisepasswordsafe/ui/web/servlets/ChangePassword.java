@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.*;
@@ -120,10 +121,10 @@ public final class ChangePassword extends AbstractPasswordManipulatingServlet {
         }
 
         pDAO.storeNewPassword(passwordContext.password, user);
-        if (passwordContext.password.getAuditLevel() != Password.AUDITING_NONE) {
-            boolean sendEmail = ((passwordContext.password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY) != 0);
+        if (passwordContext.password.getAuditLevel().shouldTriggerLogging()) {
             TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-                    user, passwordContext.password, "Created the password.", sendEmail);
+                    user, passwordContext.password, "Created the password.",
+					passwordContext.password.getAuditLevel().shouldTriggerEmail());
         }
     }
 
@@ -238,20 +239,8 @@ public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 	 * @param password The password to set the value in.
 	 */
 	private void setAuditing(final HttpServletRequest request, final Password password ) {
-        String auditFlag = request.getParameter("audit");
-        int auditValue;
-        switch(auditFlag.charAt(0)) {
-        	case 'L':
-        		auditValue = Password.AUDITING_LOG_ONLY;
-        		break;
-        	case 'N':
-        		auditValue = Password.AUDITING_NONE;
-        		break;
-        	default:
-        		auditValue = Password.AUDITING_FULL;
-        		break;
-        }
-       	password.setAuditLevel(auditValue);
+		AuditingLevel auditingLevel = AuditingLevel.fromRepresentation(request.getParameter("audit"));
+       	password.setAuditLevel(auditingLevel == null ? AuditingLevel.FULL : auditingLevel);
 	}
 
 	/**
@@ -264,14 +253,18 @@ public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 		throws SQLException {
         boolean newHistoryStored;
         String passwordHistory = ConfigurationDAO.getValue( ConfigurationOption.STORE_PASSWORD_HISTORY );
-		if		  ( passwordHistory.equals(Password.SYSTEM_PASSWORD_RECORD)) {
-			newHistoryStored = true;
-		} else if ( passwordHistory.equals(Password.SYSTEM_PASSWORD_DONT_RECORD)) {
-			newHistoryStored = false;
-		} else {
-	        String booleanFlag = request.getParameter("history");
-	        newHistoryStored = (booleanFlag != null && booleanFlag.equals("y"));
-		}
+        switch (passwordHistory) {
+            case Password.SYSTEM_PASSWORD_RECORD:
+                newHistoryStored = true;
+                break;
+            case Password.SYSTEM_PASSWORD_DONT_RECORD:
+                newHistoryStored = false;
+                break;
+            default:
+                String booleanFlag = request.getParameter("history");
+                newHistoryStored = (booleanFlag != null && booleanFlag.equals("y"));
+                break;
+        }
         if (password.isHistoryStored() && !newHistoryStored) {
         	HistoricalPasswordDAO.getInstance().writeNullEntry(password);
         }

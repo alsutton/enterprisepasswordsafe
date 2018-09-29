@@ -30,15 +30,8 @@ import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
 import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
 import com.enterprisepasswordsafe.engine.database.User;
 
-/**
- * Servlet to list the authentication sources.
- */
-
 public final class GetPassword extends RawAPIServlet {
 
-	/**
-     * @see RawAPIServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, HttpServletResponse response)
     	throws IOException {
@@ -48,13 +41,9 @@ public final class GetPassword extends RawAPIServlet {
     		Password password = PasswordDAO.getInstance().getById(user, passwordId);
 
     		if( password.getPasswordType() != Password.TYPE_PERSONAL ) {
-	            TamperproofEventLogDAO.getInstance().create(
-							TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-	            			user,
-	            			password,
-	            			"The password was viewed by the user",
-	                    	((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0)
-	        			);
+	            TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+	            			user, password, "The password was viewed by the user",
+							password.getAuditLevel().shouldTriggerEmail());
     		}
 
             response.setContentType("text/plain");
@@ -67,9 +56,6 @@ public final class GetPassword extends RawAPIServlet {
     	}
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Raw API Servlet to find a password id from a x@y format";

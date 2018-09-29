@@ -29,10 +29,6 @@ import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
-/**
- * Servlet to disable a specific password.
- */
-
 public final class DisablePassword extends HttpServlet {
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
@@ -51,14 +47,8 @@ public final class DisablePassword extends HttpServlet {
 	        password.setEnabled(false);
 	        pDAO.update(password, user, ac);
 
-	    	boolean sendEmail = ((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
-	        TamperproofEventLogDAO.getInstance().create(
-					TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-	        		user,
-	        		password,
-	        		"Disabled the password",
-	        		sendEmail
-	        	);
+	        TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+	        		user, password, "Disabled the password", password.getAuditLevel().shouldTriggerEmail());
         } catch(SQLException | GeneralSecurityException e) {
         	throw new ServletException("The password could not be disabled due to an error.", e);
         }

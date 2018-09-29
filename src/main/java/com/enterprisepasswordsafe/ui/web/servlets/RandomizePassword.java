@@ -95,13 +95,9 @@ public final class RandomizePassword extends HttpServlet {
 	    	password.setPassword(newPassword);
 	        pDAO.update(password, user, ac);
 
-	        TamperproofEventLogDAO.getInstance().create(
-	        				TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-	        				user,
-	        				password,
-	        				"Randomized the password.",
-	        				((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0)
-	    				);
+	        TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+	        				user, password, "Randomized the password.",
+	        				password.getAuditLevel().shouldTriggerEmail());
 	        ServletUtils.getInstance().generateMessage(request, "The password has been changed.");
 	    } catch(Exception ex) {
 	    	throw new ServletException("There was a problem talking to the system holding the password.", ex);

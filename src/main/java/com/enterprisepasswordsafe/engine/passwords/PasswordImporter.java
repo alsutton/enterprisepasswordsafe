@@ -38,7 +38,7 @@ public class PasswordImporter {
         String username = getNextValueFromCSVRecordIterator(values, "Username not specified.");
         String password = getNextValueFromCSVRecordIterator(values, "Password not specified.");
         String notes = getNotesFromImport(values);
-        int auditing = getAuditLevelFromImport(values);
+        AuditingLevel auditing = getAuditLevelFromImport(values);
         boolean recordHistory = getHistoryRecordingFromImport(values);
 
         Password importedPassword = passwordDAO.create(theImporter, adminGroup, username,
@@ -192,24 +192,18 @@ public class PasswordImporter {
         return notes;
     }
 
-    private int getAuditLevelFromImport(Iterator<String> values)
+    private AuditingLevel getAuditLevelFromImport(Iterator<String> values)
             throws GeneralSecurityException {
         if (!values.hasNext()) {
-            return Password.AUDITING_FULL;
+            return AuditingLevel.FULL;
         }
 
         String audit = values.next().trim().toLowerCase();
-        if (audit.length() == 0 || audit.equals("full")) {
-            return Password.AUDITING_FULL;
+        AuditingLevel auditingLevel = AuditingLevel.fromRepresentation(audit);
+        if(auditingLevel == null) {
+            throw new GeneralSecurityException("Invalid auditing value specified (" + audit + ").");
         }
-        if (audit.equals("log")) {
-            return Password.AUDITING_LOG_ONLY;
-        }
-        if (audit.equals("none")) {
-            return Password.AUDITING_NONE;
-        }
-
-        throw new GeneralSecurityException( "Invalid auditing value specified ("+audit+").");
+        return auditingLevel;
     }
 
     private boolean getHistoryRecordingFromImport(Iterator<String> values) {

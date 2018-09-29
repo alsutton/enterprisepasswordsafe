@@ -1,5 +1,6 @@
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 
 import java.io.IOException;
@@ -56,13 +57,13 @@ public abstract class PasswordStoreManipulator
         if (value != null) {
             switch (value) {
                 case "Y":
-                    password.setAuditLevel(Password.AUDITING_FULL);
+                    password.setAuditLevel(AuditingLevel.FULL);
                     break;
                 case "L":
-                    password.setAuditLevel(Password.AUDITING_LOG_ONLY);
+                    password.setAuditLevel(AuditingLevel.LOG_ONLY);
                     break;
                 default:
-                    password.setAuditLevel(Password.AUDITING_NONE);
+                    password.setAuditLevel(AuditingLevel.NONE);
                     break;
             }
         }
@@ -145,10 +146,10 @@ public abstract class PasswordStoreManipulator
         }
 
         if( password.getPasswordType() != Password.TYPE_PERSONAL
-        &&  password.getAuditLevel() != Password.AUDITING_NONE ) {
-            boolean sendEmail = ((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
+        &&  password.getAuditLevel() != AuditingLevel.NONE) {
             TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-                modifyingUser, password, "Changed the password", sendEmail);
+                modifyingUser, password, "Changed the password",
+                    password.getAuditLevel().shouldTriggerEmail());
         }
     }
 
@@ -161,7 +162,7 @@ public abstract class PasswordStoreManipulator
             } else {
                 ps.setString(idx++, "N");
             }
-            ps.setString(idx++, getAuditingLevelRepresentation(password));
+            ps.setString(idx++, password.getAuditLevel().toString());
             ps.setString(idx++, password.isHistoryStored() ? "Y" : "N");
             ps.setString(idx++, password.getRestrictionId());
             ps.setString(idx++, password.isRaEnabled() ? "Y" : "N");
@@ -186,22 +187,10 @@ public abstract class PasswordStoreManipulator
             ps.executeUpdate();
 
             if( password.getPasswordType() != Password.TYPE_PERSONAL ) {
-                boolean sendEmail = ((password.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
                 TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-                        deletingUser, null, "Deleted the password " + password.toString(), sendEmail);
+                        deletingUser, null, "Deleted the password " + password.toString(),
+                        password.getAuditLevel().shouldTriggerEmail());
             }
         }
     }
-
-
-    String getAuditingLevelRepresentation(Password password) {
-        if (password.getAuditLevel() == Password.AUDITING_FULL) {
-            return "Y";
-        }
-        if (password.getAuditLevel() == Password.AUDITING_LOG_ONLY) {
-            return "L";
-        }
-        return "N";
-    }
-
 }

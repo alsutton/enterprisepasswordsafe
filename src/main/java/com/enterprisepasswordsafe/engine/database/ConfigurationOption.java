@@ -16,6 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 public enum ConfigurationOption implements ExternalInterface {
@@ -31,7 +32,7 @@ public enum ConfigurationOption implements ExternalInterface {
     MAX_FUTURE_EXPIRY_DISTANCE("expiry.max_distance", "0"),
     INCLUDE_USER_ON_AUDIT_EMAIL("audit.email_user", "n"),
     LOGIN_ATTEMPTS("user.login_attempts", "3"),
-    PASSWORD_AUDIT_LEVEL("password.audit", Password.SYSTEM_AUDIT_CREATOR_CHOOSE),
+    PASSWORD_AUDIT_LEVEL("password.audit", AuditingLevel.CREATOR_CHOOSE.toString()),
     PASSWORD_DISPLAY("password.defaultdisplay", "s"),
     PASSWORD_DISPLAY_TYPE("password.displaytype", "i"),
     PASSWORD_HIDE_SYSTEM_SELECTOR("password.hidesystems", "n"),

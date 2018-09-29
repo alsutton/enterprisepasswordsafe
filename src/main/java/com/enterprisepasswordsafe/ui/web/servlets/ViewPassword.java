@@ -284,7 +284,7 @@ public final class ViewPassword extends HttpServlet {
             throws SQLException, GeneralSecurityException, IOException, RedirectException {
         boolean logRequired = ensureReasonSuppliedIfRequired(request, password);
         if (password instanceof Password) {
-            logRequired = ((Password)password).getAuditLevel() != Password.AUDITING_NONE;
+            logRequired = ((Password)password).getAuditLevel().shouldTriggerLogging();
         }
         if (logRequired) {
             String dt = request.getParameter(BaseServlet.DATE_TIME_PARAMETER);
@@ -353,11 +353,11 @@ public final class ViewPassword extends HttpServlet {
     private boolean shouldSendEmail(User user, PasswordBase thisPassword)
             throws GeneralSecurityException, SQLException, IOException {
         if(thisPassword instanceof Password) {
-            return ((((Password)thisPassword).getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
+            return ((Password)thisPassword).getAuditLevel().shouldTriggerEmail();
         }
 
         Password currentPassword = UnfilteredPasswordDAO.getInstance().getById(user, thisPassword.getId());
-        return ((currentPassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
+        return currentPassword.getAuditLevel().shouldTriggerEmail();
     }
 
     private String shouldDisplay(String requestSetting)

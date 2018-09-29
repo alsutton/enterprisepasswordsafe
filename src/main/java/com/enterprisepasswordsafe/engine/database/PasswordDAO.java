@@ -18,6 +18,7 @@ package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.database.actions.password.ExpiringAccessiblePasswordsAction;
 import com.enterprisepasswordsafe.engine.database.derived.ExpiringAccessiblePasswords;
+import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
 import com.enterprisepasswordsafe.engine.passwords.PasswordPermissionApplier;
 import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
@@ -127,13 +128,13 @@ public final class PasswordDAO
      */
 
     public Password create(final User theCreator, final Group adminGroup,
-            final String username, final String password, final String location,
-            final String notes, final int audit, final boolean history,
-            final long expiry, final String parentNode, final String restrictionId,
-            final boolean raEnabled, final int raApprovers, final int raBlockers,
-            final int type, Map<String,String> customFields)
+                           final String username, final String password, final String location,
+                           final String notes, final AuditingLevel audit, final boolean history,
+                           final long expiry, final String parentNode, final String restrictionId,
+                           final boolean raEnabled, final int raApprovers, final int raBlockers,
+                           final int type, Map<String,String> customFields)
             throws SQLException, GeneralSecurityException, IOException {
-        Password newPassword = new Password(username, password, location, notes, Password.AUDITING_FULL, history, expiry);
+        Password newPassword = new Password(username, password, location, notes, AuditingLevel.FULL, history, expiry);
         newPassword.setPasswordType(type);
         newPassword.setRestrictionId(restrictionId);
         newPassword.setRaEnabled(raEnabled);
@@ -155,10 +156,8 @@ public final class PasswordDAO
         if( adminGroup != null ) {
             GroupAccessControlDAO.getInstance().create(adminGroup, newPassword, true, true);
             new PasswordPermissionApplier().setDefaultPermissions(newPassword, parentNode, adminGroup);
-
-	    	boolean sendEmail = ((newPassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0);
 	        TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-                theCreator, newPassword, "Created the password.", sendEmail);
+                theCreator, newPassword, "Created the password.", newPassword.getAuditLevel().shouldTriggerEmail());
         }
 
         return newPassword;
@@ -177,7 +176,7 @@ public final class PasswordDAO
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_PASSWORD_SQL)) {
             ps.setString(1, password.getId());
             ps.setString(2, password.isEnabled() ? "Y" : "N");
-            ps.setString(3, getAuditingLevelRepresentation(password));
+            ps.setString(3, password.getAuditLevel().toString());
             ps.setString(4, password.isHistoryStored() ? "Y" : "N");
             ps.setString(5, password.getRestrictionId());
             ps.setString(6, password.isRaEnabled() ? "Y" : "N");

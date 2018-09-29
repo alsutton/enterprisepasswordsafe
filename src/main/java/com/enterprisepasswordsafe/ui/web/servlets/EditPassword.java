@@ -161,7 +161,6 @@ public final class EditPassword extends HttpServlet {
 		}
 	}
 
-
     private void addRestrictedAccessRequestDetails(HttpServletRequest request, ServletUtils servletUtils, Password password) {
 		servletUtils.setAttributeAllowingOverride(request, "ra_enabled", password.isRaEnabled() ? "Y" : "N");
 		servletUtils.setAttributeAllowingOverride(request, "ra_approvers", Integer.toString(password.getRaApprovers()) );
@@ -171,20 +170,7 @@ public final class EditPassword extends HttpServlet {
 	private void addAuditingState(HttpServletRequest request, ServletUtils servletUtils, Password password)
             throws SQLException {
         request.setAttribute("password_audit", ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_AUDIT_LEVEL));
-        String auditState;
-        switch(password.getAuditLevel()) {
-            case Password.AUDITING_NONE:
-                auditState = "N";
-                break;
-            case Password.AUDITING_LOG_ONLY:
-                auditState = "L";
-                break;
-            default:
-                auditState = "F";
-                break;
-        }
-        servletUtils.setAttributeAllowingOverride( request, "audit", auditState );
-
+        servletUtils.setAttributeAllowingOverride( request, "audit", password.getAuditLevel().toString() );
     }
 
 	private void addCustomFields(HttpServletRequest request,Password password) {

@@ -282,7 +282,7 @@ public final class UpdateAccess extends HttpServlet {
     private void logAndEmailIfNeeded(Password thePassword, User adminUser, String message)
 			throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
 		TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-				adminUser, thePassword, message, ((thePassword.getAuditLevel() & Password.AUDITING_EMAIL_ONLY)!=0));
+				adminUser, thePassword, message, thePassword.getAuditLevel().shouldTriggerEmail());
 	}
 
     private boolean modifyOrCreateAccessControl(AccessControl adminAc, AccessControl currentAccessControl,
