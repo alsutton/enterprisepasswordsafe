@@ -141,20 +141,23 @@ public final class CreatePassword extends HttpServlet {
         PasswordRestrictionDAO prDAO = PasswordRestrictionDAO.getInstance();
         request.setAttribute("restriction_list", prDAO.getAll());
 
-        String restrictionId = request.getParameter("restriction.id");
-        String restrictionName = null;
-        if(restrictionId != null && ! restrictionId.isEmpty()) {
-            PasswordRestriction restriction = prDAO.getById(restrictionId);
-            if( restriction != null ) {
-                restrictionName = restriction.getName();
-            }
-        }
-        if( restrictionName != null ) {
-            request.setAttribute("restriction_id", restrictionId);
-            request.setAttribute("restriction_name", restrictionName);
-        } else {
+        PasswordRestriction restriction = findRelevantRestriction(request, prDAO);
+        if( restriction == null ) {
             request.setAttribute("restriction_id", "");
+            return;
         }
+        request.setAttribute("restriction_id", restriction.getId());
+        request.setAttribute("restriction_name", restriction.getName());
+    }
+
+    private PasswordRestriction findRelevantRestriction(final HttpServletRequest request,
+                                                        final PasswordRestrictionDAO passwordRestrictionDAO)
+            throws SQLException {
+        String restrictionId = request.getParameter("restriction.id");
+        if(restrictionId == null || restrictionId.isEmpty()) {
+            return null;
+        }
+        return passwordRestrictionDAO.getById(restrictionId);
     }
 
     @Override
