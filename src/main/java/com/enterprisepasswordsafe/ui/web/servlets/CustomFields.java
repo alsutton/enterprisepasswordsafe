@@ -27,31 +27,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-
-
-/**
- * Servlet to send the user to the page allowing them to edit the default custom fields for a password.
- */
+import com.enterprisepasswordsafe.ui.web.password.CustomFieldPopulator;
 
 public final class CustomFields extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 8830414674792049120L;
-
-	/**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#getGenericErrorMessage()
-     */
-
-    protected String getGenericErrorMessage() {
-        return "The custom fields can not be altered at this time.";
-    }
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
@@ -59,24 +38,12 @@ public final class CustomFields extends HttpServlet {
     	final ConfigurationDAO cDAO = ConfigurationDAO.getInstance();
 
     	try {
-	    	int i = 0;
-	    	String fieldName, fieldValue;
-	    	while( (fieldName = cDAO.get("custom_fn"+i, null)) != null ) {
-	    		fieldValue = cDAO.get("custom_fv"+i, "");
-	    		customFields.put(fieldName, fieldValue);
-	    		i++;
-	    	}
-
-	        request.setAttribute("customFields", customFields);
+			new CustomFieldPopulator().populateRequestWithDefaultCustomFields(request);
 	    } catch(SQLException sqle) {
 	    	throw new ServletException("The custom fields can not be altered at this time.", sqle);
 	    }
         request.getRequestDispatcher("/admin/configure_custom_fields.jsp").forward(request, response);
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

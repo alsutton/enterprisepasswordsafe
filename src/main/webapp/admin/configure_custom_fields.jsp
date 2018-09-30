@@ -30,7 +30,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         role="form">
 <fieldset>
     <c:choose>
-        <c:when test="${empty requestScope.customFields}">
+        <c:when test="${empty requestScope.cfields}">
             <div class="row">
                 <div class="col-md-12">
                     <i>No fields have been defined.</i>
@@ -55,7 +55,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                     <h6><span class="glyphicon glyphicon-trash"></span></h6>
                 </div>
             </div>
-            <c:forEach var="thisEntry" varStatus="status" items="${requestScope.customFields}">
+            <c:forEach var="thisEntry" varStatus="status" items="${requestScope.cfields}">
                 <label for="fn_${status.count - 1}"></label>
                 <label for="fv_${status.count - 1}"></label>
                 <div class="row">
