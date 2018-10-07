@@ -1,14 +1,23 @@
 package com.enterprisepasswordsafe.ui.web.utils;
 
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.database.PasswordBase;
+import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
 
 public class RestrictedAccessEnforcer {
+
+    public static final String RA_REQUEST_ATTRIBUTE = "rar";
+
+    private static final String RESTRICTED_ACCESS_PAGE = "/system/ra_reason.jsp";
+
+    private static final String RESTRICTED_ACCESS_EXPIRED_PAGE = "/system/ra_expired.jsp";
+
+    private static final String RESTRICTED_ACCESS_HOLDING_PAGE = "/system/ra_holding_page.jsp";
+
+    public static final String RESTRICTED_ACCESS_LAST_REFRESH = "ra_last_refresh";
 
     public static final String REASON_PARAMETER = "reason";
 
@@ -21,6 +30,94 @@ public class RestrictedAccessEnforcer {
         configurationDAO = ConfigurationDAO.getInstance();
         servletUtils = ServletUtils.getInstance();
     }
+
+    public RestrictedAccessRequest ensureRestrictedAccessConditionsHaveBeenMet(HttpServletRequest request, User user,
+                                                                               PasswordBase thisPassword)
+            throws SQLException, RedirectException {
+        if (!(thisPassword instanceof Password)) {
+            return null;
+        }
+
+        Password password = (Password) thisPassword;
+        if (!password.isRaEnabled()) {
+            return null;
+        }
+
+        String raPage = getRaPage(password, user, request);
+        if (raPage != null) {
+            throw new RedirectException(raPage);
+        }
+
+        RestrictedAccessRequest raRequest = (RestrictedAccessRequest) request.getSession().getAttribute(RA_REQUEST_ATTRIBUTE);
+        ServletUtils.getInstance().generateMessage(request,
+                "This is a restricted access password. Your request to view it has been approved by the approproate users.");
+        request.getSession().removeAttribute(RA_REQUEST_ATTRIBUTE);
+        return raRequest;
+    }
+
+    private String getRaPage(final Password password, final User requester, final HttpServletRequest request)
+            throws SQLException {
+        HttpSession session = request.getSession();
+
+        RestrictedAccessRequest raRequest = getRaREquestForPassword(password, requester, session);
+
+        String divertPage = getDivertPageIfNeeded(request, password, raRequest);
+        if (divertPage != null) {
+            return divertPage;
+        }
+
+        if( raRequest.getViewedDT() < 0 ) {
+            RestrictedAccessRequestDAO.getInstance().setViewedDT(raRequest, DateFormatter.getNow());
+        }
+        return null;
+    }
+
+    private RestrictedAccessRequest getRaREquestForPassword(Password password, User requester, HttpSession session)
+            throws SQLException {
+        RestrictedAccessRequest raRequest = (RestrictedAccessRequest) session.getAttribute(RA_REQUEST_ATTRIBUTE);
+        if( raRequest != null
+                && (!raRequest.getItemId().equals(password.getId()) || !raRequest.getRequesterId().equals(requester.getId()))) {
+            session.removeAttribute(RA_REQUEST_ATTRIBUTE);
+            raRequest = null;
+        }
+
+        if( raRequest == null ) {
+            raRequest = RestrictedAccessRequestDAO.getInstance().getValidRequest(password.getId(), requester.getId());
+            session.setAttribute(RA_REQUEST_ATTRIBUTE, raRequest);
+        }
+
+        return raRequest;
+    }
+
+    private String getDivertPageIfNeeded(HttpServletRequest request, Password password, RestrictedAccessRequest raRequest)
+            throws SQLException {
+        if( raRequest == null ) {
+            request.setAttribute("id", password.getId());
+            return RESTRICTED_ACCESS_PAGE;
+        }
+        if (raRequest.hasExpired() || hasRequestBeenBlocked(password, raRequest)) {
+            request.getSession().removeAttribute(RA_REQUEST_ATTRIBUTE);
+            return RESTRICTED_ACCESS_EXPIRED_PAGE;
+        }
+
+        int approvers = ApproverListDAO.getInstance().countApprovers(raRequest.getApproversListId());
+        if (approvers < password.getRaApprovers()) {
+            request.setAttribute(RESTRICTED_ACCESS_LAST_REFRESH, DateFormatter.convertToDateTimeString(DateFormatter.getNow()));
+            request.setAttribute("rarId", raRequest.getRequestId());
+            request.setAttribute("ra_refresh_url", "/system/ViewPassword?id=" + request.getParameter("id"));
+            return RESTRICTED_ACCESS_HOLDING_PAGE;
+        }
+
+        return null;
+    }
+
+    private boolean hasRequestBeenBlocked(Password password, RestrictedAccessRequest raRequest)
+            throws SQLException {
+        int blockers = ApproverListDAO.getInstance().countBlockers(raRequest.getApproversListId());
+        int blockersNeeded = password.getRaBlockers();
+        return blockersNeeded != 0 && blockers >= blockersNeeded;
+    }
+
 
     public boolean ensureReasonSuppliedIfRequired(HttpServletRequest request, PasswordBase thisPassword)
             throws SQLException, RedirectException {

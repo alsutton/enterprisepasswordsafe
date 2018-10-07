@@ -16,22 +16,20 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.ui.web.utils.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.engine.utils.DateFormatter;
-import com.enterprisepasswordsafe.ui.web.utils.*;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -39,18 +37,6 @@ import com.enterprisepasswordsafe.ui.web.utils.*;
  */
 
 public final class ViewPassword extends HttpServlet {
-
-	/**
-	 * The attribute used to hold any applicable restriced access request.
-	 */
-
-	public static final String RA_REQUEST_ATTRIBUTE = "rar";
-
-	/**
-	 * The parameter used to hold the last refresh time and date.
-	 */
-
-	public static final String RA_LAST_REFRESH = "ra_last_refresh";
 
 	/**
 	 * The request attribute used to hold the human readable date time format.
@@ -63,24 +49,6 @@ public final class ViewPassword extends HttpServlet {
 	 */
 
 	public static final String SCRIPTS_IN_USE = "scripts";
-
-    /**
-     * The page to send the user to the password is a restricted access page
-     */
-
-    private static final String RESTRICTED_ACCESS_PAGE = "/system/ra_reason.jsp";
-
-    /**
-     * The page to send the user to the password is a restricted access page
-     */
-
-    private static final String RESTRICTED_ACCESS_EXPIRED_PAGE = "/system/ra_expired.jsp";
-
-    /**
-     * The page to send the user to the password is a restricted access page
-     */
-
-    private static final String RESTRICTED_ACCESS_HOLDING_PAGE = "/system/ra_holding_page.jsp";
 
     private BackButtonDetector backButtonDetector = new BackButtonDetector();
     private RestrictedAccessEnforcer restrictedAccessEnforcer = new RestrictedAccessEnforcer();
@@ -106,7 +74,8 @@ public final class ViewPassword extends HttpServlet {
 				return;
 			}
 
-			RestrictedAccessRequest restrictedAccessRequest = ensureRestrictedAccessConditionsHaveBeenMet(request, user, thisPassword);
+			RestrictedAccessRequest restrictedAccessRequest =
+                    restrictedAccessEnforcer.ensureRestrictedAccessConditionsHaveBeenMet(request, user, thisPassword);
 			logIfRequired(request, user, thisPassword, restrictedAccessRequest);
 			populateRequestAttributesWithData(request, user, thisPassword);
 			request.getRequestDispatcher("/system/view_password.jsp").forward(request, response);
@@ -149,30 +118,6 @@ public final class ViewPassword extends HttpServlet {
         request.setAttribute(HUMAN_READABLE_TIMEPOINT, DateFormatter.convertToDateTimeString(timestamp));
         return password;
     }
-
-	private RestrictedAccessRequest ensureRestrictedAccessConditionsHaveBeenMet(HttpServletRequest request, User user,
-															 PasswordBase thisPassword)
-			throws SQLException, RedirectException {
-		if (!(thisPassword instanceof Password)) {
-            return null;
-        }
-
-        Password password = (Password) thisPassword;
-        if (!password.isRaEnabled()) {
-            return null;
-        }
-
-        String raPage = getRaPage(password, user, request);
-        if (raPage != null) {
-            throw new RedirectException(raPage);
-        }
-
-        RestrictedAccessRequest raRequest = (RestrictedAccessRequest) request.getSession().getAttribute(RA_REQUEST_ATTRIBUTE);
-        ServletUtils.getInstance().generateMessage(request,
-                "This is a restricted access password. Your request to view it has been approved by the approproate users.");
-        request.getSession().removeAttribute(RA_REQUEST_ATTRIBUTE);
-		return raRequest;
-	}
 
 
 	private void populateRequestAttributesWithData(HttpServletRequest request, User user, PasswordBase password)
@@ -297,73 +242,6 @@ public final class ViewPassword extends HttpServlet {
 
 		return Boolean.FALSE;
 	}
-
-	/**
-     * Get the page to divert the user to to handle a restricted access request.
-     *
-     * @param password The password which is being viewed.
-     * @param requester The user attempting to view the password.
-     * @param request The request being serviced.
-     *
-     * @return The page the user should be redirected to, or null if the password
-     * should be shown.
-     */
-
-    private String getRaPage(final Password password, final User requester,	final HttpServletRequest request)
-    	throws SQLException {
-    	HttpSession session = request.getSession();
-
-   		RestrictedAccessRequest raRequest = (RestrictedAccessRequest) session.getAttribute(RA_REQUEST_ATTRIBUTE);
-   		if( raRequest != null
-        && (!raRequest.getItemId().equals(password.getId()) || !raRequest.getRequesterId().equals(requester.getId()))) {
-            session.removeAttribute(RA_REQUEST_ATTRIBUTE);
-            raRequest = null;
-   		}
-
-   		if( raRequest == null ) {
-   			raRequest = RestrictedAccessRequestDAO.getInstance().getValidRequest(password.getId(), requester.getId());
-			session.setAttribute(RA_REQUEST_ATTRIBUTE, raRequest);
-   		}
-
-   		String divertPage = getDivertPageIfNeeded(request, password, raRequest);
-   		if (divertPage != null) {
-   		    return divertPage;
-        }
-
-		if( raRequest.getViewedDT() < 0 ) {
-			RestrictedAccessRequestDAO.getInstance().setViewedDT(raRequest, DateFormatter.getNow());
-		}
-   		return null;
-    }
-
-    private boolean hasRequestBeenBlocked(Password password, RestrictedAccessRequest raRequest)
-            throws SQLException {
-        int blockers = ApproverListDAO.getInstance().countBlockers(raRequest.getApproversListId());
-        int blockersNeeded = password.getRaBlockers();
-        return blockersNeeded != 0 && blockers >= blockersNeeded;
-    }
-
-    private String getDivertPageIfNeeded(HttpServletRequest request, Password password, RestrictedAccessRequest raRequest)
-            throws SQLException {
-        if( raRequest == null ) {
-            request.setAttribute("id", password.getId());
-            return RESTRICTED_ACCESS_PAGE;
-        }
-        if (raRequest.hasExpired() || hasRequestBeenBlocked(password, raRequest)) {
-            request.getSession().removeAttribute(RA_REQUEST_ATTRIBUTE);
-            return RESTRICTED_ACCESS_EXPIRED_PAGE;
-        }
-
-        int approvers = ApproverListDAO.getInstance().countApprovers(raRequest.getApproversListId());
-        if (approvers < password.getRaApprovers()) {
-            request.setAttribute(RA_LAST_REFRESH, DateFormatter.convertToDateTimeString(DateFormatter.getNow()));
-            request.setAttribute("rarId", raRequest.getRequestId());
-            request.setAttribute("ra_refresh_url", "/system/ViewPassword?id=" + request.getParameter("id"));
-            return RESTRICTED_ACCESS_HOLDING_PAGE;
-        }
-
-        return null;
-    }
 
     @Override
 	public String getServletInfo() {
