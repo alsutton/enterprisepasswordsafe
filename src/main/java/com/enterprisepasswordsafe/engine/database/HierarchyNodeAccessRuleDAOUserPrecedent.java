@@ -18,24 +18,9 @@ package com.enterprisepasswordsafe.engine.database;
 
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-
-/**
- * Data access object for hierarchy node access rules.
- */
 
 public class HierarchyNodeAccessRuleDAOUserPrecedent
 	extends HierarchyNodeAccessRuleDAO {
-
-	/**
-     * Check if this node is usable by a specific user.
-     *
-     * @param conn The connection to the database.
-     * @param user The user to get the rule for.
-     *
-     * @return true If the node is accessible by the user, false if not.
-     */
 
     @Override
 	public byte getAccessibilityForUser( final String nodeId, final User user, boolean recurse)
@@ -44,34 +29,20 @@ public class HierarchyNodeAccessRuleDAOUserPrecedent
     		return ACCESIBILITY_ALLOWED;
     	}
 
-    	byte[] rule = getUserAccessibilityRule(nodeId, user);
-	    if( rule != null ) {
-	    	byte decodedRule;
-	    	if( rule.length > 1 ) {
-	    		decodedRule = user.getKeyDecrypter().decrypt( rule )[0];
-	    	} else {
-	    		decodedRule = rule[0];
-	    	}
-			return decodedRule;
-	    }
+    	Byte userRule = getUserRule(user, nodeId);
+    	if( userRule != null ) {
+    		return userRule;
+		}
 
-	    boolean allowed = false;
-    	List<byte[]> rules = getUsersGroupAccessibilityRules(nodeId, user);
-    	Iterator<byte[]> ruleIter = rules.iterator();
-    	while( ruleIter.hasNext() ) {
-    		byte[] ruleValue = ruleIter.next();
-    		if			( ruleValue[0] == ACCESIBILITY_DENIED ) {
-    			return ACCESIBILITY_DENIED;
-    		} else if 	( ruleValue[0] == ACCESIBILITY_ALLOWED ) {
-    			allowed = true;
-    		}
+	    Boolean allowedViaGroup = isAllowedViaGroup(user, nodeId);
+    	if (allowedViaGroup == Boolean.FALSE) {
+			return ACCESIBILITY_DENIED;
     	}
 
-		if( allowed ) {
+		if( allowedViaGroup ) {
 	    	if( recurse ) {
 	    		return getAccessibilityForUser(HierarchyNodeDAO.getInstance().getParentIdById(nodeId), user);
 	    	}
-
 	    	return ACCESIBILITY_ALLOWED;
 		}
 

@@ -18,12 +18,6 @@ package com.enterprisepasswordsafe.engine.database;
 
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-
-/**
- * Data access object for hierarchy node access rules.
- */
 
 public class HierarchyNodeAccessRuleDAOGroupPrecedent
 	extends HierarchyNodeAccessRuleDAO {
@@ -35,36 +29,22 @@ public class HierarchyNodeAccessRuleDAOGroupPrecedent
     		return ACCESIBILITY_ALLOWED;
     	}
 
-	    boolean allowed = false;
-    	List<byte[]> rules = getUsersGroupAccessibilityRules(nodeId, user);
-    	Iterator<byte[]> ruleIter = rules.iterator();
-    	while( ruleIter.hasNext() ) {
-    		byte[] ruleValue = ruleIter.next();
-    		if			( ruleValue[0] == ACCESIBILITY_DENIED ) {
-    			return ACCESIBILITY_DENIED;
-    		} else if 	( ruleValue[0] == ACCESIBILITY_ALLOWED ) {
-    			allowed = true;
-    		}
-    	}
-
-		if( allowed ) {
-	    	if( recurse ) {
-	    		return getAccessibilityForUser(HierarchyNodeDAO.getInstance().getParentIdById(nodeId), user);
-	    	}
-
-	    	return ACCESIBILITY_ALLOWED;
+		Boolean allowedViaGroup = isAllowedViaGroup(user, nodeId);
+		if (allowedViaGroup == Boolean.FALSE) {
+			return ACCESIBILITY_DENIED;
 		}
 
-    	byte[] rule = getUserAccessibilityRule(nodeId, user);
-	    if( rule != null ) {
-	    	byte decodedRule;
-	    	if( rule.length > 1 ) {
-	    		decodedRule = user.getKeyDecrypter().decrypt( rule )[0];
-	    	} else {
-	    		decodedRule = rule[0];
-	    	}
-			return decodedRule;
-	    }
+		if( allowedViaGroup ) {
+			if( recurse ) {
+				return getAccessibilityForUser(HierarchyNodeDAO.getInstance().getParentIdById(nodeId), user);
+			}
+			return ACCESIBILITY_ALLOWED;
+		}
+
+    	Byte userRule = getUserRule(user, nodeId);
+		if (userRule != null) {
+			return userRule;
+		}
 
         String defaultRule = ConfigurationDAO.getValue(ConfigurationOption.DEFAULT_HIERARCHY_ACCESS_RULE);
 	    if( defaultRule != null && defaultRule.equals("D") ) {

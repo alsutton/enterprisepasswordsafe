@@ -21,10 +21,7 @@ import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
@@ -277,6 +274,31 @@ public abstract class HierarchyNodeAccessRuleDAO implements ExternalInterface {
             ps.executeUpdate();
         }
     }
+
+    Byte getUserRule(User user, String nodeId)
+			throws SQLException, GeneralSecurityException {
+		byte[] rule = getUserAccessibilityRule(nodeId, user);
+		if (rule == null) {
+			return null;
+		}
+		return rule.length > 1 ? user.getKeyDecrypter().decrypt( rule )[0] :  rule[0];
+	}
+
+	Boolean isAllowedViaGroup(User user, String nodeId)
+			throws SQLException {
+    	Boolean allowed = null;
+		List<byte[]> rules = getUsersGroupAccessibilityRules(nodeId, user);
+		Iterator<byte[]> ruleIter = rules.iterator();
+		while( ruleIter.hasNext() ) {
+			byte[] ruleValue = ruleIter.next();
+			if			( ruleValue[0] == ACCESIBILITY_DENIED ) {
+				return Boolean.FALSE;
+			} else if 	( ruleValue[0] == ACCESIBILITY_ALLOWED ) {
+				allowed = Boolean.TRUE;
+			}
+		}
+    	return allowed;
+	}
 
     //------------------------
 
