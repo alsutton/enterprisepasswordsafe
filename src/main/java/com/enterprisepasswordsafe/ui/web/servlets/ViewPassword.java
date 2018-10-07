@@ -31,9 +31,7 @@ import javax.servlet.http.HttpSession;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
-import com.enterprisepasswordsafe.ui.web.utils.RedirectException;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import com.enterprisepasswordsafe.ui.web.utils.*;
 
 
 /**
@@ -66,18 +64,6 @@ public final class ViewPassword extends HttpServlet {
 
 	public static final String SCRIPTS_IN_USE = "scripts";
 
-	/**
-	 * The parameter for the reason a password was viewed.
-	 */
-
-	public static final String REASON_PARAMETER = "reason";
-
-    /**
-     * The page to send the user to if a reason is required and has not been entered
-     */
-
-    private static final String REASON_PAGE = "/system/view_password_reason.jsp";
-
     /**
      * The page to send the user to the password is a restricted access page
      */
@@ -96,6 +82,8 @@ public final class ViewPassword extends HttpServlet {
 
     private static final String RESTRICTED_ACCESS_HOLDING_PAGE = "/system/ra_holding_page.jsp";
 
+    private BackButtonDetector backButtonDetector = new BackButtonDetector();
+    private RestrictedAccessEnforcer restrictedAccessEnforcer = new RestrictedAccessEnforcer();
     private UserClassifier userClassifier = new UserClassifier();
 
     @Override
@@ -103,7 +91,7 @@ public final class ViewPassword extends HttpServlet {
             throws IOException, ServletException {
         // Check to see if this user already has a valid session.
     	try {
-			ensureBackIsNotUsedIfBlocked(request);
+			backButtonDetector.ensureBackIsNotUsedIfBlocked(request);
 
 			User user = SecurityUtils.getRemoteUser(request);
 			if(userClassifier.isNonViewingUser(user)) {
@@ -130,22 +118,6 @@ public final class ViewPassword extends HttpServlet {
 	    }
 
     }
-
-    private void ensureBackIsNotUsedIfBlocked(final HttpServletRequest request)
-			throws ServletException, SQLException {
-		String backAllowed = ConfigurationDAO.getValue(ConfigurationOption.ALLOW_BACK_BUTTON_TO_ACCESS_PASSWORD);
-		if( backAllowed == null || backAllowed.equals("false") ) {
-			HttpSession session = request.getSession(false);
-			String sessionOtid = (String) session.getAttribute("otid");
-			String requestOtid = request.getParameter("otid");
-			if( requestOtid == null ) {
-				requestOtid = (String) request.getAttribute("otid");
-			}
-			if (sessionOtid == null || !sessionOtid.equals(requestOtid)) {
-				throw new ServletException("You can not view passwords using your browsers back button.");
-			}
-		}
-	}
 
 	private PasswordBase getDecryptedPassword(HttpServletRequest request, User thisUser)
 			throws SQLException, ServletException, GeneralSecurityException, IOException {
@@ -202,63 +174,6 @@ public final class ViewPassword extends HttpServlet {
 		return raRequest;
 	}
 
-	private boolean ensureReasonSuppliedIfRequired(HttpServletRequest request, PasswordBase thisPassword)
-			throws SQLException, RedirectException {
-		String reasonRequired =
-				ConfigurationDAO.getInstance().get(ConfigurationOption.PASSWORD_REASON_FOR_VIEWING_REQUIRED);
-
-		if( reasonRequired.charAt(0) != 'y') {
-			clearReasonSessionAttributes(request);
-			request.setAttribute("reason", "");
-			return true;
-		}
-
-		boolean logRequired = true;
-		String reason = request.getParameter(REASON_PARAMETER);
-		if( reason == null || reason.trim().length() == 0 ) {
-			String lastReasonViewId = (String) request.getSession().getAttribute("reason.lastid");
-			String lastPassword = (String) request.getSession().getAttribute("reason.password");
-			if( lastReasonViewId != null &&	lastReasonViewId.equals(thisPassword.getId())
-			&&	lastPassword != null &&	lastPassword.equals(thisPassword.getPassword())) {
-				reason = (String) request.getSession().getAttribute("reason.text");
-				logRequired = false;
-			}
-		}
-
-		clearReasonSessionAttributes(request);
-		ensureReasonHasBeenSupplied(request, thisPassword, reason);
-
-		request.getSession().setAttribute("reason.lastid", thisPassword.getId());
-		request.getSession().setAttribute("reason.password", thisPassword.getPassword());
-		request.getSession().setAttribute("reason.text", reason);
-		request.setAttribute("reason", reason);
-
-		return logRequired;
-	}
-
-	private void ensureReasonHasBeenSupplied(HttpServletRequest request, PasswordBase password, String reason)
-            throws RedirectException {
-        if( reason != null && !reason.isEmpty()) {
-            return;
-        }
-
-        String displayValue = request.getParameter("display");
-        if( displayValue == null ) {
-            displayValue = "";
-        }
-        request.setAttribute("display", displayValue);
-        request.setAttribute("id", password.getId());
-        ServletUtils.getInstance().generateErrorMessage(request, "You must enter a reason for viewing the password.");
-        throw new RedirectException(REASON_PAGE);
-    }
-
-	private void clearReasonSessionAttributes(HttpServletRequest request) {
-    	HttpSession session = request.getSession();
-		session.removeAttribute("reason.lastid");
-		session.removeAttribute("reason.password");
-		session.removeAttribute("reason.text");
-	}
-
 
 	private void populateRequestAttributesWithData(HttpServletRequest request, User user, PasswordBase password)
 			throws SQLException {
@@ -282,7 +197,7 @@ public final class ViewPassword extends HttpServlet {
 	private void logIfRequired(HttpServletRequest request, User user, PasswordBase password,
                                RestrictedAccessRequest restrictedAccessRequest)
             throws SQLException, GeneralSecurityException, IOException, RedirectException {
-        boolean logRequired = ensureReasonSuppliedIfRequired(request, password);
+        boolean logRequired = restrictedAccessEnforcer.ensureReasonSuppliedIfRequired(request, password);
         if (password instanceof Password) {
             logRequired = ((Password)password).getAuditLevel().shouldTriggerLogging();
         }
