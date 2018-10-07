@@ -30,8 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Calendar;
-import java.util.Map;
-import java.util.TreeMap;
 
 public final class CreatePassword extends HttpServlet {
 
