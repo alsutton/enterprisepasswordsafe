@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class UserAccessControlDAO
+		extends AbstractAccessControlDAO
 		implements ExternalInterface, AccessControlDAOInterface<User, UserAccessControl> {
 
     public static final String UAC_FIELDS = " uac.item_id, uac.mkey, uac.rkey, uac.user_id ";
@@ -206,26 +207,10 @@ public final class UserAccessControlDAO
 		    			}
 		    		}
 
-		    		boolean canApproveRARequest = false;
-		    		boolean canViewHistory = false;
 		    		uarPS.setString(2, thisUser.getId());
-		    		try(ResultSet rs = uarPS.executeQuery()) {
-		    			while( rs.next() ) {
-		    				String role = rs.getString(1);
-		    				if( rs.wasNull() ) {
-		    					continue;
-		    				}
-
-		    				if( role.equals(AccessRole.APPROVER_ROLE) ) {
-		    					canApproveRARequest = true;
-		    				} else if (role.equals(AccessRole.HISTORYVIEWER_ROLE)) {
-		    					canViewHistory = true;
-		    				}
-		    			}
-		    		}
-
+					AbstractAccessControlDAO.Permissions permissions = getPermissions(uarPS);
 	            	AccessSummary gas = new AccessSummary(thisUser.getId(), thisUser.getUserName(),
-	            				canRead, canModify, canApproveRARequest, canViewHistory);
+	            				canRead, canModify, permissions.canApproveRARequest, permissions.canViewHistory);
 	            	summaries.add(gas);
 		    	}
 

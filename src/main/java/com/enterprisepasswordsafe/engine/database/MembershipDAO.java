@@ -32,7 +32,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class MembershipDAO implements ExternalInterface {
+public final class MembershipDAO
+		extends JDBCBase
+		implements ExternalInterface {
 
     private static final Object MEMBERSHIP_MARKER = new Object();
 
@@ -240,13 +242,7 @@ public final class MembershipDAO implements ExternalInterface {
 	        return false;
 	    }
 
-	    try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_MEMBERSHIP_SQL)) {
-	        ps.setString(1, userId);
-	        ps.setString(2, groupId);
-	        try(ResultSet rs = ps.executeQuery()) {
-	        	return rs.next();
-	        }
-	    }
+	    return exists(GET_MEMBERSHIP_SQL, userId, groupId);
 	}
 
 	/**
@@ -310,11 +306,7 @@ public final class MembershipDAO implements ExternalInterface {
 
     public void delete(final String userId, final String groupId)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_MEMBERSHIP_SQL)) {
-            ps.setString(1, userId);
-            ps.setString(2, groupId);
-            ps.executeUpdate();
-        }
+    	runResultlessParameterisedSQL(DELETE_MEMBERSHIP_SQL, userId, groupId);
     }
 
     /**

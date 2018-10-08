@@ -24,7 +24,9 @@ import java.util.Map;
 
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
-public final class IntegrationModuleConfigurationDAO implements ExternalInterface {
+public final class IntegrationModuleConfigurationDAO
+		extends JDBCBase
+		implements ExternalInterface {
 
 	private static final String ALL_PASSWORDS_MARKER = "*";
 
@@ -91,13 +93,7 @@ public final class IntegrationModuleConfigurationDAO implements ExternalInterfac
 
     public boolean scriptIsInUse( final String scriptId )
     	throws SQLException {
-    	try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(CHECK_FOR_SCRIPT_USE_SQL)) {
-            ps.setString(1, scriptId);
-            ps.setMaxRows(1);
-            try(ResultSet rs = ps.executeQuery()) {
-            	return rs.next();
-            }
-    	}
+		return exists(CHECK_FOR_SCRIPT_USE_SQL, scriptId);
     }
 
     public void deleteAllForModule( final String moduleId )

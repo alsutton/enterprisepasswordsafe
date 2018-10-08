@@ -35,6 +35,7 @@ import java.util.TreeSet;
  */
 
 public class GroupAccessControlDAO
+    extends AbstractAccessControlDAO
     implements AccessControlDAOInterface<Group, GroupAccessControl>, ExternalInterface {
 
     /**
@@ -317,26 +318,10 @@ public class GroupAccessControlDAO
 		    			}
 		    		}
 
-		    		boolean canApproveRARequest = false;
-		    		boolean canViewHistory = false;
 		    		garPS.setString(2, thisGroup.getGroupId());
-		    		try(ResultSet rs = garPS.executeQuery()) {
-		    			while( rs.next() ) {
-		    				String role = rs.getString(1);
-		    				if( rs.wasNull() ) {
-		    					continue;
-		    				}
-
-		    				if( role.equals(AccessRole.APPROVER_ROLE) ) {
-		    					canApproveRARequest = true;
-		    				} else if ( role.equals(AccessRole.HISTORYVIEWER_ROLE) ) {
-		    					canViewHistory = true;
-		    				}
-		    			}
-		    		}
-
+		    		Permissions permissions = getPermissions(garPS);
 	            	AccessSummary gas = new AccessSummary( thisGroup.getGroupId(), thisGroup.getGroupName(),
-                            canRead, canModify, canApproveRARequest, canViewHistory);
+                            canRead, canModify, permissions.canApproveRARequest, permissions.canViewHistory);
 	            	summaries.add(gas);
 		    	}
 

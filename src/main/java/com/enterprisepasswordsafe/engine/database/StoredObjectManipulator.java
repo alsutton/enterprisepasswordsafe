@@ -56,17 +56,6 @@ abstract class StoredObjectManipulator<T>
         }
     }
 
-    boolean exists(String sql, final String... parameters)
-        throws SQLException{
-        try(PreparedStatement ps =  BOMFactory.getCurrentConntection().prepareStatement(sql)) {
-            setParameters(ps, parameters);
-            ps.setMaxRows(1);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        }
-    }
-
     List<T> getMultiple(final String sql, final String... parameters)
             throws SQLException {
         List<T> results = new ArrayList<>();

@@ -17,11 +17,7 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -486,28 +482,26 @@ public abstract class AccessControl
 			return itemIdComparison;
 		}
 
-		if( modifyKey == null ) {
-			if( otherAc.modifyKey != null ) {
-				return Integer.MIN_VALUE;
-			}
-		} else {
-			if( otherAc.modifyKey == null ) {
-				return Integer.MAX_VALUE;
-			}
-		}
+		int comparison = compareKeys(modifyKey, otherAc.modifyKey);
+		if (comparison != 0) {
+		    return comparison;
+        }
 
-		if( readKey == null ) {
-			if(otherAc.readKey != null) {
-				return Integer.MIN_VALUE;
-			}
-		} else {
-			if(otherAc.readKey == null) {
-				return Integer.MAX_VALUE;
-			}
-		}
-
-		return 0;
+        return compareKeys(readKey, otherAc.readKey);
 	}
+
+	private int compareKeys(Key thisKey, Key otherKey) {
+        if( thisKey == null ) {
+            if( otherKey != null ) {
+                return Integer.MIN_VALUE;
+            }
+        } else {
+            if( otherKey == null ) {
+                return Integer.MAX_VALUE;
+            }
+        }
+	    return 0;
+    }
 
 	public String getAccessorId() {
 		return accessorId;

@@ -25,7 +25,9 @@ import java.util.Map;
 
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
-public final class ConfigurationDAO implements ExternalInterface {
+public final class ConfigurationDAO
+        extends JDBCBase
+        implements ExternalInterface {
 
     private static final String GET_SQL =
             "SELECT property_value FROM configuration WHERE property_name = ?";
@@ -93,15 +95,7 @@ public final class ConfigurationDAO implements ExternalInterface {
         if (name == null) {
             return false;
         }
-
-        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_SQL)) {
-            ps.setString(1, name);
-            ps.setMaxRows(1);
-
-            try(ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        }
+        return exists(GET_SQL, name);
     }
 
     public void delete(final ConfigurationOption configurationOption)
