@@ -21,11 +21,10 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
 public class IPZoneDAO
+    extends StoredObjectFetcher<IPZone>
 	implements ExternalInterface {
 
     private static final String GET_ZONES =
@@ -47,7 +46,12 @@ public class IPZoneDAO
 		super();
 	}
 
-	public IPZone create( String name, int version, String firstIp, String lastIp )
+    @Override
+    IPZone newInstance(ResultSet rs, int startIndex) throws SQLException {
+        return new IPZone(rs);
+    }
+
+    public IPZone create( String name, int version, String firstIp, String lastIp )
 		throws SQLException {
 		IPZone newZone = new IPZone(name, version, firstIp, lastIp);
 		store(newZone);
@@ -81,36 +85,18 @@ public class IPZoneDAO
 
     public void delete( final IPZone zone )
         throws SQLException {
-        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(DELETE_ZONE)) {
-            ps.setString(1, zone.getId());
-            ps.executeUpdate();
-        }
+	    runResultlessParameterisedSQL(DELETE_ZONE, zone.getId());
     }
 
     public IPZone getById( final String id )
         throws SQLException {
-        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_ZONE_BY_ID)) {
-            ps.setString(1, id);
-            ps.setMaxRows(1);
-            try(ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? new IPZone(rs) : null;
-            }
-        }
+	    return fetchObjectIfExists(GET_ZONE_BY_ID, id);
     }
 
     public List<IPZone> getAll( )
         throws SQLException {
-        List<IPZone> zones = new ArrayList<IPZone>();
-        try(Statement stmt = BOMFactory.getCurrentConntection().createStatement()) {
-            try(ResultSet rs = stmt.executeQuery(GET_ZONES)) {
-                while (rs.next()) {
-                    zones.add(new IPZone(rs));
-                }
-            }
-        }
-        return zones;
+	    return getMultiple(GET_ZONES);
     }
-
 
     private static final class InstanceHolder {
         private static final IPZoneDAO INSTANCE = new IPZoneDAO();

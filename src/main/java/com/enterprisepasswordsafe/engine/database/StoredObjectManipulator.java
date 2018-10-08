@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  * @param <T> The type of object being fetched
  */
 abstract class StoredObjectManipulator<T>
-    extends JDBCBase {
+    extends StoredObjectFetcher<T> {
 
     private String getByIdSql;
 
@@ -30,8 +30,6 @@ abstract class StoredObjectManipulator<T>
         this.getCountSql = getCountSql;
     }
 
-    abstract T newInstance(ResultSet rs, int startIndex) throws SQLException;
-
     public T getById(final String id)
             throws SQLException {
         return fetchObjectIfExists(getByIdSql, id);
@@ -40,38 +38,6 @@ abstract class StoredObjectManipulator<T>
     public T getByName(final String name)
             throws SQLException {
         return fetchObjectIfExists(getByNameSql, name);
-    }
-
-    T fetchObjectIfExists(String sql, final String... parameters)
-            throws SQLException {
-        if (sql == null) {
-            throw new RuntimeException("Unsupported operation");
-        }
-        try(PreparedStatement ps =  BOMFactory.getCurrentConntection().prepareStatement(sql)) {
-            setParameters(ps, parameters);
-            ps.setMaxRows(1);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? newInstance(rs, 1) : null;
-            }
-        }
-    }
-
-    List<T> getMultiple(final String sql, final String... parameters)
-            throws SQLException {
-        List<T> results = new ArrayList<>();
-        try (PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
-            setParameters(ps, parameters);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    try {
-                        results.add(newInstance(rs, 1));
-                    } catch(Exception e) {
-                        Logger.getAnonymousLogger().log(Level.SEVERE, "Error fetching object.", e);
-                    }
-                }
-            }
-        }
-        return results;
     }
 
     List<String> getFieldValues(final String sql, final String... parameters)

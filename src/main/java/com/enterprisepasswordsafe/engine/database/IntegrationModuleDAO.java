@@ -27,75 +27,30 @@ import com.enterprisepasswordsafe.engine.integration.PasswordChanger;
 import com.enterprisepasswordsafe.engine.integration.PasswordChangerProperty;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
-/**
- * Data access object for passwords.
- */
 public final class IntegrationModuleDAO
-	implements ExternalInterface {
+        extends StoredObjectFetcher<IntegrationModule>
+    	implements ExternalInterface {
 
-    /**
-     * The SQL statement to get the module for a given ID.
-     */
+    private static final String GET_SQL = "SELECT module_id, name, className FROM intmodules WHERE module_id = ? ";
 
-    private static final String GET_SQL =
-            "SELECT   module_id, name, className "
-            + "  FROM intmodules "
-            + " WHERE module_id = ? ";
+    private static final String INSERT_SQL = "INSERT INTO intmodules( module_id, name, className ) VALUES ( ?, ?, ? ) ";
 
-    /**
-     * The SQL statement to insert the details of a module into the database.
-     */
+    private static final String GET_ALL_SQL = "SELECT  module_id, name, className FROM intmodules ORDER BY name";
 
-    private static final String INSERT_SQL =
-            "INSERT INTO intmodules( module_id, name, className ) "
-            + "             VALUES (         ?,    ?,         ? ) ";
-
-    /**
-     * The SQL statement to get all of the installed modules.
-     */
-
-    private static final String GET_ALL_SQL =
-              "   SELECT  module_id, name, className "
-            + "     FROM intmodules "
-            + " ORDER BY name";
-
-    /**
-     * SQL to delete the details of a module from the database
-     */
-
-    private static final String DELETE_SQL =
-           "DELETE FROM intmodules "
-         + "      WHERE module_id = ? ";
-
-	/**
-     * Check to see if a module has been configured for use with any password.
-     */
+    private static final String DELETE_SQL = "DELETE FROM intmodules WHERE module_id = ? ";
 
     private static final String CHECK_FOR_MODULE_USE_SQL =
-              "SELECT conf.password_id "
-            + "  FROM intmodules_conf conf,"
-            + "       intmodules_scripts scripts"
-            + " WHERE scripts.module_id = ?"
-            + "   AND scripts.script_id = conf.script_id "
-            + "   AND conf.parameter_name = '"
-            	+IntegrationModuleConfigurationDAO.MODULE_CONFIGURED_PARAMETER
-        	+"'";
-
-	/**
-	 * Private constructor to prevent instantiation.
-	 */
+              "SELECT conf.password_id FROM intmodules_conf conf, intmodules_scripts scripts"
+            + " WHERE scripts.module_id = ? AND scripts.script_id = conf.script_id "
+            + "   AND conf.parameter_name = '" + IntegrationModuleConfigurationDAO.MODULE_CONFIGURED_PARAMETER  + "'";
 
 	private IntegrationModuleDAO() {
 	}
 
-
-    /**
-     * Install a module.
-     *
-     * @param module The module to install.
-     *
-     * @throws Exception Thrown if the module can not be installed.
-     */
+    @Override
+    IntegrationModule newInstance(ResultSet rs, int startIndex) throws SQLException {
+        return new IntegrationModule(rs);
+    }
 
     public void install(final IntegrationModule module)
             throws Exception {
@@ -108,22 +63,8 @@ public final class IntegrationModuleDAO
     	changer.install(BOMFactory.getDatabaseAbstractionLayer().getConnection());
 
     	// Delete the details of the node.
-        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(INSERT_SQL)) {
-            int idx = 1;
-            ps.setString(idx++, module.getId());
-            ps.setString(idx++, module.getName());
-            ps.setString(idx,   module.getClassName());
-            ps.executeUpdate();
-        }
+        runResultlessParameterisedSQL(INSERT_SQL, module.getId(), module.getName(), module.getClassName());
     }
-
-    /**
-     * Uninstall a module.
-     *
-     * @param module The module to uninstall.
-     *
-     * @throws Exception Thrown if the module can not be uninstalled.
-     */
 
     public void uninstall(final IntegrationModule module)
             throws Exception {
@@ -135,70 +76,21 @@ public final class IntegrationModuleDAO
     	changer.uninstall(BOMFactory.getDatabaseAbstractionLayer().getConnection());
 
     	// Delete the details of the node.
-        try(PreparedStatement deleteStatement = BOMFactory.getCurrentConntection().prepareStatement(DELETE_SQL)) {
-            deleteStatement.setString(1, module.getId());
-            deleteStatement.executeUpdate();
-        }
+        runResultlessParameterisedSQL(DELETE_SQL, module.getId());
 
         // Delete the configuration
         IntegrationModuleConfigurationDAO.getInstance().deleteAllForModule(module.getId());
     }
 
-
-    /**
-     * Gets a specific module.
-     *
-     * @param id The ID of the module to get.
-     *
-     * @return The requested module details, or null if it doesn't exist.
-     *
-     * @throws SQLException Thrown if there is problem talking to the database.
-     */
-
     public IntegrationModule getById(final String id)
             throws SQLException {
-        try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_SQL)) {
-            ps.setString(1, id);
-            ps.setMaxRows(1);
-            try(ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new IntegrationModule(rs);
-                }
-            }
-        }
-
-        return null;
+	    return fetchObjectIfExists(GET_SQL, id);
     }
-
-    /**
-     * Gets all of the configured modules.
-     *
-     * @return The requested module details, or null if it doesn't exist.
-     *
-     * @throws SQLException
-     *             Thrown if there is problem talking to the database.
-     */
 
     public List<IntegrationModule> getAll()
             throws SQLException {
-    	List<IntegrationModule> modules = new ArrayList<IntegrationModule>();
-        try(Statement stmt = BOMFactory.getCurrentConntection().createStatement()) {
-            try(ResultSet rs = stmt.executeQuery(GET_ALL_SQL)) {
-                while (rs.next()) {
-                    modules.add(new IntegrationModule(rs));
-                }
-            }
-        }
-        return modules;
+	    return getMultiple(GET_ALL_SQL);
     }
-
-    /**
-     * Get an instance of the password change associated withe a module.
-     *
-     * @param module The module to get the password changer for.
-     *
-     * @return An instance of the password changer.
-     */
 
     public PasswordChanger getPasswordChangerInstance(final IntegrationModule module)
     	throws ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -207,18 +99,6 @@ public final class IntegrationModuleDAO
     	return changer;
     }
 
-    /**
-     * Gets the properties for the password changer for a module.
-     *
-     * @param module The module to get the password changer properties for.
-     *
-     * @return The List of PasswordChangerProperty's holding the modules property list.
-     *
-     * @throws ClassNotFoundException Thrown if the module could not be found.
-     * @throws IllegalAccessException Thrown if the module class could not be instanciated.
-     * @throws InstantiationException Thrown if the module class could not be instanciated.
-     */
-
     public List<PasswordChangerProperty> getPasswordChangerProperties( final IntegrationModule module )
     	throws ClassNotFoundException, InstantiationException, IllegalAccessException {
     	Class<?> integratorClass = Class.forName(module.getClassName());
@@ -226,20 +106,10 @@ public final class IntegrationModuleDAO
     	return changer.getProperties();
     }
 
-    /**
-     * Check to see if a module is configured for any passwords.
-     */
-
     public boolean isInUse( final IntegrationModule module )
     	throws SQLException {
-    	try(PreparedStatement checkPS = BOMFactory.getCurrentConntection().prepareStatement(CHECK_FOR_MODULE_USE_SQL)) {
-            checkPS.setString(1, module.getId());
-            try(ResultSet rs = checkPS.executeQuery()) {
-                return rs.next();
-            }
-    	}
+	    return exists(CHECK_FOR_MODULE_USE_SQL, module.getId());
     }
-
 
     private static final class InstanceHolder {
         private static final IntegrationModuleDAO INSTANCE = new IntegrationModuleDAO();
