@@ -65,7 +65,7 @@ public class SchemaVersion {
 
 	private static final String CURRENT_SCHEMA_VERSION_PROPERTY = "db.schema.version";
 
-	public void create()
+	void create()
 		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
 		AuthenticationSourcesTable.getInstance().create();
 		ConfigurationTable.getInstance().create();
@@ -117,40 +117,40 @@ public class SchemaVersion {
 
 	public void update()
 			throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-		Long currentSchema = getCurrentSchemaVersion();
-		if(currentSchema == null) {
-			create();
-			return;
-		}
-		if(isSchemaCurrent(currentSchema)) {
-			return;
-		}
+		synchronized(SchemaVersion.class) {
+			Long currentSchema = getCurrentSchemaVersion();
+			if (currentSchema == null) {
+				create();
+				return;
+			}
+			if (isSchemaCurrent(currentSchema)) {
+				return;
+			}
 
-		AuthenticationSourcesTable table = AuthenticationSourcesTable.getInstance();
-		table.updateSchema(currentSchema);
-		ConfigurationTable.getInstance().updateSchema(currentSchema);
-		EventLogTable.getInstance().updateSchema(currentSchema);
-		GroupsTable.getInstance().updateSchema(currentSchema);
-		GroupAccessControlTable.getInstance().updateSchema(currentSchema);
-		GroupAccessRolesTable.getInstance().updateSchema(currentSchema);
-		HierarchyPasswordDefaultsTable.getInstance().updateSchema(currentSchema);
-		HierarchyTable.getInstance().updateSchema(currentSchema);
-		LocationsTable.getInstance().updateSchema(currentSchema);
-		MembershipTable.getInstance().updateSchema(currentSchema);
-		PasswordRestrictionsTable.getInstance().updateSchema(currentSchema);
-		PasswordsTable.getInstance().updateSchema(currentSchema);
-		RestrictedAccessApproversTable.getInstance().updateSchema(currentSchema);
-		RestrictedAccessRequestsTable.getInstance().updateSchema(currentSchema);
-		UserAccessControl.getInstance().updateSchema(currentSchema);
-		UserAccessRoles.getInstance().updateSchema(currentSchema);
-		UserIPZones.getInstance().updateSchema(currentSchema);
-		UsersTable.getInstance().updateSchema(currentSchema);
+			AuthenticationSourcesTable.getInstance().updateSchema(currentSchema);
+			ConfigurationTable.getInstance().updateSchema(currentSchema);
+			EventLogTable.getInstance().updateSchema(currentSchema);
+			GroupsTable.getInstance().updateSchema(currentSchema);
+			GroupAccessControlTable.getInstance().updateSchema(currentSchema);
+			GroupAccessRolesTable.getInstance().updateSchema(currentSchema);
+			HierarchyPasswordDefaultsTable.getInstance().updateSchema(currentSchema);
+			HierarchyTable.getInstance().updateSchema(currentSchema);
+			LocationsTable.getInstance().updateSchema(currentSchema);
+			MembershipTable.getInstance().updateSchema(currentSchema);
+			PasswordRestrictionsTable.getInstance().updateSchema(currentSchema);
+			PasswordsTable.getInstance().updateSchema(currentSchema);
+			RestrictedAccessApproversTable.getInstance().updateSchema(currentSchema);
+			RestrictedAccessRequestsTable.getInstance().updateSchema(currentSchema);
+			UserAccessControl.getInstance().updateSchema(currentSchema);
+			UserAccessRoles.getInstance().updateSchema(currentSchema);
+			UserIPZones.getInstance().updateSchema(currentSchema);
+			UsersTable.getInstance().updateSchema(currentSchema);
 
-		ConfigurationDAO.getInstance().set(ConfigurationOption.SCHEMA_VERSION, Long.toString(CURRENT_SCHEMA));
+			ConfigurationDAO.getInstance().set(ConfigurationOption.SCHEMA_VERSION, Long.toString(CURRENT_SCHEMA));
+		}
 	}
 
-	public boolean isSchemaCurrent()
-			throws SQLException {
+	public boolean isSchemaCurrent() {
 		Long currentSchema = getCurrentSchemaVersion();
 		return isSchemaCurrent(currentSchema);
 	}
