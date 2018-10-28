@@ -18,8 +18,6 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,10 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.configuration.PropertyBackedJDBCConfigurationRepository;
 import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
-import com.enterprisepasswordsafe.engine.database.schema.SchemaVersion;
 import com.enterprisepasswordsafe.engine.dbabstraction.SupportedDatabase;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 public class VerifyJDBCConfiguration extends HttpServlet {
@@ -53,25 +48,15 @@ public class VerifyJDBCConfiguration extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             JDBCConnectionInformation jdbcConfig = Repositories.jdbcConfigurationRepository.load();
-
-            if (verifiedConfiguration != null && verifiedConfiguration.equals(jdbcConfig)) {
+            if( request.getParameter("force") != null) {
+                verifiedConfiguration = null;
+            } else if (isExistingConnectionInformationValid(jdbcConfig)) {
                 response.sendRedirect(request.getContextPath() + LOGIN_PAGE);
                 return;
             }
 
-            if( jdbcConfig.dbType == null || jdbcConfig.dbType.length() == 0 ) {
-                setJdbcConnectionInformationToDefaults();
-                initialiseDatabase();
-                doGet(request, response);
-                return;
-            }
-
-            if ( jdbcConfig.isValid() ) {
-                verifiedConfiguration = jdbcConfig;
-                Repositories.databasePoolFactory.setConfiguration(jdbcConfig);
-                updateSchema();
-                response.sendRedirect(request.getContextPath() + LOGIN_PAGE);
-                return;
+            if (jdbcConfig.getDbType() == null) {
+                jdbcConfig = setJdbcConnectionInformationToDefaults();
             }
 
             request.setAttribute(JDBC_CONFIG_PROPERTY, jdbcConfig);
@@ -91,9 +76,27 @@ public class VerifyJDBCConfiguration extends HttpServlet {
         doGet(request, response);
     }
 
-    private void setJdbcConnectionInformationToDefaults()
-            throws BackingStoreException {
+    private boolean isExistingConnectionInformationValid(JDBCConnectionInformation connectionInformation)
+            throws SQLException, ClassNotFoundException {
+        if (connectionInformation == null || ! connectionInformation.isValid()) {
+            return false;
+        }
 
+        if (connectionInformation.equals(connectionInformation)) {
+            return true;
+        }
+
+        if (!connectionInformation.isValid()) {
+            return false;
+        }
+
+        verifiedConfiguration = connectionInformation;
+        Repositories.databasePoolFactory.setConfiguration(connectionInformation);
+        return Repositories.databasePoolFactory.isConfigured();
+    }
+
+    private JDBCConnectionInformation setJdbcConnectionInformationToDefaults()
+            throws BackingStoreException {
         JDBCConnectionInformation newConnectionInformation = new JDBCConnectionInformation();
 
         newConnectionInformation.dbType = SupportedDatabase.APACHE_DERBY.getType();
@@ -109,6 +112,7 @@ public class VerifyJDBCConfiguration extends HttpServlet {
         newConnectionInformation.password = "";
 
         Repositories.jdbcConfigurationRepository.store(newConnectionInformation);
+        return newConnectionInformation;
     }
 
     private String getDefaultDatabaseDirectory() {
@@ -121,25 +125,5 @@ public class VerifyJDBCConfiguration extends HttpServlet {
             return directory;
         }
         return "eps-db";
-    }
-
-    private void initialiseDatabase()
-            throws UnsupportedEncodingException, GeneralSecurityException, InstantiationException, IllegalAccessException {
-        try(DatabasePool pool = Repositories.databasePoolFactory.getInstance()) {
-            pool.initialiseDatabase();
-        } catch(SQLException | ClassNotFoundException e) {
-            Logger.getAnonymousLogger().log(Level.WARNING, "Error creating default database", e);
-        }
-    }
-
-    private void updateSchema() {
-        try {
-            SchemaVersion schema = new SchemaVersion();
-            if(!schema.isSchemaCurrent()) {
-                schema.update();
-            }
-        } catch(Exception e) {
-            Logger.getAnonymousLogger().log(Level.SEVERE, "Exception adding features", e);
-        }
     }
 }

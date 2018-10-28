@@ -36,14 +36,14 @@ public class Login extends HttpServlet {
         try
         {
             if (!Repositories.databasePoolFactory.isConfigured()) {
-                response.sendRedirect(request.getContextPath()+"/VerifyJDBCConfiguration");
+                response.sendRedirect(request.getContextPath()+"/VerifyJDBCConfiguration?force=true");
                 return;
             }
 
             request.getRequestDispatcher("/login.jsp").forward(request, response);
         } catch( Exception e ) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Error trying to access login page", e);
-            response.sendRedirect(request.getContextPath()+"/VerifyJDBCConfiguration");
+            response.sendRedirect(request.getContextPath()+"/VerifyJDBCConfiguration?force=true");
         }
     }
 }
