@@ -109,7 +109,7 @@ public final class DatabasePool implements ExternalInterface, AutoCloseable {
 
         try (Connection conn = getConnection()) {
             databaseAbstractionLayer.setConnection(conn);
-            new SchemaVersion().create();
+            new SchemaVersion().update();
         } catch (SQLException | GeneralSecurityException | UnsupportedEncodingException e) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Problem during database creation.", e);
             throw e;
