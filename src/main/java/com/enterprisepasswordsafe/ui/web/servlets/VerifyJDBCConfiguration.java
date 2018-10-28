@@ -82,7 +82,7 @@ public class VerifyJDBCConfiguration extends HttpServlet {
             return false;
         }
 
-        if (connectionInformation.equals(connectionInformation)) {
+        if (connectionInformation.equals(verifiedConfiguration)) {
             return true;
         }
 
