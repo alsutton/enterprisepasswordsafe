@@ -64,7 +64,7 @@ public class SetJDBCConfiguration extends HttpServlet {
         }
 
         ServletUtils.getInstance().generateMessage(request, "The database configuration has been updated");
-        response.sendRedirect(request.getContextPath()+"/Logout");
+        response.sendRedirect(request.getContextPath()+"/Login");
     }
 
     /**
