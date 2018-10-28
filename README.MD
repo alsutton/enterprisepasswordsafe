@@ -16,14 +16,10 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-### Current Built Status
+### Current Development State
 
-[![CircleCI](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master.svg?style=svg)](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master)
-
-## Quality Indicators
-
-[![Maintainability](https://api.codeclimate.com/v1/badges/6b1eb77eaef47517d783/maintainability)](https://codeclimate.com/github/alsutton/enterprisepasswordsafe/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/6b1eb77eaef47517d783/test_coverage)](https://codeclimate.com/github/alsutton/enterprisepasswordsafe/test_coverage)
+This is very much pre-release. The code is undergoing significant and widespread
+updates to modernise it's use of Java and current cryptographic best practices.
 
 ### What is it?
 
@@ -39,6 +35,25 @@ The key pair for each password is different, and the keys are encrypted with eac
 
 The EPS is written in Java and built using [Gradle](https://gradle.org). It uses JDBC to talk to the database which is used to store the information via a custom database abstraction layer which handles the translation of EPS requests into a database specific format. The EPS includes support for Apache Derby, DB2, HSQLDB, JavaDB, MySQL, Oracle 8i, Postgresql, and SQL Server.
 
+The code can be deployed using Docker by running the following commands;
+
+```bash
+$ docker build -t eps:latest .
+$ docker run -it --rm -p 8888:8080 eps:latest
+```
+
+Which run the EPS on the URL `http://localhost:8888/`.
+
 ### Contributions
 
 Pull requests are welcome. If you're planning to implement a new feature or work on a change, please make sure you open an issue for it and comment that you're working on it to avoid multiple people working on the same thing and producing incompatible implementations.
+
+## Quality Indicators
+
+#### Build
+[![CircleCI](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master.svg?style=svg)](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master)
+
+#### Code Metrics
+[![Maintainability](https://api.codeclimate.com/v1/badges/6b1eb77eaef47517d783/maintainability)](https://codeclimate.com/github/alsutton/enterprisepasswordsafe/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/6b1eb77eaef47517d783/test_coverage)](https://codeclimate.com/github/alsutton/enterprisepasswordsafe/test_coverage)
+
