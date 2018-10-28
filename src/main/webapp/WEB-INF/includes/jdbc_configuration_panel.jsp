@@ -20,10 +20,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         <label for="database">Database Type</label>
         <select name="database" id="database" class="form-control">
             <c:choose>
-                <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.DBType != null)}">
+                <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.dbType != null)}">
                     <c:forEach var="dbType" items="${requestScope.dbTypes}">
                         <c:choose>
-                            <c:when test="${dbType eq requestScope.jdbcConfig.DBType}">
+                            <c:when test="${dbType eq requestScope.jdbcConfig.dbType}">
                                 <option selected="selected"><c:out value="${dbType}"/></option>
                             </c:when>
                             <c:otherwise>
@@ -34,7 +34,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                 </c:when>
                 <c:otherwise>
                     <c:forEach var="dbType" items="${requestScope.dbTypes}">
-                        <option><c:out value="${dbType}"/></option>
+                        <option><c:out value="${dbTydbType}"/></option>
                     </c:forEach>
                 </c:otherwise>
             </c:choose>
@@ -62,9 +62,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <div class="form-group">
         <label for="jdbcurl">JDBC URL</label>
         <c:choose>
-            <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.URL != null)}">
+            <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.url != null)}">
                 <input type="text" name="jdbcurl" id="jdbcurl" class="form-control"
-                       value="<c:out value='${requestScope.jdbcConfig.URL}' />"/>
+                       value="<c:out value='${requestScope.jdbcConfig.url}' />"/>
             </c:when>
             <c:otherwise>
                 <input type="text" name="jdbcurl" id="jdbcurl" class="form-control"/>

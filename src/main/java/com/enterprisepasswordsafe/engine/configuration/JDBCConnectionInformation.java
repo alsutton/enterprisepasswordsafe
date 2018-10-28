@@ -102,4 +102,24 @@ public class JDBCConnectionInformation {
         cipher.init(mode, cryptoKey);
         return cipher.doFinal(data);
     }
+
+    public String getDbType() {
+        return dbType;
+    }
+
+    public String getDriver() {
+        return driver;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 }
