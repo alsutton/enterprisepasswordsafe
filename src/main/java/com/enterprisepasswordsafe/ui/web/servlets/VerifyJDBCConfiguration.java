@@ -16,6 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -91,22 +92,35 @@ public class VerifyJDBCConfiguration extends HttpServlet {
     }
 
     private void setJdbcConnectionInformationToDefaults()
-            throws GeneralSecurityException, BackingStoreException {
+            throws BackingStoreException {
 
         JDBCConnectionInformation newConnectionInformation = new JDBCConnectionInformation();
 
         newConnectionInformation.dbType = SupportedDatabase.APACHE_DERBY.getType();
         newConnectionInformation.driver = "org.apache.derby.jdbc.EmbeddedDriver";
 
-        String userHome = System.getProperty("user.home");
-        if( userHome == null ) {
-            userHome = "eps-db";
+        String databaseDirectory = getDefaultDatabaseDirectory();
+        File userHomeDirectory = new File(databaseDirectory);
+        if(!userHomeDirectory.exists() || !userHomeDirectory.isDirectory()) {
+            throw new RuntimeException("Unable to create database in nonexistant directory "+databaseDirectory);
         }
-        newConnectionInformation.url = "jdbc:derby:/" + userHome + "/pwsafe-hsqldb";
+        newConnectionInformation.url = "jdbc:derby:" + databaseDirectory  + "/pwsafe-hsqldb;create=true";
         newConnectionInformation.username = "";
         newConnectionInformation.password = "";
 
         Repositories.jdbcConfigurationRepository.store(newConnectionInformation);
+    }
+
+    private String getDefaultDatabaseDirectory() {
+        String directory = System.getenv("EPS_DATABASE_HOME");
+        if (directory != null) {
+            return directory;
+        }
+        directory = System.getProperty("user.home");
+        if (directory != null) {
+            return directory;
+        }
+        return "eps-db";
     }
 
     private void initialiseDatabase()
