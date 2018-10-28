@@ -38,6 +38,7 @@ The EPS is written in Java and built using [Gradle](https://gradle.org). It uses
 The code can be deployed using Docker by running the following commands;
 
 ```bash
+$ ./gradlew build
 $ docker build -t eps:latest .
 $ docker run -it --rm -p 8888:8080 eps:latest
 ```
