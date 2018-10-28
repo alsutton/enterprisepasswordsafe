@@ -55,7 +55,7 @@ public class SetJDBCConfiguration extends HttpServlet {
             final String initialise = request.getParameter("initialise");
             if (initialise != null && initialise.trim().equalsIgnoreCase("Yes")) {
                 Logger.getLogger(getClass().toString()).log(Level.WARNING,"Initialising Database");
-                DatabasePool pool = DatabasePoolFactory.getInstance();
+                DatabasePool pool = Repositories.databasePoolFactory.getInstance();
                 pool.initialiseDatabase();
             }
         } catch (Exception e) {

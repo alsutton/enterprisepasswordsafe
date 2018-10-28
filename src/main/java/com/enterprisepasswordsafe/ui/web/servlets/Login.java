@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
 
 public class Login extends HttpServlet {
@@ -34,7 +35,7 @@ public class Login extends HttpServlet {
             HttpServletResponse response) throws ServletException, IOException {
         try
         {
-            if (!DatabasePoolFactory.isConfigured()) {
+            if (!Repositories.databasePoolFactory.isConfigured()) {
                 response.sendRedirect(request.getContextPath()+"/VerifyJDBCConfiguration");
                 return;
             }

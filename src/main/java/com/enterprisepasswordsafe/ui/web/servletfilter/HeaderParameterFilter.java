@@ -29,6 +29,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
 import com.enterprisepasswordsafe.engine.database.ConfigurationListenersDAO;
 import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
@@ -120,7 +121,7 @@ public final class HeaderParameterFilter
     private void updateParameters()
     	throws SQLException {
 		// Don't try to refresh using an invalid database pool
-    	if( ! DatabasePoolFactory.isConfigured() ) {
+    	if( ! Repositories.databasePoolFactory.isConfigured() ) {
     		return;
     	}
 

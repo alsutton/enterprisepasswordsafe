@@ -20,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
+import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
 
@@ -45,6 +46,18 @@ public class SchemaVersion {
 	 */
 
 	public static final long CURRENT_SCHEMA = SCHEMA_201212;
+
+
+	private ConfigurationDAO configurationDAO;
+
+	public SchemaVersion() {
+		configurationDAO = ConfigurationDAO.getInstance();
+	}
+
+	SchemaVersion(ConfigurationDAO configurationDAO) {
+		this.configurationDAO = configurationDAO;
+	}
+
 
 	/**
 	 * The configuration property which stores the current schema version
@@ -103,13 +116,18 @@ public class SchemaVersion {
 	}
 
 	public void update()
-		throws SQLException {
+			throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
 		Long currentSchema = getCurrentSchemaVersion();
+		if(currentSchema == null) {
+			create();
+			return;
+		}
 		if(isSchemaCurrent(currentSchema)) {
 			return;
 		}
 
-		AuthenticationSourcesTable.getInstance().updateSchema(currentSchema);
+		AuthenticationSourcesTable table = AuthenticationSourcesTable.getInstance();
+		table.updateSchema(currentSchema);
 		ConfigurationTable.getInstance().updateSchema(currentSchema);
 		EventLogTable.getInstance().updateSchema(currentSchema);
 		GroupsTable.getInstance().updateSchema(currentSchema);
@@ -138,11 +156,11 @@ public class SchemaVersion {
 	}
 
 	private Long getCurrentSchemaVersion() {
-		if(!DatabasePoolFactory.isConfigured()) {
+		if(!Repositories.databasePoolFactory.isConfigured()) {
 			return null;
 		}
 
-		return ConfigurationDAO.getLongValue(ConfigurationOption.SCHEMA_VERSION);
+		return configurationDAO.getLongValue(ConfigurationOption.SCHEMA_VERSION);
 	}
 
 	private boolean isSchemaCurrent(final Long currentSchema) {

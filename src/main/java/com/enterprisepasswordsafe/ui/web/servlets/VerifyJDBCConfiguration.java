@@ -68,7 +68,7 @@ public class VerifyJDBCConfiguration extends HttpServlet {
 
             if ( jdbcConfig.isValid() ) {
                 verifiedConfiguration = jdbcConfig;
-                DatabasePoolFactory.setConfiguration(jdbcConfig);
+                Repositories.databasePoolFactory.setConfiguration(jdbcConfig);
                 updateSchema();
                 response.sendRedirect(request.getContextPath() + LOGIN_PAGE);
                 return;
@@ -125,7 +125,7 @@ public class VerifyJDBCConfiguration extends HttpServlet {
 
     private void initialiseDatabase()
             throws UnsupportedEncodingException, GeneralSecurityException, InstantiationException, IllegalAccessException {
-        try(DatabasePool pool = DatabasePoolFactory.getInstance()) {
+        try(DatabasePool pool = Repositories.databasePoolFactory.getInstance()) {
             pool.initialiseDatabase();
         } catch(SQLException | ClassNotFoundException e) {
             Logger.getAnonymousLogger().log(Level.WARNING, "Error creating default database", e);

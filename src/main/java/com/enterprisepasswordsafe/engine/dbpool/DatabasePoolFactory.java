@@ -23,11 +23,11 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
-public final class DatabasePoolFactory implements ExternalInterface {
+public class DatabasePoolFactory implements ExternalInterface {
 
     private static DatabasePool mSharedInstance;
 
-    private static void initialise(final JDBCConnectionInformation configuration)
+    private void initialise(final JDBCConnectionInformation configuration)
         throws SQLException, ClassNotFoundException {
     	if(mSharedInstance != null) {
             mSharedInstance.close();
@@ -36,7 +36,7 @@ public final class DatabasePoolFactory implements ExternalInterface {
         mSharedInstance = new DatabasePool(configuration);
     }
 
-    public static synchronized void setConfiguration(JDBCConnectionInformation configuration)
+    public synchronized void setConfiguration(JDBCConnectionInformation configuration)
             throws SQLException, ClassNotFoundException {
         if (mSharedInstance != null && mSharedInstance.isUsingConfiguration(configuration)) {
             return;
@@ -45,7 +45,7 @@ public final class DatabasePoolFactory implements ExternalInterface {
         initialise(configuration);
     }
 
-    public static synchronized DatabasePool getInstance()
+    public synchronized DatabasePool getInstance()
             throws SQLException, ClassNotFoundException, GeneralSecurityException {
         if(mSharedInstance == null) {
             setConfiguration(Repositories.jdbcConfigurationRepository.load());
@@ -53,7 +53,7 @@ public final class DatabasePoolFactory implements ExternalInterface {
         return mSharedInstance;
     }
 
-    public static boolean isConfigured() {
+    public boolean isConfigured() {
         return mSharedInstance != null && mSharedInstance.isConfigured();
     }
 }

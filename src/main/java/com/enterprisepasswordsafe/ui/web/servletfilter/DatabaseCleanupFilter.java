@@ -36,6 +36,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.database.BOMFactory;
 import com.enterprisepasswordsafe.engine.database.exceptions.DatabaseUnavailableException;
 import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
@@ -77,7 +78,7 @@ public final class DatabaseCleanupFilter implements Filter {
     }
 
     private boolean isPoolInitialised() {
-        return DatabasePoolFactory.isConfigured();
+        return Repositories.databasePoolFactory.isConfigured();
     }
 
 }
