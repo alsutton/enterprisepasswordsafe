@@ -20,8 +20,8 @@ dependencies {
             'javax.servlet.jsp:jsp-api:2.2',
             'org.apache.commons:commons-collections4:4.0',
             'org.apache.commons:commons-csv:1.1',
-            'org.apache.commons:commons-dbcp2:2.0.1',
-            'org.apache.commons:commons-pool2:2.2',
+            'org.apache.commons:commons-dbcp2:2.5.0',
+            'org.apache.derby:derby:10.14.2.0',
             'org.bouncycastle:bctls-jdk15on:1.59'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
@@ -33,7 +33,6 @@ dependencies {
     runtime         'opensymphony:sitemesh:2.4.2',
                     'javax.servlet:jstl:1.2',
                     'org.hsqldb:hsqldb:1.8.0.10',
-                    'org.apache.derby:derby:10.14.1.0',
                     'org.postgresql:postgresql:9.3-1102-jdbc41',
                     'mysql:mysql-connector-java:5.1.32'
 
