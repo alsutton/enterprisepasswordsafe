@@ -37,7 +37,7 @@ public class UserAccessControl extends AccessControl {
     public static class Builder extends AccessControlBuilder<UserAccessControl> {
         @Override
         public UserAccessControl build() {
-            return new UserAccessControl(itemId, accessorId, modifyKey, readKey);
+            return new UserAccessControl(accessorId, itemId, modifyKey, readKey);
         }
     }
 }

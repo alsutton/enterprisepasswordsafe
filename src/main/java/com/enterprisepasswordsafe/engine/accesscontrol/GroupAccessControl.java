@@ -49,7 +49,7 @@ public final class GroupAccessControl extends AccessControl {
     public static class Builder extends AccessControlBuilder<GroupAccessControl> {
         @Override
         public GroupAccessControl build() {
-            return new GroupAccessControl(itemId, accessorId, modifyKey, readKey);
+            return new GroupAccessControl(accessorId, itemId, modifyKey, readKey);
         }
     }
 }
