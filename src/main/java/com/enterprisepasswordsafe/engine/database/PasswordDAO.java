@@ -16,6 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
+import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
 import com.enterprisepasswordsafe.engine.database.actions.password.ExpiringAccessiblePasswordsAction;
 import com.enterprisepasswordsafe.engine.database.derived.ExpiringAccessiblePasswords;
 import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
@@ -76,7 +80,7 @@ public final class PasswordDAO
 		super(GET_BY_ID_SQL, null, null);
 	}
 
-	public UserAccessControl storeNewPassword( final Password thePassword, final User creator )
+	public UserAccessControl storeNewPassword(final Password thePassword, final User creator )
 		throws SQLException, GeneralSecurityException, IOException {
         Group adminGroup = GroupDAO.getInstance().getAdminGroup(creator);
         if (adminGroup == null) {
@@ -84,12 +88,12 @@ public final class PasswordDAO
         }
 
         GroupAccessControlDAO gacDAO = GroupAccessControlDAO.getInstance();
-    	GroupAccessControl gac = gacDAO.create(adminGroup, thePassword, true, true, false);
+    	GroupAccessControl gac = gacDAO.create(adminGroup, thePassword, PasswordPermission.MODIFY, false);
 
         write(thePassword, gac);
 
         gacDAO.write(adminGroup, gac);
-        return UserAccessControlDAO.getInstance().create(creator, thePassword, true, true);
+        return UserAccessControlDAO.getInstance().create(creator, thePassword, PasswordPermission.MODIFY);
 	}
 
 	public Password getById(final User user, final String id)
@@ -144,7 +148,7 @@ public final class PasswordDAO
         newPassword.setCustomFields(customFields);
 
         UserAccessControl newUac =
-        		UserAccessControlDAO.getInstance().create(theCreator, newPassword, true, true, false);
+        		UserAccessControlDAO.getInstance().create(theCreator, newPassword, PasswordPermission.MODIFY, false);
 
         write(newPassword, newUac);
 
@@ -154,7 +158,7 @@ public final class PasswordDAO
         HierarchyNodeDAO.getInstance().store(node);
 
         if( adminGroup != null ) {
-            GroupAccessControlDAO.getInstance().create(adminGroup, newPassword, true, true);
+            GroupAccessControlDAO.getInstance().create(adminGroup, newPassword, PasswordPermission.MODIFY);
             new PasswordPermissionApplier().setDefaultPermissions(newPassword, parentNode, adminGroup);
 	        TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
                 theCreator, newPassword, "Created the password.", newPassword.getAuditLevel().shouldTriggerEmail());
@@ -165,7 +169,7 @@ public final class PasswordDAO
 
     public void write(final Password password, final Group group)
             throws SQLException, GeneralSecurityException, IOException {
-    	GroupAccessControl gac = GroupAccessControlDAO.getInstance().create(group, password, true, true);
+    	GroupAccessControl gac = GroupAccessControlDAO.getInstance().create(group, password, PasswordPermission.MODIFY);
         GroupAccessControlDAO.getInstance().write(group, gac);
 
         write(password, gac);

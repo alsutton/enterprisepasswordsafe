@@ -1,6 +1,6 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
 import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
 import com.enterprisepasswordsafe.engine.database.Password;

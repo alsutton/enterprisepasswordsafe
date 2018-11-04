@@ -16,6 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.tests.utils;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
 import com.enterprisepasswordsafe.engine.database.*;
 
 import java.io.IOException;

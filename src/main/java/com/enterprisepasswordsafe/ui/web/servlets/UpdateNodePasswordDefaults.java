@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.actions.ChangePermissionsAction;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
@@ -49,8 +50,8 @@ public final class UpdateNodePasswordDefaults extends HttpServlet {
 	    	SecurityUtils.isAllowedAccess(accessApprover, remoteUser);
 
 	        String nodeId = ServletUtils.getInstance().getNodeId(request);
-	        Map<String, String> uPerms = new HashMap<>();
-	        Map<String, String> gPerms = new HashMap<>();
+	        Map<String, PasswordPermission> uPerms = new HashMap<>();
+	        Map<String, PasswordPermission> gPerms = new HashMap<>();
 
 			Enumeration<String> paramNames = request.getParameterNames();
 	        while( paramNames.hasMoreElements() ) {
@@ -58,12 +59,12 @@ public final class UpdateNodePasswordDefaults extends HttpServlet {
 	        	if( name.startsWith("gperm_") ) {
 	        		String value = request.getParameter(name);
 	        		if( value != null && value.length() > 0 && !value.equals("0")) {
-	        			gPerms.put(name.substring(6), value);
+	        			gPerms.put(name.substring(6), PasswordPermission.fromRepresentation(value));
 	        		}
 	        	} else if( name.startsWith("uperm_") ) {
 	        		String value = request.getParameter(name);
 	        		if( value != null && value.length() > 0 && !value.equals("0")) {
-	        			uPerms.put(name.substring(6), value);
+	        			uPerms.put(name.substring(6), PasswordPermission.fromRepresentation(value));
 	        		}
 	        	}
 	        }
@@ -88,7 +89,9 @@ public final class UpdateNodePasswordDefaults extends HttpServlet {
     }
 
     private void applyPermissions(final User remoteUser, final HierarchyNodeDAO hnDAO, final HierarchyNode node,
-    		final Map<String, String> uPerms, final Map<String, String> gPerms, final ChangePermissionsAction action)
+								  final Map<String, PasswordPermission> uPerms,
+								  final Map<String, PasswordPermission> gPerms,
+								  final ChangePermissionsAction action)
     	throws Exception {
     	new HierarchyNodePermissionDAO().setDefaultPermissionsForNode(node.getNodeId(), uPerms, gPerms);
     	hierarchyTools.processObjectNodes(node, remoteUser, action, false);

@@ -1,5 +1,6 @@
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.database.actions.PasswordAction;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 

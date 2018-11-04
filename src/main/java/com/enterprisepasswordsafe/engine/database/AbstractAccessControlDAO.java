@@ -6,6 +6,8 @@ import java.sql.SQLException;
 
 public class AbstractAccessControlDAO {
 
+    public static final int ACCESS_CONTROL_FIELD_COUNT = 4;
+
     Permissions getPermissions(PreparedStatement preparedStatement)
             throws SQLException {
         Permissions permissions = new Permissions();

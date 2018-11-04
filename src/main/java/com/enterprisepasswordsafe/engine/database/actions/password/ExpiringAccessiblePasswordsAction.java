@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Calendar;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.actions.PasswordAction;
 import com.enterprisepasswordsafe.engine.database.derived.ExpiringAccessiblePasswords;
@@ -99,14 +100,13 @@ public class ExpiringAccessiblePasswordsAction
      *            The password to analyse
      *
      *
-     * @throws ParseException Thrown if there is a problem parsing the expiry date.
      * @throws GeneralSecurityException Thrown if there is a problm accessing the data.
      * @throws SQLException Thrown if there is a problem accessing the database.
      * @throws UnsupportedEncodingException
      */
     @Override
 	public void process(final HierarchyNode node, final Password testPassword)
-        throws ParseException, GeneralSecurityException, SQLException, UnsupportedEncodingException {
+        throws  GeneralSecurityException, SQLException, UnsupportedEncodingException {
         if (testPassword == null || !testPassword.expires()) {
             return;
         }

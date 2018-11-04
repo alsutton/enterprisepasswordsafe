@@ -24,7 +24,7 @@ import java.util.IllegalFormatException;
 import java.util.Map;
 import java.util.Properties;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.database.Password;
 import com.enterprisepasswordsafe.engine.database.PasswordBase;
 

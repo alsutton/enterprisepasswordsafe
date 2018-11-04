@@ -1,5 +1,6 @@
 package com.enterprisepasswordsafe.engine.hierarchy;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.database.*;
 
 import java.io.IOException;

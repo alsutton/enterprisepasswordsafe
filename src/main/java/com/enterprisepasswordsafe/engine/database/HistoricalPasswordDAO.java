@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
@@ -49,7 +50,7 @@ public class HistoricalPasswordDAO implements ExternalInterface {
 	}
 
     public final void writeHistoryEntry(final Password password, final AccessControl ac)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
     	long timestamp = DateFormatter.getNow();
 
     	try {

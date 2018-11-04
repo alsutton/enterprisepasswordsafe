@@ -22,6 +22,7 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 

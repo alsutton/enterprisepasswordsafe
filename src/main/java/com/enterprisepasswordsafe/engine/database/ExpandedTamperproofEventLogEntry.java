@@ -22,6 +22,7 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.logging.LogEventHasher;
 import com.enterprisepasswordsafe.engine.logging.LogEventParser;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;

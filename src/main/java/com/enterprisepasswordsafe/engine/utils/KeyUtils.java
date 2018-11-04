@@ -36,7 +36,7 @@ public final class KeyUtils {
     /**
      * Encrypt key are return the encrypted representation.
      *
-     * @param Key The key
+     * @param key The key
      * @param keyEncrypter The Encrypter to use to encrypt the key.
      *
      * @return The PrivateKey encrypted representation.
@@ -79,7 +79,10 @@ public final class KeyUtils {
      */
 
     public static PrivateKey decryptPrivateKey(final byte[] encryptedKey, final Decrypter keyDecrypter)
-    	throws SQLException, GeneralSecurityException {
+    	throws GeneralSecurityException {
+        if(encryptedKey == null) {
+            return null;
+        }
     	byte[] decryptedKeyBytes = keyDecrypter.decrypt(encryptedKey);
         PKCS8EncodedKeySpec skeySpec = new PKCS8EncodedKeySpec(decryptedKeyBytes);
         KeyFactory factory = KeyFactory.getInstance("RSA");
@@ -96,7 +99,10 @@ public final class KeyUtils {
      */
 
     public static PublicKey decryptPublicKey(final byte[] encryptedKey, final Decrypter keyDecrypter)
-    	throws SQLException, GeneralSecurityException {
+    	throws GeneralSecurityException {
+        if(encryptedKey == null) {
+            return null;
+        }
     	byte[] decryptedKeyBytes = keyDecrypter.decrypt(encryptedKey);
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decryptedKeyBytes);
         KeyFactory factory = KeyFactory.getInstance("RSA");

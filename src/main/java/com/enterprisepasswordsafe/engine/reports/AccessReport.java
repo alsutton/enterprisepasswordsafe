@@ -16,6 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.reports;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
 

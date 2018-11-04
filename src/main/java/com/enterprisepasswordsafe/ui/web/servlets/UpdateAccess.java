@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.*;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
@@ -256,7 +257,7 @@ public final class UpdateAccess extends HttpServlet {
 				uacDAO.delete(currentUac);
 				logAndEmailIfNeeded(context.password, context.adminUser, "Removed all permissions for " + theUser.getUserName());
 			}
-		} else if(modifyOrCreateAccessControl(adminAc, currentUac, uacDAO, theUser, context.password, access)) {
+		} else if(needsUpdate(adminAc, currentUac, uacDAO, theUser, context.password, access, UserAccessControl.builder())) {
 			logAndEmailIfNeeded(context.password, context.adminUser, "Changed the access permissions on the user {user:"
 					+ theUser.getId() + "} to be " + access);
 		}
@@ -273,7 +274,7 @@ public final class UpdateAccess extends HttpServlet {
 				logAndEmailIfNeeded(context.password, context.adminUser, "Removed all permissions for the group {group:" +
 						theGroup.getGroupId()+"}");
 	    	}
-	    } else if (modifyOrCreateAccessControl(adminAc, currentGac, gacDAO, theGroup, context.password, access)) {
+	    } else if (needsUpdate(adminAc, currentGac, gacDAO, theGroup, context.password, access, GroupAccessControl.builder())) {
 	    	logAndEmailIfNeeded(context.password, context.adminUser, "Changed the access permissions on the group {group:"
 					+ theGroup.getGroupId() + "} to be " + access);
 		}
@@ -285,35 +286,38 @@ public final class UpdateAccess extends HttpServlet {
 				adminUser, thePassword, message, thePassword.getAuditLevel().shouldTriggerEmail());
 	}
 
-    private boolean modifyOrCreateAccessControl(AccessControl adminAc, AccessControl currentAccessControl,
-		AccessControlDAOInterface accessControlDAO, EntityWithAccessRights entity, Password thePassword, String access)
+    private boolean needsUpdate(AccessControl adminAc, AccessControl currentAccessControl,
+								AccessControlDAOInterface accessControlDAO, EntityWithAccessRights entity,
+								Password thePassword, String access, AccessControlBuilder accessControlBuilder)
 			throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-		boolean allowRead = (access.indexOf('R') != -1);
-		boolean allowModify = (access.indexOf('M') != -1);
+        PasswordPermission permission = PasswordPermission.fromRepresentation(access);
 		if( currentAccessControl == null ) {
-			accessControlDAO.create(entity, thePassword, allowRead, allowModify);
+			accessControlDAO.create(entity, thePassword, permission);
 			return true;
-		} else if(updateAccessControl(adminAc, currentAccessControl, allowRead, allowModify)) {
-			accessControlDAO.update(entity, currentAccessControl);
-			return true;
+		} else {
+            accessControlBuilder = accessControlBuilder.copyFrom(currentAccessControl);
+			if(updateAccessControl(adminAc, currentAccessControl, permission, accessControlBuilder)) {
+				accessControlDAO.update(entity, accessControlBuilder.build());
+				return true;
+			}
 		}
 
 		return false;
 	}
 
 	private boolean updateAccessControl(AccessControl adminAc, AccessControl currentAccessControl,
-										boolean allowRead, boolean allowModify) {
+										PasswordPermission permission, AccessControlBuilder accessControlBuilder) {
 		boolean changed = false;
-		if( allowRead && currentAccessControl.getReadKey() == null ) {
-			currentAccessControl.setReadKey(adminAc.getReadKey());
+		if( permission.allowsRead && currentAccessControl.getReadKey() == null ) {
+			accessControlBuilder.withReadKey(adminAc.getReadKey());
 			changed = true;
 		}
-		if( allowModify && currentAccessControl.getModifyKey() == null ) {
-			currentAccessControl.setModifyKey(adminAc.getModifyKey());
+		if( permission.allowsModification && currentAccessControl.getModifyKey() == null ) {
+			accessControlBuilder.withModifyKey(adminAc.getModifyKey());
 			changed = true;
 		}
-		if( !allowModify && currentAccessControl.getModifyKey() != null ) {
-			currentAccessControl.setModifyKey(null);
+		if( !permission.allowsModification && currentAccessControl.getModifyKey() != null ) {
+			accessControlBuilder.withModifyKey(null);
 			changed = true;
 		}
 		return changed;

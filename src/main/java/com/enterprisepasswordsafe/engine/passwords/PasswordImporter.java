@@ -1,5 +1,6 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.*;
 import com.enterprisepasswordsafe.engine.database.*;
 import org.apache.commons.csv.CSVRecord;
 
@@ -79,8 +80,8 @@ public class PasswordImporter {
                                       final String parentNode, final Password importedPassword,
                                       final Iterator<String> importedPermissions )
             throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-        Map<String,String> userPermissions = new HashMap<>();
-        Map<String,String> groupPermissions = new HashMap<>();
+        Map<String,PasswordPermission> userPermissions = new HashMap<>();
+        Map<String,PasswordPermission> groupPermissions = new HashMap<>();
 
         new HierarchyNodePermissionDAO().getDefaultPermissionsForNodeIncludingInherited(
                 parentNode, userPermissions, groupPermissions);
@@ -91,7 +92,8 @@ public class PasswordImporter {
         storeImportedGroupPermissions(adminUser, accessControl, importedPassword, groupPermissions);
     }
 
-    private void updateWithImportedPermissions(Map<String,String> userPermissions, Map<String,String> groupPermissions,
+    private void updateWithImportedPermissions(Map<String,PasswordPermission> userPermissions,
+                                               Map<String,PasswordPermission> groupPermissions,
                                                Iterator<String> importedPermissions) {
         UserDAO userDAO = UserDAO.getInstance();
         GroupDAO groupDAO = GroupDAO.getInstance();
@@ -123,52 +125,48 @@ public class PasswordImporter {
         }
     }
 
-    private void importPermission(Map<String, String> permissionMap, String id, String permission) {
-        switch(permission.charAt(1)) {
-            case 'V':
-                permissionMap.put(id, AccessControl.READ_PERMISSION);
-                break;
-            case 'M':
-                permissionMap.put(id, AccessControl.MODIFY_PERMISSION);
-                break;
-        }
+    private void importPermission(Map<String, PasswordPermission> permissionMap, String id, String permission) {
+        permissionMap.put(id, PasswordPermission.fromRepresentation(permission.charAt(1)));
     }
 
     private void storeImportedUserPermissions(final Group adminGroup, final AccessControl accessControl,
-                                              final Password importedPassword, final Map<String,String> userPermissions)
+                                              final Password importedPassword,
+                                              final Map<String,PasswordPermission> userPermissions)
             throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
         final UserDAO uDAO = UserDAO.getInstance();
         final UserAccessControlDAO uacDAO = UserAccessControlDAO.getInstance();
 
-        for(Map.Entry<String,String> thisEntry : userPermissions.entrySet()) {
+        for(Map.Entry<String,PasswordPermission> thisEntry : userPermissions.entrySet()) {
             User user = uDAO.getByIdDecrypted(thisEntry.getKey(), adminGroup);
-            UserAccessControl uac = new UserAccessControl();
-            uac.setAccessorId(user.getId());
-            uac.setItemId(importedPassword.getId());
-            uac.setReadKey(accessControl.getReadKey());
-            if(thisEntry.getValue().equals("2")) {
-                uac.setModifyKey(accessControl.getModifyKey());
+            AccessControlBuilder<UserAccessControl> accessControlBuilder = UserAccessControl.builder()
+                    .withAccessorId(user.getId())
+                    .withItemId(importedPassword.getId())
+                    .withReadKey(accessControl.getReadKey());
+            if(thisEntry.getValue() == PasswordPermission.MODIFY) {
+                accessControlBuilder.withModifyKey(accessControl.getModifyKey());
             }
-            uacDAO.write(uac, user);
+            uacDAO.write(accessControlBuilder.build(), user);
         }
     }
 
     private void storeImportedGroupPermissions(final User adminUser, final AccessControl accessControl,
-                                               final Password importedPassword, final Map<String,String> groupPermissions)
+                                               final Password importedPassword,
+                                               final Map<String,PasswordPermission> groupPermissions)
             throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
         final GroupDAO groupDAO = GroupDAO.getInstance();
         final GroupAccessControlDAO groupAccessControlDAO = GroupAccessControlDAO.getInstance();
 
-        for(Map.Entry<String,String> thisEntry : groupPermissions.entrySet()) {
+        for(Map.Entry<String,PasswordPermission> thisEntry : groupPermissions.entrySet()) {
             Group group = groupDAO.getByIdDecrypted(thisEntry.getKey(), adminUser);
-            GroupAccessControl gac = new GroupAccessControl();
-            gac.setAccessorId(group.getGroupId());
-            gac.setItemId(importedPassword.getId());
-            gac.setReadKey(accessControl.getReadKey());
-            if(thisEntry.getValue().equals("2")) {
-                gac.setModifyKey(accessControl.getModifyKey());
+
+            AccessControlBuilder<GroupAccessControl> accessControlBuilder = GroupAccessControl.builder()
+                    .withAccessorId(group.getId())
+                    .withItemId(importedPassword.getId())
+                    .withReadKey(accessControl.getReadKey());
+            if(thisEntry.getValue() == PasswordPermission.MODIFY) {
+                accessControlBuilder.withModifyKey(accessControl.getModifyKey());
             }
-            groupAccessControlDAO.write(group, gac);
+            groupAccessControlDAO.write(group, accessControlBuilder.build());
         }
     }
 
@@ -278,7 +276,8 @@ public class PasswordImporter {
             throw new GeneralSecurityException("User " + objectName + " does not exist");
         }
         theUser.decryptAdminAccessKey(adminGroup);
-        UserAccessControlDAO.getInstance().create(theUser, thePassword, true, allowModify);
+        PasswordPermission permission = allowModify ? PasswordPermission.MODIFY : PasswordPermission.READ;
+        UserAccessControlDAO.getInstance().create(theUser, thePassword, permission);
 
     }
 
@@ -291,7 +290,8 @@ public class PasswordImporter {
         }
         Membership membership = MembershipDAO.getInstance().getMembership(adminUser, theGroup);
         theGroup.updateAccessKey(membership);
-        GroupAccessControlDAO.getInstance().create(theGroup, thePassword, true, allowModify);
+        PasswordPermission permission = allowModify ? PasswordPermission.MODIFY : PasswordPermission.READ;
+        GroupAccessControlDAO.getInstance().create(theGroup, thePassword, permission);
     }
 
 }

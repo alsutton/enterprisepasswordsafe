@@ -1,5 +1,6 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 
@@ -27,8 +28,8 @@ public class PasswordPermissionApplier {
 
     public void setDefaultPermissions(final Password newPassword, final String parentNodeId, final Group adminGroup)
             throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-        Map<String,String> uPerms = new HashMap<>();
-        Map<String,String> gPerms = new HashMap<>();
+        Map<String,PasswordPermission> uPerms = new HashMap<>();
+        Map<String,PasswordPermission> gPerms = new HashMap<>();
         hierarchyNodePermissionDAO.getCombinedDefaultPermissionsForNode(parentNodeId, uPerms, gPerms);
 
         setUserDefaults(uPerms, adminGroup, newPassword);
@@ -36,10 +37,10 @@ public class PasswordPermissionApplier {
 
     }
 
-    private void setUserDefaults(Map<String,String> uPerms, Group adminGroup, Password newPassword)
+    private void setUserDefaults(Map<String,PasswordPermission> uPerms, Group adminGroup, Password newPassword)
             throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
 
-        for(Map.Entry<String, String> thisEntry : uPerms.entrySet()) {
+        for(Map.Entry<String,PasswordPermission> thisEntry : uPerms.entrySet()) {
             String userId = thisEntry.getKey();
             User theUser = userDAO.getByIdDecrypted(userId, adminGroup);
             if( theUser != null ) {
@@ -48,10 +49,10 @@ public class PasswordPermissionApplier {
         }
     }
 
-    private void setGroupDefaults(Map<String,String> gPerms, Group adminGroup, Password newPassword)
+    private void setGroupDefaults(Map<String,PasswordPermission> gPerms, Group adminGroup, Password newPassword)
             throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
         final User adminUser = userDAO.getAdminUser(adminGroup);
-        for(Map.Entry<String,String> thisEntry : gPerms.entrySet()) {
+        for(Map.Entry<String,PasswordPermission> thisEntry : gPerms.entrySet()) {
             final String groupId = thisEntry.getKey();
             Group theGroup = groupDAO.getByIdDecrypted(groupId, adminUser);
             if( theGroup != null ) {
@@ -61,10 +62,8 @@ public class PasswordPermissionApplier {
     }
 
     private void addPermission(EntityWithAccessRights entity, Password newPassword,
-                               AccessControlDAOInterface acDAO, String permissions)
+                               AccessControlDAOInterface acDAO, PasswordPermission permission)
             throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-        boolean allowRead = "1".equals(permissions) || "2".equals(permissions);
-        boolean allowModify = "2".equals(permissions);
-        acDAO.create(entity, newPassword, allowRead, allowModify);
+        acDAO.create(entity, newPassword, permission);
     }
 }

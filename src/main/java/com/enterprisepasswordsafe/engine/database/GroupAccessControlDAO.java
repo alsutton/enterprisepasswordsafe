@@ -16,6 +16,9 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.AccessControlDecryptor;
+import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
@@ -215,7 +218,7 @@ public class GroupAccessControlDAO
                 if (rs.next()) {
                     String groupId = rs.getString(4);
                     Group group = GroupDAO.getInstance().getByIdDecrypted(groupId, theUser);
-                    return new GroupAccessControl(rs, 1, group);
+                    return buildFromResultSet(rs, 1, group);
                 }
             }
         }
@@ -244,7 +247,7 @@ public class GroupAccessControlDAO
             ps.setString(2, passwordId);
             ps.setMaxRows(1);
             try(ResultSet rs = ps.executeQuery()) {
-	            return rs.next() ? new GroupAccessControl(rs, 1, group) : null;
+	            return rs.next() ? buildFromResultSet(rs, 1, group) : null;
             }
         }
     }
@@ -265,17 +268,16 @@ public class GroupAccessControlDAO
         }
     }
 
-    public GroupAccessControl create(Group group, AccessControledObject item,
-    		boolean allowRead, boolean allowModify)
+    public GroupAccessControl create(Group group, AccessControledObject item, PasswordPermission permission)
     	throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-    	return create(group, item, allowRead, allowModify, true);
+    	return create(group, item, permission, true);
     }
 
 
     public GroupAccessControl create(Group group, AccessControledObject item,
-    		boolean allowRead, boolean allowModify, boolean writeToDatabase)
-    	throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-    	PrivateKey modifyKey = allowModify ? item.getModifyKey() : null;
+                                     PasswordPermission permission, boolean writeToDatabase)
+    	throws SQLException, GeneralSecurityException {
+    	PrivateKey modifyKey = permission.allowsModification ? item.getModifyKey() : null;
     	GroupAccessControl gac =
     			new GroupAccessControl( group.getGroupId(), item.getId(), modifyKey, item.getReadKey() );
     	if(writeToDatabase) {
@@ -285,7 +287,7 @@ public class GroupAccessControlDAO
     }
 
     public void write(final Group group, final GroupAccessControl gac)
-    	throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+    	throws SQLException, GeneralSecurityException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_GAC_SQL)) {
             ps.setString(1,	gac.getGroupId());
             ps.setString(2,	gac.getItemId());
@@ -328,6 +330,20 @@ public class GroupAccessControlDAO
 	    		return summaries;
         	}
     	}
+    }
+
+    static GroupAccessControl buildFromResultSet(final ResultSet rs, final int startIdx,
+                                                  final AccessControlDecryptor decryptor)
+            throws SQLException, GeneralSecurityException {
+	    return GroupAccessControl.builder()
+                .withItemId(rs.getString(startIdx))
+                .withModifyKey(
+                        KeyUtils.decryptPrivateKey(rs.getBytes(startIdx+1), decryptor.getKeyDecrypter()))
+                .withReadKey(
+                        KeyUtils.decryptPublicKey(rs.getBytes(startIdx+2), decryptor.getKeyDecrypter()))
+                .withAccessorId(rs.getString(startIdx+3))
+                .build();
+
     }
 
     public void update(final Group group, final GroupAccessControl gac)

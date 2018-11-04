@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
@@ -61,24 +62,24 @@ public final class NodePasswordDefaults extends HttpServlet {
 
 	        su.setCurrentNodeId(request, nodeId);
 
-	        Map<String, String> uPerms = new HashMap<>();
-	        Map<String, String> gPerms = new HashMap<>();
+	        Map<String, PasswordPermission> uPerms = new HashMap<>();
+	        Map<String, PasswordPermission> gPerms = new HashMap<>();
 	        HierarchyNodePermissionDAO hierarchyNodePermissionDAO = new HierarchyNodePermissionDAO();
 			hierarchyNodePermissionDAO.getDefaultPermissionsForNode(nodeId, uPerms, gPerms);
 
-	        Map<String, String> parentUPerms = new HashMap<>();
-	        Map<String, String> parentGPerms = new HashMap<>();
+	        Map<String, PasswordPermission> parentUPerms = new HashMap<>();
+	        Map<String, PasswordPermission> parentGPerms = new HashMap<>();
 			hierarchyNodePermissionDAO.getCombinedDefaultPermissionsForNode(node.getParentId(), parentUPerms, parentGPerms);
 
-	        String everyonePerm = gPerms.remove(Group.ALL_USERS_GROUP_ID);
+			PasswordPermission everyonePerm = gPerms.remove(Group.ALL_USERS_GROUP_ID);
 	        if( everyonePerm == null ) {
-	        	everyonePerm = "0";
+	        	everyonePerm = PasswordPermission.NONE;
 	        }
 	    	request.setAttribute("egac", everyonePerm);
 
-	    	String everyoneParentPerm = parentGPerms.remove(Group.ALL_USERS_GROUP_ID);
+			PasswordPermission everyoneParentPerm = parentGPerms.remove(Group.ALL_USERS_GROUP_ID);
 	        if( everyoneParentPerm == null ) {
-	        	everyoneParentPerm = "0";
+	        	everyoneParentPerm = PasswordPermission.NONE;
 	        }
 	    	request.setAttribute("paregac", everyoneParentPerm);
 

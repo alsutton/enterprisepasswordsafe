@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
@@ -273,7 +274,7 @@ public abstract class PasswordBase
      * @param ac The access control for the password.
      */
 
-    public PasswordBase(final String passwordId, final byte[] data, AccessControl ac)
+    public PasswordBase(final String passwordId, final byte[] data, final AccessControl ac)
             throws IOException, GeneralSecurityException {
     	this(passwordId, data, ac, null);
     }

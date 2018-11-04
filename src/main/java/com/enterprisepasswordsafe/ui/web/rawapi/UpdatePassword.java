@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.enterprisepasswordsafe.engine.database.AccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
 import com.enterprisepasswordsafe.engine.database.Password;
 import com.enterprisepasswordsafe.engine.database.PasswordDAO;

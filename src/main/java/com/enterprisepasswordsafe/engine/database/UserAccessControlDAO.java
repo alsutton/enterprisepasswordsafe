@@ -16,6 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.AccessControlDecryptor;
+import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
+import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
 import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
 import com.enterprisepasswordsafe.proguard.ExternalInterface;
@@ -67,16 +71,15 @@ public final class UserAccessControlDAO
 		super();
 	}
 
-	public UserAccessControl create(final User theUser, final AccessControledObject item,
-			boolean allowRead, boolean allowModify)
+	public UserAccessControl create(final User theUser, final AccessControledObject item, PasswordPermission permission)
 		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-		return create(theUser, item, allowRead, allowModify, true);
+		return create(theUser, item, permission, true);
 	}
 
 	public UserAccessControl create(final User theUser, final AccessControledObject item,
-			final boolean allowRead, final boolean allowModify, final boolean writeToDB)
+									final PasswordPermission permission, final boolean writeToDB)
 		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
-		if( !allowRead ) {
+		if( !permission.allowsRead ) {
 			UserAccessControl existingUac = getUac(theUser, item);
 			if( existingUac != null ) {
 				delete(existingUac);
@@ -85,7 +88,7 @@ public final class UserAccessControlDAO
 		}
 
     	PrivateKey modifyKey = null;
-    	if( allowModify ) {
+    	if( permission.allowsModification ) {
     		modifyKey = item.getModifyKey();
     	}
 
@@ -134,7 +137,7 @@ public final class UserAccessControlDAO
             ps.setString(2, itemId);
             ps.setMaxRows(1);
             try(ResultSet rs = ps.executeQuery()) {
-	            return rs.next() ? new UserAccessControl(rs, 1, user) : null;
+	            return rs.next() ? buildFromResultSet(rs, 1, user) : null;
             }
         }
     }
@@ -168,7 +171,7 @@ public final class UserAccessControlDAO
             try(ResultSet rs = ps.executeQuery()) {
 	            while(rs.next()) {
 	            	try {
-	            		final UserAccessControl ac = new UserAccessControl(rs, 1, user);
+	            		final UserAccessControl ac = buildFromResultSet(rs, 1, user);
 	            		if(ac.getReadKey() != null || ac.getModifyKey() != null) {
 	            			encryptionList.add(ac);
 	            		}
@@ -231,7 +234,23 @@ public final class UserAccessControlDAO
     	write(uac, encrypter);
     }
 
-    //------------------------
+	static UserAccessControl buildFromResultSet(final ResultSet rs, final int startIdx,
+												  final AccessControlDecryptor decryptor)
+			throws SQLException, GeneralSecurityException {
+		return UserAccessControl.builder()
+				.withItemId(rs.getString(startIdx))
+				.withModifyKey(
+						KeyUtils.decryptPrivateKey(rs.getBytes(startIdx+1), decryptor.getKeyDecrypter()))
+				.withReadKey(
+						KeyUtils.decryptPublicKey(rs.getBytes(startIdx+2), decryptor.getKeyDecrypter()))
+				.withAccessorId(rs.getString(startIdx+3))
+				.build();
+
+	}
+
+
+
+	//------------------------
 
     private static final class InstanceHolder {
     	static final UserAccessControlDAO INSTANCE = new UserAccessControlDAO();

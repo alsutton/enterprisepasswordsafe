@@ -1,5 +1,6 @@
 package com.enterprisepasswordsafe.engine.database;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.nodes.GroupNodeDefaultPermission;
 import com.enterprisepasswordsafe.engine.nodes.UserNodeDefaultPermission;
@@ -73,7 +74,8 @@ public class HierarchyNodePermissionDAO
      */
 
     public void getDefaultPermissionsForNode(final String nodeId,
-                                             final Map<String, String> userPermMap, final Map<String, String> groupPermMap)
+                                             final Map<String, PasswordPermission> userPermMap,
+                                             final Map<String, PasswordPermission> groupPermMap)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         if( nodeId == null )
             return;
@@ -84,7 +86,7 @@ public class HierarchyNodePermissionDAO
                 while (rs.next()) {
                     String type = rs.getString(1);
                     String actorId = rs.getString(2);
-                    String permission = rs.getString(3);
+                    PasswordPermission permission = PasswordPermission.fromRepresentation(rs.getString(3));
                     if			( type.equals("g") ) {
                         groupPermMap.put(actorId, permission);
                     } else if	( type.equals("u") ) {
@@ -164,7 +166,8 @@ public class HierarchyNodePermissionDAO
      */
 
     public void getDefaultPermissionsForNodeIncludingInherited(final String nodeId,
-                                                               final Map<String,String> userPermMap, final Map<String,String> groupPermMap)
+                                                               final Map<String,PasswordPermission> userPermMap,
+                                                               final Map<String,PasswordPermission> groupPermMap)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         if( nodeId == null )
             return;
@@ -178,15 +181,15 @@ public class HierarchyNodePermissionDAO
                         int idx = 1;
                         String type = rs.getString(idx++);
                         String actorId = rs.getString(idx++);
-                        String permission = rs.getString(idx);
+                        PasswordPermission permission = PasswordPermission.fromRepresentation(rs.getString(idx));
                         if			( type.equals("g") ) {
-                            String oldValue = groupPermMap.get(actorId);
-                            if( oldValue == null && !permission.equals("0")) {
+                            PasswordPermission oldValue = groupPermMap.get(actorId);
+                            if( oldValue == null && permission != PasswordPermission.NONE) {
                                 groupPermMap.put(actorId, permission);
                             }
                         } else if	( type.equals("u") ) {
-                            String oldValue = userPermMap.get(actorId);
-                            if( oldValue == null && !permission.equals("0")) {
+                            PasswordPermission oldValue = userPermMap.get(actorId);
+                            if( oldValue == null && permission != PasswordPermission.NONE) {
                                 userPermMap.put(actorId, permission);
                             }
                         } else {
@@ -211,7 +214,8 @@ public class HierarchyNodePermissionDAO
      */
 
     public void setDefaultPermissionsForNode(final String nodeId,
-                                             final Map<String,String> userPermMap, final Map<String,String> groupPermMap)
+                                             final Map<String,PasswordPermission> userPermMap,
+                                             final Map<String,PasswordPermission> groupPermMap)
             throws SQLException {
         runResultlessParameterisedSQL(DELETE_PASSWORD_DEFAULTS_FOR_NODE, nodeId);
 
@@ -233,13 +237,13 @@ public class HierarchyNodePermissionDAO
      * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
-    private void setDefaultPermissions( PreparedStatement ps, Map<String,String> map)
+    private void setDefaultPermissions( PreparedStatement ps, Map<String,PasswordPermission> map)
             throws SQLException {
         int addCounter = 0;
 
-        for(Map.Entry<String, String> thisEntry : map.entrySet()) {
+        for(Map.Entry<String, PasswordPermission> thisEntry : map.entrySet()) {
             ps.setString(3, thisEntry.getKey());
-            ps.setString(4, thisEntry.getValue());
+            ps.setString(4, thisEntry.getValue().toString());
             ps.addBatch();
 
             addCounter++;
@@ -265,7 +269,8 @@ public class HierarchyNodePermissionDAO
      */
 
     public void getCombinedDefaultPermissionsForNode(final String nodeId,
-                                                     final Map<String, String> userPermMap, final Map<String, String> groupPermMap)
+                                                     final Map<String, PasswordPermission> userPermMap,
+                                                     final Map<String, PasswordPermission> groupPermMap)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         if( nodeId != null ) {
             HierarchyNode thisNode = hierarchyNodeDAO.getById(nodeId);

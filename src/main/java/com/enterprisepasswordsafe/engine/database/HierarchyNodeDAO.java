@@ -26,6 +26,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeSummary;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.Cache;
@@ -378,12 +381,12 @@ public final class HierarchyNodeDAO
     private void processObjectResults(User user, Map<String, Password> results, ResultSet rs)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         while (rs.next()) {
-            String passwordId = rs.getString(AccessControl.ACCESS_CONTROL_FIELD_COUNT + 1);
+            String passwordId = rs.getString(AbstractAccessControlDAO.ACCESS_CONTROL_FIELD_COUNT + 1);
             if (results.containsKey(passwordId)) {
                 continue;
             }
 
-            addPasswordToResults(results, passwordId, rs, new UserAccessControl(rs, 1, user));
+            addPasswordToResults(results, passwordId, rs,UserAccessControlDAO.buildFromResultSet(rs, 1, user));
         }
     }
 
@@ -410,20 +413,20 @@ public final class HierarchyNodeDAO
 
     private void processGroupAccessControlResult(Map<String,Password> results, User user, ResultSet rs)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        String passwordId = rs.getString(AccessControl.ACCESS_CONTROL_FIELD_COUNT + 1);
+        String passwordId = rs.getString(AbstractAccessControlDAO.ACCESS_CONTROL_FIELD_COUNT + 1);
         if (results.containsKey(passwordId)) {
             return;
         }
 
         Group group =  GroupDAO.getInstance().getByIdDecrypted(rs.getString(4), user);
-        addPasswordToResults(results, passwordId, rs, new GroupAccessControl(rs, 1, group));
+        addPasswordToResults(results, passwordId, rs, GroupAccessControlDAO.buildFromResultSet(rs, 1, group));
     }
 
     private void addPasswordToResults(Map<String,Password> results, String passwordId,
                                       ResultSet rs, AccessControl ac)
             throws SQLException, GeneralSecurityException {
         try {
-            Password password = new Password(passwordId, rs.getBytes(AccessControl.ACCESS_CONTROL_FIELD_COUNT + 2), ac);
+            Password password = new Password(passwordId, rs.getBytes(AbstractAccessControlDAO.ACCESS_CONTROL_FIELD_COUNT + 2), ac);
             results.put(passwordId, password);
         } catch (IOException e) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Unable to decrypt password " + passwordId, e);
