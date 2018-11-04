@@ -36,12 +36,20 @@ public enum PasswordPermission {
         }
 
         for (PasswordPermission permission: values()) {
-            for (String thisRepresentation : permission.stringRepresentations) {
-                if (thisRepresentation.equals(string)) {
-                    return permission;
-                }
+            if(matches(permission, string)) {
+                return permission;
             }
         }
         return null;
+    }
+
+    private static boolean matches(PasswordPermission permission, String representation) {
+        for (String thisRepresentation : permission.stringRepresentations) {
+            if (thisRepresentation.equals(representation)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
