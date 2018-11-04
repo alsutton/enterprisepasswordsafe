@@ -10,7 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
 
-public abstract class AccessControl implements Comparable<AccessControl> {
+public class AccessControl implements Comparable<AccessControl> {
 
     private static final String FIRST_LEVEL_ENCRYPTION_ALGORITHM = "RSA";
     private static final String SECOND_LEVEL_ENCRYPTION_ALGORITHM = "AES";
@@ -178,15 +178,9 @@ public abstract class AccessControl implements Comparable<AccessControl> {
     }
 
     private int compareKeys(Key thisKey, Key otherKey) {
-        if( thisKey == null ) {
-            if( otherKey != null ) {
-                return Integer.MIN_VALUE;
-            }
-        } else {
-            if( otherKey == null ) {
-                return Integer.MAX_VALUE;
-            }
+        if( thisKey == null) {
+            return otherKey == null ? 0 : Integer.MIN_VALUE;
         }
-        return 0;
+        return otherKey == null ? Integer.MAX_VALUE : 0;
     }
 }
