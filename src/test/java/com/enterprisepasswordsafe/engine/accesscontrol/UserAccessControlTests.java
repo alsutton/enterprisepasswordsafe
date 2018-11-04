@@ -41,6 +41,24 @@ public class UserAccessControlTests {
         Assertions.assertEquals(testKeys.getPublic(), testUac.getReadKey());
     }
 
+    @Test
+    public void testBuilderCopyFrom()
+            throws GeneralSecurityException, UnsupportedEncodingException {
+        KeyPair testKeys = generateTestKeys();
+        UserAccessControl firstUac = UserAccessControl.builder()
+                .withAccessorId("Accessor")
+                .withItemId("Item")
+                .withModifyKey(testKeys.getPrivate())
+                .withReadKey(testKeys.getPublic())
+                .build();
+        UserAccessControl testUac = UserAccessControl.builder().copyFrom(firstUac).build();
+
+        Assertions.assertEquals("Accessor", testUac.getUserId());
+        Assertions.assertEquals("Item", testUac.getItemId());
+        Assertions.assertEquals(testKeys.getPrivate(), testUac.getModifyKey());
+        Assertions.assertEquals(testKeys.getPublic(), testUac.getReadKey());
+    }
+
     private KeyPair generateTestKeys()
             throws NoSuchAlgorithmException {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");

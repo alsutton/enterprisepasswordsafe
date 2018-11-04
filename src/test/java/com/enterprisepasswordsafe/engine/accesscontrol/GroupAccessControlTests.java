@@ -28,17 +28,35 @@ public class GroupAccessControlTests {
     public void testBuilder()
             throws GeneralSecurityException, UnsupportedEncodingException {
         KeyPair testKeys = generateTestKeys();
-        GroupAccessControl testUac = GroupAccessControl.builder()
+        GroupAccessControl testGac = GroupAccessControl.builder()
                 .withAccessorId("Accessor")
                 .withItemId("Item")
                 .withModifyKey(testKeys.getPrivate())
                 .withReadKey(testKeys.getPublic())
                 .build();
 
-        Assertions.assertEquals("Accessor", testUac.getGroupId());
-        Assertions.assertEquals("Item", testUac.getItemId());
-        Assertions.assertEquals(testKeys.getPrivate(), testUac.getModifyKey());
-        Assertions.assertEquals(testKeys.getPublic(), testUac.getReadKey());
+        Assertions.assertEquals("Accessor", testGac.getGroupId());
+        Assertions.assertEquals("Item", testGac.getItemId());
+        Assertions.assertEquals(testKeys.getPrivate(), testGac.getModifyKey());
+        Assertions.assertEquals(testKeys.getPublic(), testGac.getReadKey());
+    }
+
+    @Test
+    public void testBuilderCopyFrom()
+            throws GeneralSecurityException, UnsupportedEncodingException {
+        KeyPair testKeys = generateTestKeys();
+        GroupAccessControl firstGac = GroupAccessControl.builder()
+                .withAccessorId("Accessor")
+                .withItemId("Item")
+                .withModifyKey(testKeys.getPrivate())
+                .withReadKey(testKeys.getPublic())
+                .build();
+        GroupAccessControl testGac = GroupAccessControl.builder().copyFrom(firstGac).build();
+
+        Assertions.assertEquals("Accessor", testGac.getGroupId());
+        Assertions.assertEquals("Item", testGac.getItemId());
+        Assertions.assertEquals(testKeys.getPrivate(), testGac.getModifyKey());
+        Assertions.assertEquals(testKeys.getPublic(), testGac.getReadKey());
     }
 
     private KeyPair generateTestKeys()
