@@ -21,21 +21,17 @@ dependencies {
             'org.apache.commons:commons-collections4:4.0',
             'org.apache.commons:commons-csv:1.1',
             'org.apache.commons:commons-dbcp2:2.5.0',
-            'org.apache.derby:derby:10.14.2.0',
             'org.bouncycastle:bctls-jdk15on:1.59'
 
     testImplementation  'org.junit.jupiter:junit-jupiter-api:5.3.1',
                         'org.mockito:mockito-core:2.23.0';
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+    testCompile         'net.sourceforge.htmlunit:htmlunit:2.15'
+    testRuntimeOnly     'org.junit.jupiter:junit-jupiter-engine:5.3.1',
+                        'org.apache.derby:derby:10.14.2.0'
 
-    testCompile 'net.sourceforge.htmlunit:htmlunit:2.15',
-                'org.apache.derby:derby:10.14.2.0'
 
     runtime         'opensymphony:sitemesh:2.4.2',
-                    'javax.servlet:jstl:1.2',
-                    'org.hsqldb:hsqldb:1.8.0.10',
-                    'org.postgresql:postgresql:9.3-1102-jdbc41',
-                    'mysql:mysql-connector-java:5.1.32'
+                    'javax.servlet:jstl:1.2'
 
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
             "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
