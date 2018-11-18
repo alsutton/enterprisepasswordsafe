@@ -8,17 +8,36 @@ public class TestConfigurationJDBCConfigurationRepository
     implements JDBCConfigurationRepository {
     @Override
     public JDBCConnectionInformation load() throws GeneralSecurityException {
-        JDBCConnectionInformation configuration = new JDBCConnectionInformation();
-        configuration.dbType = SupportedDatabase.APACHE_DERBY.getType();
-        configuration.driver = "org.apache.derby.jdbc.EmbeddedDriver";
-        configuration.url = "jdbc:derby:memory:myDB;create=true";
-        configuration.password = "";
-        configuration.username = "";
-        return configuration;
-    }
+        return new JDBCConnectionInformation() {
+            @Override
+            public boolean isValid() {
+                return true;
+            }
 
-    @Override
-    public void store(JDBCConnectionInformation jdbcConnectionInformation) {
-        throw new RuntimeException("Not implemented");
+            @Override
+            public String getDbType() {
+                return SupportedDatabase.APACHE_DERBY.getType();
+            }
+
+            @Override
+            public String getDriver() {
+                return "org.apache.derby.jdbc.EmbeddedDriver";
+            }
+
+            @Override
+            public String getUrl() {
+                return "jdbc:derby:memory:myDB;create=true";
+            }
+
+            @Override
+            public String getUsername() {
+                return "";
+            }
+
+            @Override
+            public String getPassword() {
+                return "";
+            }
+        };
     }
 }

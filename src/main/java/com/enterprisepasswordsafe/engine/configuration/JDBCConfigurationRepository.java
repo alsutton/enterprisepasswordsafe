@@ -6,6 +6,4 @@ import java.util.prefs.BackingStoreException;
 public interface JDBCConfigurationRepository {
 
     JDBCConnectionInformation load() throws GeneralSecurityException;
-
-    void store(JDBCConnectionInformation jdbcConnectionInformation) throws BackingStoreException;
 }

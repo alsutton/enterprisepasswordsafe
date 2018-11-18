@@ -345,10 +345,6 @@
 	</servlet>
 
 	<servlet>
-		<servlet-name>SetJDBCConfiguration</servlet-name>
-		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.SetJDBCConfiguration</servlet-class>
-	</servlet>
-	<servlet>
 		<servlet-name>ConfigureEmail</servlet-name>
 		<servlet-class>com.enterprisepasswordsafe.ui.web.servlets.ConfigureEmail</servlet-class>
 	</servlet>
@@ -604,11 +600,6 @@
 	<servlet-mapping>
 		<servlet-name>Login</servlet-name>
 		<url-pattern>/Login</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>SetJDBCConfiguration</servlet-name>
-		<url-pattern>/SetJDBCConfiguration</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>

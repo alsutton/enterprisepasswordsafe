@@ -55,18 +55,7 @@ public class PropertyBackedJDBCConfigurationRepository
 
 	public JDBCConnectionInformation load()
 			throws GeneralSecurityException {
-		connectionInformation = new JDBCConnectionInformation(preferencesRepository.getPreferences());
+		connectionInformation = new PropertyBackedJDBCConnectionInformation(preferencesRepository.getPreferences());
 		return connectionInformation;
-	}
-
-	public void store(JDBCConnectionInformation jdbcConnectionInformation)
-			throws BackingStoreException {
-	    try {
-            Preferences prefs = preferencesRepository.getFlushablePreferences();
-            jdbcConnectionInformation.storeIn(prefs);
-            prefs.flush();
-        } catch (GeneralSecurityException e) {
-	        throw new BackingStoreException(e);
-        }
 	}
 }
