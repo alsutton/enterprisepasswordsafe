@@ -15,44 +15,43 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   --%>
-<table>
-    <tr>
-        <td>Database Type</td>
-        <td><c:out value='${requestScope.jdbcConfig.dbType}' /></td>
-    </tr>
+<table class="table">
+    <tbody>
+        <tr>
+            <td aling="right">Database Type</td>
+            <td><c:out value='${requestScope.jdbcConfig.dbType}' default='[Not Set]'/></td>
+        </tr>
 
-    <tr>
-        <td colspan="2">
-        You will need to ensure that the JDBC drivers for your database have been correctly
-        installed before the EPS will be able to talk to the database.
-        </td>
-    </tr>
+        <tr>
+            <td colspan="2" aling="center">
+            You will need to ensure that the JDBC drivers for your database have been correctly
+            installed before the EPS will be able to talk to the database.
+            </td>
+        </tr>
 
-    <tr class="form-group">
-        <td>JDBC Driver</td>
-        <td><c:out value='${requestScope.jdbcConfig.driver}' /></td>
-    </tr>
+        <tr>
+            <td aling="right">JDBC Driver</td>
+            <td><c:out value='${requestScope.jdbcConfig.driver}' default='[Not Set]'/></td>
+        </tr>
 
-    <tr class="form-group">
-        <td>JDBC URL</td>
-        <td><c:out value='${requestScope.jdbcConfig.url}' /></td>
-    </tr>
+        <tr>
+            <td aling="right">JDBC URL</td>
+            <td><c:out value='${requestScope.jdbcConfig.url}' default='[Not Set]'/></td>
+        </tr>
 
-    <tr class="form-group">
-        <td>Database Username</td>
-        <td><c:out value='${requestScope.jdbcConfig.username}' /></td>
-    </tr>
+        <tr>
+            <td aling="right">Database Username</td>
+            <td><c:out value='${requestScope.jdbcConfig.username}' default='[Not Set]' /></td>
+        </tr>
 
-    <tr class="form-group">
-        <td>Database Password</td>
-        <td>
-            <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.password != null)}">
-                ************
-            </c:when>
-            <c:otherwise>
-                [Not Set]
-            </c:otherwise>
-        </td>
-    </tr>
+        <tr>
+            <td aling="right">Database Password</td>
+            <td>
+                <c:choose>
+                    <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.password != null)}">************</c:when>
+                    <c:otherwise>[Not Set]</c:otherwise>
+                </c:choose>
+            </td>
+        </tr>
+    </tbody>
 </table>
-<script language="JavaScript" src="<c:url value='/js/jdbcoptions.js'/>"></script>
