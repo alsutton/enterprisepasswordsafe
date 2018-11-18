@@ -18,6 +18,8 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
+import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.engine.database.UserDAO;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
@@ -28,6 +30,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.enterprisepasswordsafe.engine.users.UserClassifier.ADMIN_USER_ID;
 
 public class VerifyJDBCConfiguration extends HttpServlet {
 
@@ -82,6 +86,7 @@ public class VerifyJDBCConfiguration extends HttpServlet {
 
         verifiedConfiguration = connectionInformation;
         Repositories.databasePoolFactory.setConfiguration(connectionInformation);
-        return Repositories.databasePoolFactory.isConfigured();
+        User admin = UserDAO.getInstance().getById(ADMIN_USER_ID);
+        return admin != null;
     }
 }
