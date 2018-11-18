@@ -15,89 +15,44 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   --%>
-<fieldset>
-    <div class="form-group">
-        <label for="database">Database Type</label>
-        <select name="database" id="database" class="form-control">
-            <c:choose>
-                <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.dbType != null)}">
-                    <c:forEach var="dbType" items="${requestScope.dbTypes}">
-                        <c:choose>
-                            <c:when test="${dbType eq requestScope.jdbcConfig.dbType}">
-                                <option selected="selected"><c:out value="${dbType}"/></option>
-                            </c:when>
-                            <c:otherwise>
-                                <option><c:out value="${dbType}"/></option>
-                            </c:otherwise>
-                        </c:choose>
-                    </c:forEach>
-                </c:when>
-                <c:otherwise>
-                    <c:forEach var="dbType" items="${requestScope.dbTypes}">
-                        <option><c:out value="${dbTydbType}"/></option>
-                    </c:forEach>
-                </c:otherwise>
-            </c:choose>
-        </select>
-    </div>
+<table>
+    <tr>
+        <td>Database Type</td>
+        <td><c:out value='${requestScope.jdbcConfig.dbType}' /></td>
+    </tr>
 
-    <div class="alert alert-info" id="driver_install_warning">
+    <tr>
+        <td colspan="2">
         You will need to ensure that the JDBC drivers for your database have been correctly
         installed before the EPS will be able to talk to the database.
-    </div>
+        </td>
+    </tr>
 
-    <div class="form-group">
-        <label for="jdbcdriver">JDBC Driver</label>
-        <c:choose>
-            <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.driver != null)}">
-                <input type="text" class="form-control" name="jdbcdriver" id="jdbcdriver"
-                       value="<c:out value='${requestScope.jdbcConfig.driver}' />"/>
+    <tr class="form-group">
+        <td>JDBC Driver</td>
+        <td><c:out value='${requestScope.jdbcConfig.driver}' /></td>
+    </tr>
+
+    <tr class="form-group">
+        <td>JDBC URL</td>
+        <td><c:out value='${requestScope.jdbcConfig.url}' /></td>
+    </tr>
+
+    <tr class="form-group">
+        <td>Database Username</td>
+        <td><c:out value='${requestScope.jdbcConfig.username}' /></td>
+    </tr>
+
+    <tr class="form-group">
+        <td>Database Password</td>
+        <td>
+            <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.password != null)}">
+                ************
             </c:when>
             <c:otherwise>
-                <input type="text" class="form-control" name="jdbcdriver" id="jdbcdriver"/>
+                [Not Set]
             </c:otherwise>
-        </c:choose>
-    </div>
-
-    <div class="form-group">
-        <label for="jdbcurl">JDBC URL</label>
-        <c:choose>
-            <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.url != null)}">
-                <input type="text" name="jdbcurl" id="jdbcurl" class="form-control"
-                       value="<c:out value='${requestScope.jdbcConfig.url}' />"/>
-            </c:when>
-            <c:otherwise>
-                <input type="text" name="jdbcurl" id="jdbcurl" class="form-control"/>
-            </c:otherwise>
-        </c:choose>
-    </div>
-
-    <div class="form-group">
-        <label for="jdbcusername">Database Username</label>
-        <c:choose>
-            <c:when test="${(requestScope.jdbcConfig != null) && (requestScope.jdbcConfig.username != null)}">
-                <input type="text" name="jdbcusername" id="jdbcusername" class="form-control"
-                       value="<c:out value='${requestScope.jdbcConfig.username}' />"/>
-            </c:when>
-            <c:otherwise>
-                <input type="text" name="jdbcusername" id="jdbcusername" class="form-control"/>
-            </c:otherwise>
-        </c:choose>
-    </div>
-
-    <div class="form-group">
-        <label for="jdbcpassword">Database Password</label>
-        <input type="password" name="jdbcpassword" id="jdbcpassword" class="form-control"/>
-    </div>
-
-    <div class="form-group">
-        <label for="initialise">Initialise database <span class="form-help">(If you initialise the database the only login available will be 'admin' with the password 'admin'.)</span></label>
-        <select name="initialise" id="initialise" class="form-control">
-            <option selected="selected">No</option>
-            <option>Yes</option>
-        </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Use Configuration</button>
-</fieldset>
+        </td>
+    </tr>
+</table>
 <script language="JavaScript" src="<c:url value='/js/jdbcoptions.js'/>"></script>

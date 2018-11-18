@@ -17,22 +17,20 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   --%>
 <html lang="en">
 <head>
-	<title>EPS: Configure Database</title>
+	<title>EPS: Database Configuration Error</title>
 </head>
 <body>
 	<c:choose>
 		<c:when test="${not requestScope.verifyOK == 'X'}"><% response.sendError(HttpServletResponse.SC_FORBIDDEN); %></c:when>
 		<c:otherwise>
 			<div class="row">
-                <div class="alert alert-danger text-center">Your database configuration appears to be incorrect. Please enter the details below</div>
+                <div class="alert alert-danger text-center">Your database configuration appears to be incorrect. The following
+				is the configuration which is in use;</div>
 			</div>
 
 			<div class="row">
                 <div class="col-md-12">
-                    <form action="SetJDBCConfiguration" method="post" name="jdbcselection"
-                        accept-charset="ISO-8859-1" role="form">
-                        <%@include file="WEB-INF/includes/jdbc_configuration_panel.jsp"%>
-                    </form>
+					<%@include file="WEB-INF/includes/jdbc_configuration_panel.jsp"%>
                 </div>
 			</div>
 		</c:otherwise>

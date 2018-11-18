@@ -18,9 +18,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 <html lang="en">
 <head><title>Database configuration</title></head>
 <body>
-<form action="<c:url value='/SetJDBCConfiguration' />" name="jdbcselection"
-      method="POST" accept-charset="ISO-8859-1" role="form">
-    <%@include file="../WEB-INF/includes/jdbc_configuration_panel.jsp"%>
-</form>
+<%@include file="../WEB-INF/includes/jdbc_configuration_panel.jsp"%>
 </body>
 </html>
