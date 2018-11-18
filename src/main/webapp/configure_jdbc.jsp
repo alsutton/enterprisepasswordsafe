@@ -35,5 +35,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 			</div>
 		</c:otherwise>
 	</c:choose>
+
+	<p>If this is the first time you're run the EPS against your database, please click the button below to
+	initialise the database with the default user 'admin' which will have the password 'admin'.</p>
+
+	<form action="<%=request.getContextPath()%>/InitialiseDatabase">
+		<input type="submit" value="Initialise Database" />
+	</form>
 </body>
 </html>
