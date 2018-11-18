@@ -44,7 +44,7 @@ public class DatabaseAccessManager {
 	private Map<String,Object> cache;
 
 	public DatabaseAccessManager(JDBCConnectionInformation jdbcConnectionInformation) {
-		dbType =jdbcConnectionInformation.dbType;
+		dbType =jdbcConnectionInformation.getDbType();
 	}
 
 	public void close() {

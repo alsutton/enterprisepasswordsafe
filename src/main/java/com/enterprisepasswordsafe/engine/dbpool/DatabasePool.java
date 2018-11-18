@@ -42,10 +42,11 @@ public final class DatabasePool implements ExternalInterface, AutoCloseable {
 
     public DatabasePool(final JDBCConnectionInformation connectionInformation) throws ClassNotFoundException, SQLException {
         this.connectionInformation = connectionInformation;
-        Class.forName(connectionInformation.driver);
+        Class.forName(connectionInformation.getDriver());
 
         ConnectionFactory connectionFactory =
-                new DriverManagerConnectionFactory(connectionInformation.url, connectionInformation.username, connectionInformation.password);
+                new DriverManagerConnectionFactory(connectionInformation.getUrl(),
+                        connectionInformation.getUsername(), connectionInformation.getPassword());
         PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);
         ObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
         poolableConnectionFactory.setPool(connectionPool);
@@ -105,7 +106,7 @@ public final class DatabasePool implements ExternalInterface, AutoCloseable {
             InstantiationException, IllegalAccessException,
             ClassNotFoundException, UnsupportedEncodingException,
             GeneralSecurityException {
-        DALInterface databaseAbstractionLayer = DALFactory.getDAL(connectionInformation.dbType);
+        DALInterface databaseAbstractionLayer = DALFactory.getDAL(connectionInformation.getDbType());
 
         try (Connection conn = getConnection()) {
             databaseAbstractionLayer.setConnection(conn);
@@ -156,7 +157,7 @@ public final class DatabasePool implements ExternalInterface, AutoCloseable {
         }
 
         try {
-            Class.forName(connectionInformation.driver);
+            Class.forName(connectionInformation.getDriver());
         } catch (ClassNotFoundException e) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Error testing database.", e);
             return false;
