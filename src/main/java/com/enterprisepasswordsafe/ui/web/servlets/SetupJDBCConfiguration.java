@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
-import com.enterprisepasswordsafe.engine.configuration.PropertyBackedJDBCConfigurationRepository;
 
 public class SetupJDBCConfiguration extends HttpServlet {
 
