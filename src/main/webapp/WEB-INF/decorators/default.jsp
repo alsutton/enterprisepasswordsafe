@@ -27,7 +27,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <link rel="StyleSheet" href="<c:url value='/css/bootstrap.min.css'/>" type="text/css">
     <link rel="StyleSheet" href="<c:url value='/css/bootstrap-theme.min.css'/>" type="text/css">
     <link rel="StyleSheet" href="<c:url value='/css/eps.css'/>" type="text/css">
-    <script src="<c:url value='/js/jquery-1.11.1.min.js'/>"></script>
+    <script src="<c:url value='/js/jquery.min.js'/>"></script>
 
     <decorator:head/>
     <title><decorator:title/></title>
