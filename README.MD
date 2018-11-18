@@ -31,9 +31,29 @@ The Enterprise Password Safe (EPS) uses a cryptographic chain to enforce passwor
 
 The key pair for each password is different, and the keys are encrypted with each group or user AES key that have access rules for that password.
 
-### More details
+### Technical Details
 
 The EPS is written in Java and built using [Gradle](https://gradle.org). It uses JDBC to talk to the database which is used to store the information via a custom database abstraction layer which handles the translation of EPS requests into a database specific format. The EPS includes support for Apache Derby, DB2, HSQLDB, JavaDB, MySQL, Oracle 8i, Postgresql, and SQL Server.
+
+### Configuration
+
+The EPS stores it's runtime configuration information in the database configured via environment variables.
+
+The following environment variables are required for the EPS to operate;
+
+| Name | Value |
+| ---- |:-----:|
+| EPS_DATABASE_TYPE     | The type of database being accessed. <br/>Valid values are `Apache Derby`, `DB2`, `HSQLDB`, `MySQL`, `Oracle`, `PostgreSQL`, `SQL Server`, `Other`. |
+| EPS_JDBC_DRIVER_CLASS | The JDBC Driver class for the driver used to access the database<br/>(e.g. `org.apache.derby.jdbc.EmbeddedDriver` for an Apache Derby database) |
+| EPS_JDBC_URL          | The JDBC URL to use to connect to the database (e.g. `jdbc:derby:/tmp/pwsafe-hsqldb;create=true`) |
+| EPS_DATABASE_USERNAME | The username to use to connect to the database |
+| EPS_DATABASE_PASSWORD | The password to use to connect to the database |
+
+
+Please ensure that you install any appropriate libraries to support the JDBC Driver you are using.
+
+
+## Running the EPS
 
 The code can be deployed using Docker by running the following commands;
 
