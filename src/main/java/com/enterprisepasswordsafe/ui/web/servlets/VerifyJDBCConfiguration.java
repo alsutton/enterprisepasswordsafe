@@ -16,23 +16,19 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
+import com.enterprisepasswordsafe.engine.Repositories;
+import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
+import com.enterprisepasswordsafe.engine.configuration.PropertyBackedJDBCConfigurationRepository;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.Repositories;
-import com.enterprisepasswordsafe.engine.configuration.PropertyBackedJDBCConfigurationRepository;
-import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
-import com.enterprisepasswordsafe.engine.dbabstraction.SupportedDatabase;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class VerifyJDBCConfiguration extends HttpServlet {
 
@@ -53,10 +49,6 @@ public class VerifyJDBCConfiguration extends HttpServlet {
             } else if (isExistingConnectionInformationValid(jdbcConfig)) {
                 response.sendRedirect(request.getContextPath() + LOGIN_PAGE);
                 return;
-            }
-
-            if (jdbcConfig.getDbType() == null) {
-                jdbcConfig = setJdbcConnectionInformationToDefaults();
             }
 
             request.setAttribute(JDBC_CONFIG_PROPERTY, jdbcConfig);
@@ -93,37 +85,5 @@ public class VerifyJDBCConfiguration extends HttpServlet {
         verifiedConfiguration = connectionInformation;
         Repositories.databasePoolFactory.setConfiguration(connectionInformation);
         return Repositories.databasePoolFactory.isConfigured();
-    }
-
-    private JDBCConnectionInformation setJdbcConnectionInformationToDefaults()
-            throws BackingStoreException {
-        JDBCConnectionInformation newConnectionInformation = new JDBCConnectionInformation();
-
-        newConnectionInformation.dbType = SupportedDatabase.APACHE_DERBY.getType();
-        newConnectionInformation.driver = "org.apache.derby.jdbc.EmbeddedDriver";
-
-        String databaseDirectory = getDefaultDatabaseDirectory();
-        File userHomeDirectory = new File(databaseDirectory);
-        if(!userHomeDirectory.exists() || !userHomeDirectory.isDirectory()) {
-            throw new RuntimeException("Unable to create database in nonexistant directory "+databaseDirectory);
-        }
-        newConnectionInformation.url = "jdbc:derby:" + databaseDirectory  + "/pwsafe-hsqldb;create=true";
-        newConnectionInformation.username = "";
-        newConnectionInformation.password = "";
-
-        Repositories.jdbcConfigurationRepository.store(newConnectionInformation);
-        return newConnectionInformation;
-    }
-
-    private String getDefaultDatabaseDirectory() {
-        String directory = System.getenv("EPS_DATABASE_HOME");
-        if (directory != null) {
-            return directory;
-        }
-        directory = System.getProperty("user.home");
-        if (directory != null) {
-            return directory;
-        }
-        return "eps-db";
     }
 }
