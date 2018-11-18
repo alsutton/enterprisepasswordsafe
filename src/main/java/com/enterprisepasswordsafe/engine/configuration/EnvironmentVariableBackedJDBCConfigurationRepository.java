@@ -24,38 +24,25 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
-public class PropertyBackedJDBCConfigurationRepository
+public class EnvironmentVariableBackedJDBCConfigurationRepository
         implements JDBCConfigurationRepository, ExternalInterface {
 
-	public static final String[] DATABASE_TYPES;
-	static {
-		List<String> databaseTypes = new ArrayList<>();
-		for(SupportedDatabase database : SupportedDatabase.values()) {
-			if(database.isSupportDeprecated()) {
-				continue;
-			}
-			databaseTypes.add(database.getType());
-		}
-		DATABASE_TYPES = databaseTypes.toArray(new String[0]);
-	}
-
-	private PreferencesRepository preferencesRepository;
 	private JDBCConnectionInformation connectionInformation;
-
-	public PropertyBackedJDBCConfigurationRepository() {
-		this(new UserPreferencesRepository());
-	}
-
-	public PropertyBackedJDBCConfigurationRepository(PreferencesRepository preferencesRepository) {
-        this.preferencesRepository = preferencesRepository;
-    }
 
 	public JDBCConnectionInformation load()
 			throws GeneralSecurityException {
-		connectionInformation = new PropertyBackedJDBCConnectionInformation(preferencesRepository.getPreferences());
+		synchronized (this) {
+			if(connectionInformation == null) {
+				connectionInformation = new GenericJDBCConnectionInformation(
+						System.getenv("EPS_DATABASE_TYPE"),
+						System.getenv("EPS_JDBC_DRIVER_CLASS"),
+						System.getenv("EPS_JDBC_URL"),
+						System.getenv("EPS_DATABASE_USERNAME"),
+						System.getenv("EPS_DATABASE_PASSWORD"));
+			}
+		}
+
 		return connectionInformation;
 	}
 }
