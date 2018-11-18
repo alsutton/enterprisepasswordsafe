@@ -28,11 +28,6 @@
 		<param-value>3600</param-value>
 	</context-param>
 
-	<context-param>
-		<param-name>jdbc.config.class</param-name>
-		<param-value>com.enterprisepasswordsafe.engine.configuration.PropertyBackedJDBCConfigurationRepository</param-value>
-	</context-param>
-
 	<filter>
 		<filter-name>AdminFilter</filter-name>
 		<filter-class>com.enterprisepasswordsafe.ui.web.servletfilter.AdminFilter</filter-class>

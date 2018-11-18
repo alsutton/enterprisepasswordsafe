@@ -58,7 +58,6 @@ public class VerifyJDBCConfiguration extends HttpServlet {
                     "An error occurred whilst configuring your database.\n("+e.toString()+")");
         }
         request.setAttribute("verifyOK", "X");
-        request.setAttribute("dbTypes", PropertyBackedJDBCConfigurationRepository.DATABASE_TYPES);
 		request.getRequestDispatcher(CONFIGURATION_PAGE).forward(request, response);
     }
 

@@ -36,7 +36,6 @@ public class SetupJDBCConfiguration extends HttpServlet {
         try {
             JDBCConnectionInformation connectionInformation = Repositories.jdbcConfigurationRepository.load();
             request.setAttribute(VerifyJDBCConfiguration.JDBC_CONFIG_PROPERTY, connectionInformation);
-            request.setAttribute("dbTypes", PropertyBackedJDBCConfigurationRepository.DATABASE_TYPES);
             request.getRequestDispatcher("/admin/configure_jdbc.jsp").forward(request, response);
         } catch(GeneralSecurityException e) {
             throw new ServletException(e);
