@@ -72,7 +72,7 @@ Pull requests are welcome. If you're planning to implement a new feature or work
 ## Quality Indicators
 
 #### Build
-[![CircleCI](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master.svg?style=svg)](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master)
+[![CircleCI](https://circleci.com/gh/carbonsecurity/enterprisepasswordsafe/tree/master.svg?style=svg)](https://circleci.com/gh/carbonsecurity/enterprisepasswordsafe/tree/master)
 
 #### Code Metrics
 [![Maintainability](https://api.codeclimate.com/v1/badges/6b1eb77eaef47517d783/maintainability)](https://codeclimate.com/github/alsutton/enterprisepasswordsafe/maintainability)
