@@ -20,6 +20,7 @@ jobs:
       # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
       TERM: dumb
+      JACOCO_SOURCE_PATH: src/main/java
 
     steps:
       - checkout
@@ -38,5 +39,22 @@ jobs:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      # run tests!
-      - run: gradle test
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+
+      - run:
+          name: Setup Code Climate reporter for a build
+          command: ./cc-test-reporter before-build
+
+      - run:
+          name: Run the tests and generate the coverage report
+          command: gradle test jacocoTestReport
+
+      - run:
+          name: Report coverage stats to Code Climate
+          command: |
+            ./cc-test-reporter format-coverage build/reports/jacoco/test/jacocoTestReport.xml --input-type jacoco
+            ./cc-test-reporter upload-coverage
