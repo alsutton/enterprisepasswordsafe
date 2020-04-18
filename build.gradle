@@ -24,13 +24,13 @@ dependencies {
     testImplementation  'org.junit.jupiter:junit-jupiter-api:5.6.2',
                         'org.mockito:mockito-core:2.28.2'
     testCompile         'net.sourceforge.htmlunit:htmlunit:2.39.1'
-    testRuntimeOnly     'org.junit.jupiter:junit-jupiter-engine:5.6.2',
-                        'org.apache.derby:derby:10.15.2.0',
-                        'org.apache.derby:derbytools:10.15.2.0'
+    testRuntimeOnly     'org.junit.jupiter:junit-jupiter-engine:5.6.2'
 
 
     runtime         'opensymphony:sitemesh:2.4.2',
-                    'javax.servlet:jstl:1.2'
+                    'javax.servlet:jstl:1.2',
+                    'org.apache.derby:derby:10.15.2.0',
+                    'org.apache.derby:derbytools:10.15.2.0'
 
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
             "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
