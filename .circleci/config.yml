@@ -51,7 +51,7 @@ jobs:
 
       - run:
           name: Run the tests and generate the coverage report
-          command: gradle test jacocoTestReport
+          command: gradle test jacocoTestReport --info
 
       - run:
           name: Report coverage stats to Code Climate

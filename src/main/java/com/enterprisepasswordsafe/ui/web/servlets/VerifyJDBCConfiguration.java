@@ -47,14 +47,14 @@ public class VerifyJDBCConfiguration extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             JDBCConnectionInformation jdbcConfig = Repositories.jdbcConfigurationRepository.load();
+            request.setAttribute(JDBC_CONFIG_PROPERTY, jdbcConfig);
+
             if( request.getParameter("force") != null) {
                 verifiedConfiguration = null;
             } else if (isExistingConnectionInformationValid(jdbcConfig)) {
                 response.sendRedirect(request.getContextPath() + LOGIN_PAGE);
                 return;
             }
-
-            request.setAttribute(JDBC_CONFIG_PROPERTY, jdbcConfig);
 	    } catch (Exception e) {
         	Logger.getAnonymousLogger().log(Level.SEVERE, "Error setting JDBC configuration", e);
             ServletUtils.getInstance().generateErrorMessage( request,
