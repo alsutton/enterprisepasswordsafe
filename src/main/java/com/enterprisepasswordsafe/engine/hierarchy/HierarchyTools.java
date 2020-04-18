@@ -3,7 +3,6 @@ package com.enterprisepasswordsafe.engine.hierarchy;
 import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.database.actions.NodeObjectAction;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
-import javafx.scene.Parent;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
