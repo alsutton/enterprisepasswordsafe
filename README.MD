@@ -2,7 +2,7 @@
 
 ## License
 
-The Copyright (c) 2017 Carbon Security Ltd. <opensource@carbonsecurity.co.uk> and contributors
+The Copyright (c) 2005-2020 Al Sutton and contributors
 
 Permission to use, copy, modify, and distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -72,7 +72,7 @@ Pull requests are welcome. If you're planning to implement a new feature or work
 ## Quality Indicators
 
 #### Build
-[![CircleCI](https://circleci.com/gh/carbonsecurity/enterprisepasswordsafe/tree/master.svg?style=svg)](https://circleci.com/gh/carbonsecurity/enterprisepasswordsafe/tree/master)
+[![CircleCI](https://circleci.com/gh/alsutton/enterprisepasswordsafe/tree/master.svg?style=svg)](https://circleci.com/gh/carbonsecurity/enterprisepasswordsafe/tree/main)
 
 #### Code Metrics
 [![Maintainability](https://api.codeclimate.com/v1/badges/6b1eb77eaef47517d783/maintainability)](https://codeclimate.com/github/alsutton/enterprisepasswordsafe/maintainability)
