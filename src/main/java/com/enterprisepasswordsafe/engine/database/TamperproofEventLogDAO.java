@@ -237,7 +237,7 @@ public class TamperproofEventLogDAO
             return;
         }
 
-        daysEvents.add( new ExpandedTamperproofEventLogEntry( rs, fetchingUser, adminGroup, validateTamperstamp));
+        daysEvents.add( ExpandedTamperproofEventLogEntry.from( rs, fetchingUser, adminGroup, validateTamperstamp));
     }
 
     public static class EventsForDay

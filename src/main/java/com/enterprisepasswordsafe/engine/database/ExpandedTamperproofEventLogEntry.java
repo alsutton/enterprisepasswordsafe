@@ -36,18 +36,30 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Object representing an entry in the event log.
  */
 public final class ExpandedTamperproofEventLogEntry
-	implements Comparable<ExpandedTamperproofEventLogEntry>, JavaBean {
+		implements Comparable<ExpandedTamperproofEventLogEntry>, JavaBean {
 
-    private static final int TAMPERSTAMP_STATUS_UNKNOWN = -1,
-            				 TAMPERSTAMP_STATUS_OK = 0,
-            				 TAMPERSTAMP_STATUS_INVALID = 1;
+	private static final String LOG_TAG = "DB::ETEF";
 
-    private final String event;
+	public enum Status {
+		UNKNOWN(-1),
+		OK(0),
+		INVALID(1);
+
+		private final int numericValue;
+
+		Status(int numericValue) {
+			this.numericValue = numericValue;
+		}
+	}
+
+	private final String event;
 
 	private final String humanReadableMessage;
 
@@ -59,49 +71,71 @@ public final class ExpandedTamperproofEventLogEntry
 
 	private final String itemId;
 
-	private int tamperstampStatus;
+	private Status tamperstampStatus;
 
 	private String username;
 
 	private String item;
 
-	private final UserClassifier userClassifier = new UserClassifier();
+	private final UserClassifier userClassifier;
+	private final LogEventHasher logEventHasher;
+	private final AccessControlDAO accessControlDAO;
 
-	public ExpandedTamperproofEventLogEntry( final ResultSet rs, final User validatingUser,
-			final Group adminGroup, boolean validateTamperstamp)
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException
-	{
+	public static ExpandedTamperproofEventLogEntry from(final ResultSet rs, final User user, final Group adminGroup,
+														final boolean validateTamperstamp) throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+		return new ExpandedTamperproofEventLogEntry(new UserClassifier(), new LogEventHasher(), new LogEventParser(),
+				AccessControlDAO.getInstance(), UserDAO.getInstance(), rs, user, adminGroup, validateTamperstamp);
+	}
+
+	ExpandedTamperproofEventLogEntry(final UserClassifier userClassifier, final LogEventHasher logEventHasher,
+									 final LogEventParser logEventParser, final AccessControlDAO accessControlDAO,
+									 final UserDAO userDAO, final ResultSet rs,
+									 final User validatingUser, final Group adminGroup,
+									 boolean validateTamperstamp)
+			throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+		this.userClassifier = userClassifier;
+		this.logEventHasher = logEventHasher;
+		this.accessControlDAO = accessControlDAO;
+
 		long dateTime = rs.getLong(1);
-        timestamp = Calendar.getInstance();
-        timestamp.setTimeInMillis(dateTime);
+		timestamp = Calendar.getInstance();
+		timestamp.setTimeInMillis(dateTime);
 		String userId = rs.getString(2);
 		itemId = rs.getString(3);
 		event = rs.getString(4);
 		tamperstamp = rs.getBytes(5);
 		username = rs.getString(6);
-		humanReadableMessage = new LogEventParser().getParsedMessage(event);
+		humanReadableMessage = logEventParser.getParsedMessage(event);
 
-		if( validateTamperstamp && userId != null ) {
-			testTamperstamp(UserDAO.getInstance().getByIdDecrypted(userId, adminGroup), dateTime, itemId);
+		if (validateTamperstamp && userId != null) {
+			testTamperstamp(userDAO.getByIdDecrypted(userId, adminGroup), dateTime, itemId);
+		} else {
+			tamperstampStatus = Status.UNKNOWN;
 		}
 
-		if(itemId != null ) {
-            AccessControlDAO acDAO = AccessControlDAO.getInstance();
-            AccessControl ac = acDAO.getReadAccessControl(validatingUser, itemId);
-            if (ac != null) {
-                Password pass = new Password();
-                try {
-                    PasswordUtils.decrypt(pass, ac, rs.getBytes(7));
-                    item = pass.getUsername() + " @ " + pass.getLocation();
-                } catch (Exception ioe) {
-                    item = "";
-                }
+		if (itemId != null) {
+			populateObjectDetails(rs, validatingUser);
+		}
+	}
 
-                String booleanFlag = rs.getString(8);
-                historyStored = (booleanFlag != null && booleanFlag.equals("Y"));
-            }
+	private void populateObjectDetails(ResultSet rs, User validatingUser)
+			throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+		AccessControl ac = accessControlDAO.getReadAccessControl(validatingUser, itemId);
+		if (ac == null) {
+			return;
 		}
 
+		Password pass = new Password();
+		try {
+			PasswordUtils.decrypt(pass, ac, rs.getBytes(7));
+			item = pass.getUsername() + " @ " + pass.getLocation();
+		} catch (Exception e) {
+			Logger.getLogger(LOG_TAG).log(Level.SEVERE, "Problem fetching object", e);
+			item = "";
+		}
+
+		String booleanFlag = rs.getString(8);
+		historyStored = (booleanFlag != null && booleanFlag.equals("Y"));
 	}
 
 	/**
@@ -121,29 +155,29 @@ public final class ExpandedTamperproofEventLogEntry
 		return itemId;
 	}
 
-	public int getTamperstampStatus() {
+	public Status getTamperstampStatus() {
 		return tamperstampStatus;
 	}
 
-	public void setTamperstampStatus( int newState ) {
+	public void setTamperstampStatus(Status newState) {
 		tamperstampStatus = newState;
 	}
 
-    public final void testTamperstamp(final User logUser, final long datetime, final String itemId)
-            throws GeneralSecurityException {
-    	if( logUser == null || tamperstamp == null || userClassifier.isMasterAdmin(logUser)) {
-    		setTamperstampStatus( TAMPERSTAMP_STATUS_UNKNOWN );
-    		return;
-    	}
+	public final void testTamperstamp(final User logUser, final long datetime, final String itemId)
+			throws GeneralSecurityException {
+		if (logUser == null || tamperstamp == null || userClassifier.isMasterAdmin(logUser)) {
+			setTamperstampStatus(Status.UNKNOWN);
+			return;
+		}
 
-		byte[] stampHash = new LogEventHasher().createTamperstamp(logUser,
+		byte[] stampHash = logEventHasher.createTamperstamp(logUser,
 				datetime, event, itemId, logUser.getId());
-        if (Arrays.equals(tamperstamp, stampHash)) {
-        	setTamperstampStatus( TAMPERSTAMP_STATUS_OK );
-        } else {
-        	setTamperstampStatus( TAMPERSTAMP_STATUS_INVALID );
-        }
-    }
+		if (Arrays.equals(tamperstamp, stampHash)) {
+			setTamperstampStatus(Status.OK);
+		} else {
+			setTamperstampStatus(Status.INVALID);
+		}
+	}
 
 	public long getDateTime() {
 		return timestamp.getTimeInMillis();
@@ -169,7 +203,6 @@ public final class ExpandedTamperproofEventLogEntry
 	public String getUsername() {
 		return username;
 	}
-
 
 	/**
      * Compare this to another expanded tamper proof log entry
