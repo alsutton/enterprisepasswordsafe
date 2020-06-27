@@ -16,13 +16,11 @@
 
 package com.enterprisepasswordsafe.engine.database.derived;
 
-import com.enterprisepasswordsafe.proguard.JavaBean;
-
 /**
  * Summary information about a user, more memory efficient than a full User object.
  */
 public class UserSummary
-	implements Comparable<UserSummary>, JavaBean {
+	implements Comparable<UserSummary> {
 
     /**
      * The users id.

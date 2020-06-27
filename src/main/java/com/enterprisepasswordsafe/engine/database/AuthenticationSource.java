@@ -29,15 +29,13 @@ import com.enterprisepasswordsafe.engine.jaas.JndiLoginModuleDummy;
 import com.enterprisepasswordsafe.engine.jaas.LDAPLoginModule;
 import com.enterprisepasswordsafe.engine.jaas.LDAPSearchAndBindLoginModule;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 
 /**
  * Class representing an authentication source.
  */
 
 public final class AuthenticationSource
-        implements Comparable<AuthenticationSource>, ExternalInterface {
+        implements Comparable<AuthenticationSource> {
 
     /**
      * The name parameter.

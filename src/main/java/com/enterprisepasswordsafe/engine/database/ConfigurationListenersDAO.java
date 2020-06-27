@@ -16,14 +16,12 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class ConfigurationListenersDAO implements ExternalInterface {
+public final class ConfigurationListenersDAO {
 
     private static final Map<String, List<ConfigurationListener>> listeners = new HashMap<>();
 
@@ -48,8 +46,8 @@ public final class ConfigurationListenersDAO implements ExternalInterface {
     	}
     }
     
-    public interface ConfigurationListener extends ExternalInterface {
-    	public void configurationChange( String propertyName, String propertyValue );
+    public interface ConfigurationListener {
+    	void configurationChange(String propertyName, String propertyValue);
     }
 	
 }

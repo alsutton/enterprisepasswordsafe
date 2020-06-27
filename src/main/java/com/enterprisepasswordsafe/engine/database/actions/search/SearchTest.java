@@ -17,12 +17,11 @@
 package com.enterprisepasswordsafe.engine.database.actions.search;
 
 import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Interface implemented by all classes which represent search test criteria.
  */
-public interface SearchTest extends ExternalInterface {
+public interface SearchTest {
     /**
      * Test to see if the password meets the criteria.
      *

@@ -35,14 +35,12 @@ import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 
 /**
  * Base class for objects relating to passwords.
  */
 public abstract class PasswordBase
-	implements Comparable<PasswordBase>, AccessControledObject, ExternalInterface {
+	implements Comparable<PasswordBase>, AccessControledObject {
 
     /**
      * Number of millisecons in a day.

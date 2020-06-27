@@ -27,7 +27,6 @@ import com.enterprisepasswordsafe.engine.logging.LogEventHasher;
 import com.enterprisepasswordsafe.engine.logging.LogEventParser;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
-import com.enterprisepasswordsafe.proguard.JavaBean;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -43,7 +42,7 @@ import java.util.logging.Logger;
  * Object representing an entry in the event log.
  */
 public final class ExpandedTamperproofEventLogEntry
-		implements Comparable<ExpandedTamperproofEventLogEntry>, JavaBean {
+		implements Comparable<ExpandedTamperproofEventLogEntry> {
 
 	private static final String LOG_TAG = "DB::ETEF";
 

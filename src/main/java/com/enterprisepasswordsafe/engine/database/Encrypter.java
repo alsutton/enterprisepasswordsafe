@@ -16,14 +16,12 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.security.GeneralSecurityException;
 
 /**
  * Interface for classes which can decrypt access keys.
  */
-public interface Encrypter extends ExternalInterface {
+public interface Encrypter {
 
 	/**
 	 * Encrypt a byte array and return a byte array which is the encrypted data.
@@ -32,5 +30,5 @@ public interface Encrypter extends ExternalInterface {
 	 * 
 	 * @return The encrypted data.
 	 */
-	public byte[] encrypt(byte[] data) throws GeneralSecurityException;
+	byte[] encrypt(byte[] data) throws GeneralSecurityException;
 }

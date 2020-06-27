@@ -20,13 +20,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Representation of a node in the hierarchy.
  */
 public final class HierarchyNode
-	implements Cloneable, Comparable<HierarchyNode>, ExternalInterface {
+	implements Cloneable, Comparable<HierarchyNode> {
 	
     /**
      * The ID of the root node.
@@ -140,7 +139,7 @@ public final class HierarchyNode
     /**
      * Compare to another object.
      *
-     * @param otherObj
+     * @param otherNode
      *            The other object.
      *
      * @return The result of comparing the names of the nodes.

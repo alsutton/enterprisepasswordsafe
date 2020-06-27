@@ -27,19 +27,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
-import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
 import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeSummary;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.Cache;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Data access object for nodes in the hierarchy.
  */
 public final class HierarchyNodeDAO
-    extends StoredObjectManipulator<HierarchyNode>
-    implements ExternalInterface {
+    extends StoredObjectManipulator<HierarchyNode> {
 
 	/**
      * The shared root node.

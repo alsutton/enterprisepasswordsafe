@@ -18,7 +18,6 @@ package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.database.AccessRole.ApproverSummary;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public final class RestrictedAccessRequestDAO implements ExternalInterface {
+public final class RestrictedAccessRequestDAO {
 
 	private static final String SQL_FIELDS =
 		"request_id, item_id, requester_id, approvers_list_id, request_dt_l, viewed_dt_l, reason";

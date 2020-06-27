@@ -27,11 +27,8 @@ import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.logging.LogEventHasher;
 import com.enterprisepasswordsafe.engine.logging.LogEventMailer;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-import com.enterprisepasswordsafe.proguard.JavaBean;
 
-public class TamperproofEventLogDAO
-	implements ExternalInterface {
+public class TamperproofEventLogDAO {
 
     private static final String GET_BY_DATE_RANGE_SQL =
         	"SELECT evl.dt_l, evl.user_id, evl.item_id, evl.event, evl.stamp_b, usr.user_name, pass.password_data, pass.history_stored"
@@ -240,8 +237,7 @@ public class TamperproofEventLogDAO
         daysEvents.add( ExpandedTamperproofEventLogEntry.from( rs, fetchingUser, adminGroup, validateTamperstamp));
     }
 
-    public static class EventsForDay
-        implements JavaBean {
+    public static class EventsForDay {
     	private final String humanReadableDate;
     	private final List<ExpandedTamperproofEventLogEntry> events;
 

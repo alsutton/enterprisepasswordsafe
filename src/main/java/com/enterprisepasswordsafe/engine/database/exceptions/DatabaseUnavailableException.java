@@ -16,13 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.database.exceptions;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.sql.SQLException;
 
 public class DatabaseUnavailableException
-        extends SQLException
-        implements ExternalInterface {
+        extends SQLException {
 
     public DatabaseUnavailableException(final SQLException originalException) {
         super(originalException);

@@ -22,12 +22,11 @@ import java.sql.SQLException;
 
 import com.enterprisepasswordsafe.engine.utils.Constants;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Object handling the storage and manipulation of integration module scripts
  */
-public final class IntegrationModuleScript implements ExternalInterface{
+public final class IntegrationModuleScript {
     /**
      * The id of the script.
      */
@@ -135,8 +134,6 @@ public final class IntegrationModuleScript implements ExternalInterface{
     
     /**
      * Get the script.
-     * 
-     * @param conn The connection to the database.
      * 
      * @return The script.
      * @throws UnsupportedEncodingException 

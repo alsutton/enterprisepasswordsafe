@@ -21,9 +21,8 @@ import java.sql.SQLException;
 
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
-public final class RestrictedAccessRequest implements ExternalInterface {
+public final class RestrictedAccessRequest {
 
 	/**
 	 * The ID of this request.

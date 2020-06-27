@@ -16,12 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.utils;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 /**
  * Interface for password generator classes which can be used during an import
  */
-public interface PasswordGenerator extends ExternalInterface {
+public interface PasswordGenerator {
 
     /**
      * Generate a random password. This is used when users are imported

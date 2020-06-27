@@ -16,19 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
-
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
 import com.enterprisepasswordsafe.engine.jaas.WebLoginCallbackHandler;
@@ -36,12 +23,24 @@ import com.enterprisepasswordsafe.engine.users.UserAccessKeyEncryptionHandler;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.users.UserPasswordEncryptionHandler;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.List;
 
 /**
  * Data access object for the user objects.
  */
-public final class UserDAO extends StoredObjectManipulator<User> implements ExternalInterface {
+public final class UserDAO extends StoredObjectManipulator<User> {
 
     public static final String USER_FIELDS = "appusers.user_id, "
             + "appusers.user_name, appusers.user_pass_b, appusers.email, appusers.full_name, "

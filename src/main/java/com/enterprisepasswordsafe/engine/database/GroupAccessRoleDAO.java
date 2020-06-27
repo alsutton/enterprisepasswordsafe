@@ -19,11 +19,8 @@ package com.enterprisepasswordsafe.engine.database;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 public final class GroupAccessRoleDAO
-		extends AbstractAccessRoleDAO<GroupAccessRole>
-		implements ExternalInterface {
+		extends AbstractAccessRoleDAO<GroupAccessRole> {
 
 	private static final String GET_ALL_SQL =
 			"SELECT actor_id, role FROM group_access_roles WHERE item_id = ? ";

@@ -21,13 +21,11 @@ import java.util.Set;
 
 import com.enterprisepasswordsafe.engine.database.HierarchyNode;
 import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.proguard.JavaBean;
 
 /**
  * Class holding the details of the children of a HierarchyNode
  */
-public class HierarchyNodeChildren
-    implements JavaBean {
+public class HierarchyNodeChildren {
 
     /**
      * The list of child container nodes.

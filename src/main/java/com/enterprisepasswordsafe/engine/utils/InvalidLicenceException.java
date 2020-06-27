@@ -16,8 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.utils;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.security.GeneralSecurityException;
 
 /**
@@ -25,8 +23,7 @@ import java.security.GeneralSecurityException;
  */
 
 public class InvalidLicenceException
-        extends GeneralSecurityException
-        implements ExternalInterface {
+        extends GeneralSecurityException {
 
     /**
 	 * 

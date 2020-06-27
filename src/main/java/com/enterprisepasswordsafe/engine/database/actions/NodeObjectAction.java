@@ -18,7 +18,6 @@ package com.enterprisepasswordsafe.engine.database.actions;
 
 import com.enterprisepasswordsafe.engine.database.AccessControledObject;
 import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Interface implemented by objects wishing to perform an action on a object in the hierarchy.
@@ -26,7 +25,7 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
  * @author Al Sutton
  */
 
-public interface NodeObjectAction extends ExternalInterface {
+public interface NodeObjectAction {
     /**
      * Process a particular object.
      *

@@ -29,7 +29,6 @@ import java.util.Map;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
 import com.enterprisepasswordsafe.engine.passwords.PasswordPropertiesSerializer;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Object representing a password.
@@ -37,7 +36,7 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 public final class Password
 	extends PasswordBase
-	implements Serializable, ExternalInterface {
+	implements Serializable {
 
     /**
      * The values for a password type.

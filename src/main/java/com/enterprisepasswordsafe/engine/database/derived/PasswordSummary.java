@@ -16,14 +16,12 @@
 
 package com.enterprisepasswordsafe.engine.database.derived;
 
-import com.enterprisepasswordsafe.proguard.JavaBean;
-
 /**
  * Summary for a password, saves memory over using a full Password object. 
  */
 
 public class PasswordSummary
-        implements Comparable<PasswordSummary>, JavaBean {
+        implements Comparable<PasswordSummary> {
 	/**
 	 * The ID of the password.
 	 */

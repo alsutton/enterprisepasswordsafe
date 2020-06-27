@@ -16,14 +16,11 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class UserAccessRoleDAO
-		extends AbstractAccessRoleDAO<UserAccessRole>
-		implements ExternalInterface {
+		extends AbstractAccessRoleDAO<UserAccessRole> {
 
 	private static final String GET_ALL_SQL =
 			"SELECT actor_id, role FROM user_access_roles WHERE item_id = ? ";

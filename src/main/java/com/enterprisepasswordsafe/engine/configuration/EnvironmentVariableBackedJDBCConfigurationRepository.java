@@ -16,17 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.configuration;
 
-import com.enterprisepasswordsafe.engine.dbabstraction.SupportedDatabase;
-import com.enterprisepasswordsafe.engine.preferences.PreferencesRepository;
-import com.enterprisepasswordsafe.engine.preferences.UserPreferencesRepository;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class EnvironmentVariableBackedJDBCConfigurationRepository
-        implements JDBCConfigurationRepository, ExternalInterface {
+        implements JDBCConfigurationRepository {
 
 	private JDBCConnectionInformation connectionInformation;
 

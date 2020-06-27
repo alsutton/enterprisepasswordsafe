@@ -27,16 +27,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 /**
  * Data access object for the user access control.
- *
- * @author Compaq_Owner
  */
 
-public class AuthenticationSourceDAO
-	implements ExternalInterface {
+public class AuthenticationSourceDAO {
 
     /**
      * The SQL to get all the properties associated with a authorisation source.

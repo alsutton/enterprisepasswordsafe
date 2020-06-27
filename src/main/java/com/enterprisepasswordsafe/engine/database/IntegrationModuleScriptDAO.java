@@ -18,7 +18,6 @@ package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.database.derived.IntegrationModuleScriptSummary;
 import com.enterprisepasswordsafe.engine.utils.Constants;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
@@ -26,8 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-
-public final class IntegrationModuleScriptDAO implements ExternalInterface {
+public final class IntegrationModuleScriptDAO {
 
     private static final String GET_SQL =
             "SELECT   script_id, module_id, name, script FROM intmodules_scripts WHERE script_id = ? ";

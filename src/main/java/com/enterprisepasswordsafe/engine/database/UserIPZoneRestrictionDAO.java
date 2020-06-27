@@ -16,8 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
@@ -28,8 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class UserIPZoneRestrictionDAO
-    implements ExternalInterface {
+public final class UserIPZoneRestrictionDAO {
 
     private static final String GET_BY_USER_ID_AND_IP_SQL =
         "SELECT uipz.ip_zone_id, uipz.user_id, uipz.setting FROM user_ip_zones uipz,  ip_zones ipz "

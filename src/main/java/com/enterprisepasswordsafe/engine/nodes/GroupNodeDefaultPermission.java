@@ -1,15 +1,12 @@
 package com.enterprisepasswordsafe.engine.nodes;
 
-
 import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.proguard.JavaBean;
 
 /**
  * Class holding the details of the default permissions a group has for a node
  */
 
-public class GroupNodeDefaultPermission
-        implements JavaBean {
+public class GroupNodeDefaultPermission {
     private final Group group;
     private final String permission;
 
