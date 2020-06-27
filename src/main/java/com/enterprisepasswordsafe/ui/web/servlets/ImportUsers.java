@@ -16,18 +16,18 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserDAO;
+import com.enterprisepasswordsafe.database.Group;
+import com.enterprisepasswordsafe.database.GroupDAO;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.database.UserDAO;
 import com.enterprisepasswordsafe.engine.users.UserImporter;
 import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.PasswordGenerator;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import org.apache.commons.csv.CSVRecord;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
 public final class ImportUsers extends ImporterServlet {
 

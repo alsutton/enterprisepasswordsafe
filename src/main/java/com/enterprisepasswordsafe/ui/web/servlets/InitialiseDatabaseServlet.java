@@ -1,7 +1,7 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
+import com.enterprisepasswordsafe.database.dbpool.DatabasePool;
 import com.enterprisepasswordsafe.engine.Repositories;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

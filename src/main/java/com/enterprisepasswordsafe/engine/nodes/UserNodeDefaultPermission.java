@@ -1,6 +1,6 @@
 package com.enterprisepasswordsafe.engine.nodes;
 
-import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.derived.UserSummary;
 
 /**
  * Class holding the details of the default permissions a user has for a node

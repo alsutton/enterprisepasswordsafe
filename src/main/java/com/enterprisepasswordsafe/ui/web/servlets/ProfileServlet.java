@@ -16,22 +16,21 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.PasswordRestriction;
+import com.enterprisepasswordsafe.database.PasswordRestrictionDAO;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.database.UserDAO;
+import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
-import com.enterprisepasswordsafe.engine.database.PasswordRestrictionDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserDAO;
-import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 
 
 /**

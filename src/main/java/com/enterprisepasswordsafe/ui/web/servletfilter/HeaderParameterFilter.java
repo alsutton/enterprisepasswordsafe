@@ -16,25 +16,18 @@
 
 package com.enterprisepasswordsafe.ui.web.servletfilter;
 
+import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.database.ConfigurationListenersDAO;
+import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.engine.Repositories;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.Repositories;
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationListenersDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
-import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 
 
 public final class HeaderParameterFilter

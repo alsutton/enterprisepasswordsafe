@@ -1,14 +1,11 @@
 package com.enterprisepasswordsafe.engine.users;
 
-import com.enterprisepasswordsafe.engine.database.Decrypter;
-import com.enterprisepasswordsafe.engine.database.Encrypter;
+import com.enterprisepasswordsafe.database.Decrypter;
+import com.enterprisepasswordsafe.database.Encrypter;
 
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 
 public class UserAccessKeyEncryptionHandler implements Encrypter, Decrypter {
 

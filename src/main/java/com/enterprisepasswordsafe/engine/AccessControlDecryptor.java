@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.engine;
 
-import com.enterprisepasswordsafe.engine.database.Decrypter;
-import com.enterprisepasswordsafe.engine.database.Encrypter;
+import com.enterprisepasswordsafe.database.Decrypter;
+import com.enterprisepasswordsafe.database.Encrypter;
 
 /**
  * Interface implemented by any object capable of decrypting an access control.

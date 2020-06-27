@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.accesscontrol;
 
-import com.enterprisepasswordsafe.engine.database.Group;
+import com.enterprisepasswordsafe.database.Group;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;

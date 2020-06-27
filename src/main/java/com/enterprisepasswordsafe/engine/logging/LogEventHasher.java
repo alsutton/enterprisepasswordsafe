@@ -1,7 +1,7 @@
 package com.enterprisepasswordsafe.engine.logging;
 
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.database.TamperproofEventLog;
+import com.enterprisepasswordsafe.database.User;
 
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;

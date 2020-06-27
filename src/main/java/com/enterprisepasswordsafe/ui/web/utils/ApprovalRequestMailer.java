@@ -16,14 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.utils;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.enterprisepasswordsafe.database.*;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -32,8 +25,10 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-
-import com.enterprisepasswordsafe.engine.database.*;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -83,8 +78,8 @@ public class ApprovalRequestMailer
 	 * Constructors, stores the information and starts the sender.
 	 */
 	public ApprovalRequestMailer(final Set<AccessRole.ApproverSummary> approvers, final User requester,
-			final Password password, final RestrictedAccessRequest request,
-			final String approvalURL)
+                                 final Password password, final RestrictedAccessRequest request,
+                                 final String approvalURL)
 		throws SQLException {
 
         smtpServer = ConfigurationDAO.getValue(ConfigurationOption.SMTP_HOST);

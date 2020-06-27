@@ -16,11 +16,11 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets.exporters;
 
-import java.sql.SQLException;
-
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
+import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.database.ConfigurationOption;
 import com.enterprisepasswordsafe.ui.web.servlets.PasswordSafeBaseServlet;
+
+import java.sql.SQLException;
 
 public abstract class BaseExporter extends PasswordSafeBaseServlet {
 

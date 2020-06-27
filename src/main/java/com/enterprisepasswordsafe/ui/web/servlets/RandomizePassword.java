@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
+import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.integration.PasswordChanger;
 import com.enterprisepasswordsafe.ui.web.utils.PasswordGenerator;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;

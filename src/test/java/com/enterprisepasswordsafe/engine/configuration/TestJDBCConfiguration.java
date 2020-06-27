@@ -1,9 +1,7 @@
 package com.enterprisepasswordsafe.engine.configuration;
 
+import com.enterprisepasswordsafe.database.dbpool.DatabasePool;
 import com.enterprisepasswordsafe.engine.Repositories;
-import com.enterprisepasswordsafe.engine.dbabstraction.SupportedDatabase;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;

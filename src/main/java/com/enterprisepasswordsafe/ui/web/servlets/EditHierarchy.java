@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.derived.HierarchyNodeChildren;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.hierarchy.NodeDeleter;
 import com.enterprisepasswordsafe.engine.nodes.HierarchyManipulator;

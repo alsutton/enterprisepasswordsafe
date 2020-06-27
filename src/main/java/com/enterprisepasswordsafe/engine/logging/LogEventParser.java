@@ -1,7 +1,7 @@
 package com.enterprisepasswordsafe.engine.logging;
 
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.derived.UserSummary;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;

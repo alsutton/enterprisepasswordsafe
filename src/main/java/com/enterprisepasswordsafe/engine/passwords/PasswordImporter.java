@@ -1,7 +1,7 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
+import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.accesscontrol.*;
-import com.enterprisepasswordsafe.engine.database.*;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;

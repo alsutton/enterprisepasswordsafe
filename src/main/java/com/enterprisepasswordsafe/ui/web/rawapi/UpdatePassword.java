@@ -16,19 +16,18 @@
 
 package com.enterprisepasswordsafe.ui.web.rawapi;
 
+import com.enterprisepasswordsafe.database.AccessControlDAO;
+import com.enterprisepasswordsafe.database.Password;
+import com.enterprisepasswordsafe.database.PasswordDAO;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.database.AccessControlDAO;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.User;
 
 public final class UpdatePassword extends RawAPIServlet {
 

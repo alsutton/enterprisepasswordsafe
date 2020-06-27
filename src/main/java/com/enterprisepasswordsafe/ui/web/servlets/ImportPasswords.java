@@ -16,24 +16,19 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
-import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.passwords.PasswordImporter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 import org.apache.commons.csv.CSVRecord;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
+import java.util.List;
 
 public final class ImportPasswords extends ImporterServlet {
 

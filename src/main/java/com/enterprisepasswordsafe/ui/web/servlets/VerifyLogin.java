@@ -16,6 +16,20 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.exceptions.DatabaseUnavailableException;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
+import com.enterprisepasswordsafe.ui.web.utils.ForwardException;
+import com.enterprisepasswordsafe.ui.web.utils.RedirectException;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+
+import javax.security.auth.login.LoginException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
@@ -23,21 +37,6 @@ import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.List;
-
-import javax.security.auth.login.LoginException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.exceptions.DatabaseUnavailableException;
-import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
-import com.enterprisepasswordsafe.ui.web.utils.ForwardException;
-import com.enterprisepasswordsafe.ui.web.utils.RedirectException;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 public final class VerifyLogin extends LoginAuthenticationServlet {
 

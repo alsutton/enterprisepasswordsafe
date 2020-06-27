@@ -22,25 +22,15 @@
 
 package com.enterprisepasswordsafe.ui.web.servletfilter;
 
+import com.enterprisepasswordsafe.database.BOMFactory;
+import com.enterprisepasswordsafe.engine.Repositories;
+
+import javax.servlet.*;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
-import com.enterprisepasswordsafe.engine.Repositories;
-import com.enterprisepasswordsafe.engine.database.BOMFactory;
-import com.enterprisepasswordsafe.engine.database.exceptions.DatabaseUnavailableException;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
 
 /**
  * Filter to clean up any database connections.

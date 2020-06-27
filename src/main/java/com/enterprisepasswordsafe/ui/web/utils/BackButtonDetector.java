@@ -1,7 +1,7 @@
 package com.enterprisepasswordsafe.ui.web.utils;
 
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
+import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.database.ConfigurationOption;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

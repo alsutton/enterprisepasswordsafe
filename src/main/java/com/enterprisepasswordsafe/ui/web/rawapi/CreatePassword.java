@@ -16,21 +16,20 @@
 
 package com.enterprisepasswordsafe.ui.web.rawapi;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.database.Group;
+import com.enterprisepasswordsafe.database.GroupDAO;
+import com.enterprisepasswordsafe.database.HierarchyNode;
+import com.enterprisepasswordsafe.database.User;
 import com.enterprisepasswordsafe.engine.passwords.PasswordImporter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class CreatePassword extends RawAPIServlet {
 

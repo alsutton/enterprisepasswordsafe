@@ -16,18 +16,17 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.enterprisepasswordsafe.database.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.*;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Servlet to get the information relating to a group to be edited.
@@ -51,7 +50,7 @@ public final class EditGroup extends HttpServlet {
 
 	        if( group.isEnabled() ) {
 	            List<User> members = userDAO.getGroupMembers(group);
-	            List<User> nonMembers = new ArrayList<User>(UserDAO.getInstance().getEnabledUsers());
+	            List<User> nonMembers = new ArrayList<>(UserDAO.getInstance().getEnabledUsers());
 	            nonMembers.removeAll(members);
 
 	            Collections.sort(members);

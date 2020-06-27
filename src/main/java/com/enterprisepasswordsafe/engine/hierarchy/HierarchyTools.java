@@ -1,8 +1,8 @@
 package com.enterprisepasswordsafe.engine.hierarchy;
 
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.actions.NodeObjectAction;
-import com.enterprisepasswordsafe.engine.database.derived.HierarchyNodeChildren;
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.actions.NodeObjectAction;
+import com.enterprisepasswordsafe.database.derived.HierarchyNodeChildren;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -19,7 +19,7 @@ public class HierarchyTools {
 
     public List<HierarchyNode> getParentage(final HierarchyNode node)
             throws SQLException {
-        final List<HierarchyNode> parentage = new ArrayList<HierarchyNode>();
+        final List<HierarchyNode> parentage = new ArrayList<>();
         String currentNodeId = node.getParentId();
         while (currentNodeId != null ) {
             HierarchyNode thisNode = hierarchyNodeDAO.getById(currentNodeId);

@@ -16,11 +16,11 @@
 
 package com.enterprisepasswordsafe.engine.utils;
 
-import com.enterprisepasswordsafe.engine.database.AccessControledObject;
-import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.actions.NodeObjectAction;
+import com.enterprisepasswordsafe.database.AccessControledObject;
+import com.enterprisepasswordsafe.database.HierarchyNode;
+import com.enterprisepasswordsafe.database.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.database.actions.NodeObjectAction;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;

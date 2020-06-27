@@ -16,16 +16,15 @@
 
 package com.enterprisepasswordsafe.ui.web.rawapi;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.database.UserDAO;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserDAO;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 
 
 public abstract class RawAPIServlet extends HttpServlet {

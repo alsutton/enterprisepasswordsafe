@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.engine.reports;
 
+import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.database.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;

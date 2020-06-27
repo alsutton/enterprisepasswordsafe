@@ -16,25 +16,24 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.enterprisepasswordsafe.database.HierarchyNode;
+import com.enterprisepasswordsafe.database.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.database.actions.PasswordSearchAction;
+import com.enterprisepasswordsafe.database.actions.search.NotesContainsSearchTest;
+import com.enterprisepasswordsafe.database.actions.search.SearchTest;
+import com.enterprisepasswordsafe.database.actions.search.SystemContainsSearchTest;
+import com.enterprisepasswordsafe.database.actions.search.UsernameContainsSearchTest;
+import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.HierarchyNode;
-import com.enterprisepasswordsafe.engine.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.actions.PasswordSearchAction;
-import com.enterprisepasswordsafe.engine.database.actions.search.NotesContainsSearchTest;
-import com.enterprisepasswordsafe.engine.database.actions.search.SearchTest;
-import com.enterprisepasswordsafe.engine.database.actions.search.SystemContainsSearchTest;
-import com.enterprisepasswordsafe.engine.database.actions.search.UsernameContainsSearchTest;
-import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SearchServlet extends HttpServlet {
 

@@ -16,17 +16,16 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Map;
+import com.enterprisepasswordsafe.database.AuthenticationSource;
+import com.enterprisepasswordsafe.database.AuthenticationSourceDAO;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.AuthenticationSource;
-import com.enterprisepasswordsafe.engine.database.AuthenticationSourceDAO;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Map;
 
 
 /**

@@ -16,18 +16,17 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
+import com.enterprisepasswordsafe.database.Group;
+import com.enterprisepasswordsafe.database.GroupDAO;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
 
 /**
  * Servlet to create a new group.
@@ -41,7 +40,7 @@ public final class CreateNewGroup extends HttpServlet {
 
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
-            throws IOException, ServletException {
+            throws IOException {
     	String groupname = request.getParameter("groupname");
         GroupDAO gDAO = GroupDAO.getInstance();
 

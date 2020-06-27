@@ -16,27 +16,21 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
-import com.enterprisepasswordsafe.engine.database.PasswordRestrictionDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.engine.utils.DateFormatter;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Servlet to direct the user to the correct page upon login.

@@ -16,19 +16,18 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.IntegrationModuleConfigurationDAO;
+import com.enterprisepasswordsafe.database.IntegrationModuleScript;
+import com.enterprisepasswordsafe.database.IntegrationModuleScriptDAO;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.IntegrationModuleConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.IntegrationModuleScript;
-import com.enterprisepasswordsafe.engine.database.IntegrationModuleScriptDAO;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
 
 
 /**
@@ -66,15 +65,15 @@ public final class UpdatePasswordScripts extends HttpServlet {
 
 
 	    	String[] scriptIds = request.getParameterValues("scripts");
-	    	for(int i = 0 ; i < scriptIds.length ; i++ ) {
-		    	IntegrationModuleScript script = imsDAO.getById(scriptIds[i]);
-		    	imcDAO.store(
-		    			script,
-		    			passwordId,
-		    			IntegrationModuleConfigurationDAO.MODULE_CONFIGURED_PARAMETER,
-		    			"E"
-					);
-	    	}
+			for (String scriptId : scriptIds) {
+				IntegrationModuleScript script = imsDAO.getById(scriptId);
+				imcDAO.store(
+						script,
+						passwordId,
+						IntegrationModuleConfigurationDAO.MODULE_CONFIGURED_PARAMETER,
+						"E"
+				);
+			}
 
 	        ServletUtils.getInstance().generateMessage(request, "The password configuration has been updated.");
 	        request.getRequestDispatcher("/admin/AlterIntegrationScript").forward(request, response);

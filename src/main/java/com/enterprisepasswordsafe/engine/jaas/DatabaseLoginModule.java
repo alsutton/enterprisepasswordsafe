@@ -16,27 +16,17 @@
 
 package com.enterprisepasswordsafe.engine.jaas;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.security.Principal;
-import java.sql.SQLException;
-import java.util.Map;
-import java.util.Set;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.database.UserDAO;
 
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.callback.*;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
-import javax.security.auth.spi.LoginModule;
-
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserDAO;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePool;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
+import java.util.Map;
 
 public final class DatabaseLoginModule extends BaseLoginModule {
 
@@ -67,7 +57,7 @@ public final class DatabaseLoginModule extends BaseLoginModule {
             }
 
             loginOK = true;
-        } catch (GeneralSecurityException | SQLException | UnsupportedEncodingException ex) {
+        } catch (GeneralSecurityException | SQLException ex) {
             throw new LoginException(ex.toString());
         }
 

@@ -16,17 +16,15 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.enterprisepasswordsafe.engine.Repositories;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.Repositories;
-import com.enterprisepasswordsafe.engine.dbpool.DatabasePoolFactory;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Login extends HttpServlet {
 

@@ -16,21 +16,20 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
+import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
-import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 
 
 /**
@@ -112,12 +111,11 @@ public final class UpdateHierarchyPermissions extends HttpServlet {
      *
      * @throws SQLException Thrown if there is a problem accessing the database.
      * @throws GeneralSecurityException Thrown if there is a problem encrypting the rule.
-     * @throws UnsupportedEncodingException
-     */
+	 */
 
     private void updatePermissions(final HttpServletRequest request, final Group adminGroup,
             final HierarchyNode node, final String paramName )
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
 
         String newRule = request.getParameter(paramName);
 

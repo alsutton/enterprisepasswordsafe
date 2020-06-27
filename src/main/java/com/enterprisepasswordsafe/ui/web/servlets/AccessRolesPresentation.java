@@ -1,6 +1,6 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.engine.database.AccessRole;
+import com.enterprisepasswordsafe.database.AccessRole;
 
 /**
  * Details of how Access Roles are presented

@@ -16,25 +16,24 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.schema.AccessControlDAOInterface;
+import com.enterprisepasswordsafe.engine.accesscontrol.*;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.accesscontrol.*;
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
-import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 /**
  * Servlet to alter a users access to a password.

@@ -16,17 +16,16 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets.exporters;
 
-import java.io.PrintWriter;
+import com.enterprisepasswordsafe.database.TamperproofEventLog;
+import com.enterprisepasswordsafe.database.TamperproofEventLogDAO;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.engine.reports.AccessReport;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.reports.AccessReport;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import java.io.PrintWriter;
 
 /**
  * Servlet to generate the user access report.

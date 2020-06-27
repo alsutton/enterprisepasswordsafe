@@ -1,8 +1,8 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.database.Password;
+import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.database.Password;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;

@@ -16,22 +16,21 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.sql.SQLException;
-import java.util.Set;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.AccessRole.ApproverSummary;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.AccessRole.ApproverSummary;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.ApprovalRequestMailer;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
+import java.util.Set;
 
 public final class ViewRAPassword extends HttpServlet {
 

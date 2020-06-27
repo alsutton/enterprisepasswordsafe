@@ -16,20 +16,19 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.database.UserDAO;
+import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserDAO;
-import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 
 /**
  * Servlet to create a new user.
@@ -67,8 +66,7 @@ public final class CreateNewUser extends HttpServlet {
 	            errorMessage = "The users full name was not specified.";
 	        } else if (email == null) {
 	            email = "";
-	        } else if (password1 == null || password2 == null
-	                || !password1.equals(password2)) {
+	        } else if (password1 == null || !password1.equals(password2)) {
 	            errorMessage = "The passwords you typed did not match.";
 	        }
 
@@ -83,13 +81,11 @@ public final class CreateNewUser extends HttpServlet {
 
 	        ServletUtils.getInstance().generateMessage(request, "The user was successfully created.");
 			response.sendRedirect(request.getContextPath()+"/admin/User?userId="+newUser.getId());
-    	} catch(SQLException sqle) {
-    		throw new ServletException("The user could not be added due to an error.", sqle);
-    	} catch(GeneralSecurityException sqle) {
+    	} catch(SQLException | GeneralSecurityException sqle) {
     		throw new ServletException("The user could not be added due to an error.", sqle);
     	}
 
-    }
+	}
 
     /**
      * @see javax.servlet.Servlet#getServletInfo()

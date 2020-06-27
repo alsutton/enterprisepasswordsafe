@@ -16,12 +16,12 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets.authorisation;
 
-import java.sql.SQLException;
-
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.database.User;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
+
+import java.sql.SQLException;
 
 /**
  * AccessApprover which determines access based on a configuration option.
