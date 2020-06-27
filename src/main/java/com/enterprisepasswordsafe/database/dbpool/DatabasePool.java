@@ -37,7 +37,7 @@ public final class DatabasePool implements AutoCloseable {
 
     private static final Object VERIFICATION_LOCK = new Object();
 
-    private JDBCConnectionInformation connectionInformation;
+    private final JDBCConnectionInformation connectionInformation;
 
     public DatabasePool(final JDBCConnectionInformation connectionInformation) throws ClassNotFoundException, SQLException {
         this.connectionInformation = connectionInformation;
@@ -102,9 +102,7 @@ public final class DatabasePool implements AutoCloseable {
     }
 
     public void initialiseDatabase() throws SQLException,
-            InstantiationException, IllegalAccessException,
-            ClassNotFoundException, UnsupportedEncodingException,
-            GeneralSecurityException {
+            InstantiationException, IllegalAccessException, UnsupportedEncodingException, GeneralSecurityException {
         DALInterface databaseAbstractionLayer = DALFactory.getDAL(connectionInformation.getDbType());
 
         try (Connection conn = getConnection()) {
