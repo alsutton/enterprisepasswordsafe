@@ -21,6 +21,7 @@ import com.enterprisepasswordsafe.database.vendorspecific.DALFactory;
 import com.enterprisepasswordsafe.database.vendorspecific.DALInterface;
 import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -99,7 +100,7 @@ public class DatabaseAccessManager {
 
 
 	public synchronized DALInterface getDatabaseAbstractionLayer()
-		throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+			throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 		if(databaseAbstractionLayer != null )
 			return databaseAbstractionLayer;
 

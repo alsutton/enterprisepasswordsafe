@@ -25,22 +25,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 /**
  * Servlet to send the user to the page to list the authentication sources.
  */
 
 public final class UninstallIntegrationModuleStage2 extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 3047049034382086351L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException {
@@ -57,10 +47,6 @@ public final class UninstallIntegrationModuleStage2 extends HttpServlet {
     		throw new ServletException("The integration module can not be uninstalled at this time.");
     	}
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

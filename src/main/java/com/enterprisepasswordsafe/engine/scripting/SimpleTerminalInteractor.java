@@ -16,12 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.scripting;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.LineNumberReader;
-import java.io.OutputStream;
-import java.io.PushbackInputStream;
-import java.io.StringReader;
+import java.io.*;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,19 +39,19 @@ public class SimpleTerminalInteractor {
 	 * The stdin stream from the endpoint.
 	 */
 	
-	private InputStream stdout;
+	private final InputStream stdout;
 	
 	/**
 	 * The stderr stream from the endpoint.
 	 */
 	
-	private InputStream stderr;
+	private final InputStream stderr;
 	
 	/**
 	 * The output stream to the endpoint.
 	 */
 	
-	private OutputStream stdin;
+	private final OutputStream stdin;
 	
 	/**
 	 * Constructor. Store the reader and writer.

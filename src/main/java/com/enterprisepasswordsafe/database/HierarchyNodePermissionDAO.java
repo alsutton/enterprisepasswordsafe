@@ -5,7 +5,6 @@ import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.nodes.GroupNodeDefaultPermission;
 import com.enterprisepasswordsafe.engine.nodes.UserNodeDefaultPermission;
 
-import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -55,7 +54,7 @@ public class HierarchyNodePermissionDAO
             "SELECT hpd.permission FROM hierarchy_password_defaults hpd"
             + " WHERE hpd.actor_id = ? AND hpd.node_id = ? AND hpd.type = 'g'";
 
-    private HierarchyNodeDAO hierarchyNodeDAO;
+    private final HierarchyNodeDAO hierarchyNodeDAO;
 
     public HierarchyNodePermissionDAO() {
         hierarchyNodeDAO = HierarchyNodeDAO.getInstance();
@@ -263,13 +262,12 @@ public class HierarchyNodePermissionDAO
      *
      * @throws SQLException Thrown if there is a problem accessing the database.
      * @throws GeneralSecurityException Thrown if there is a problem accessing the data.
-     * @throws UnsupportedEncodingException
      */
 
     public void getCombinedDefaultPermissionsForNode(final String nodeId,
                                                      final Map<String, PasswordPermission> userPermMap,
                                                      final Map<String, PasswordPermission> groupPermMap)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
         if( nodeId != null ) {
             HierarchyNode thisNode = hierarchyNodeDAO.getById(nodeId);
             getCombinedDefaultPermissionsForNode(thisNode.getParentId(), userPermMap, groupPermMap);

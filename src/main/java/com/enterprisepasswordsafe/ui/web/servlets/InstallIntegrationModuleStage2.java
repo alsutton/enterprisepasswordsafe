@@ -26,22 +26,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-
 /**
  * Servlet to send the user to the page to list the authentication sources.
  */
 
 public final class InstallIntegrationModuleStage2 extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 5266941264716889249L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
 	protected void doPost( final HttpServletRequest request, final HttpServletResponse response )
             throws ServletException, IOException {
@@ -73,10 +63,6 @@ public final class InstallIntegrationModuleStage2 extends HttpServlet {
     	ServletUtils.getInstance().generateMessage(request, "The module has been installed.");
     	request.getRequestDispatcher("/admin/IntegrationModules").forward(request, response);
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

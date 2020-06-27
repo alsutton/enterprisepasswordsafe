@@ -31,13 +31,13 @@ public final class IntegrationModuleScript {
      * The id of the script.
      */
 
-    private String scriptId;
+    private final String scriptId;
 
     /**
      * The ID of the module involved
      */
 
-    private String moduleId;
+    private final String moduleId;
 
     /**
      * The name of the script.

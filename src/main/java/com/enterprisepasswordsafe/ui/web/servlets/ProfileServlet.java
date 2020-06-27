@@ -107,8 +107,7 @@ public final class ProfileServlet extends HttpServlet {
         User thisUser = SecurityUtils.getRemoteUser(request);
         try {
 	        String currentPassword = request.getParameter("currentpassword");
-	        if (currentPassword == null
-	         || !thisUser.checkPassword(currentPassword)) {
+	        if (!thisUser.checkPassword(currentPassword)) {
 	            throw new ServletException("The current password was not entered correctly.");
 	        }
 

@@ -56,6 +56,10 @@ public final class ExpandedTamperproofEventLogEntry
 		Status(int numericValue) {
 			this.numericValue = numericValue;
 		}
+
+		public int getNumericValue() {
+			return numericValue;
+		}
 	}
 
 	private final String event;
@@ -72,7 +76,7 @@ public final class ExpandedTamperproofEventLogEntry
 
 	private Status tamperstampStatus;
 
-	private String username;
+	private final String username;
 
 	private String item;
 

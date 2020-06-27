@@ -217,7 +217,7 @@ public class GroupAccessControlDAO
                 if (rs.next()) {
                     String groupId = rs.getString(4);
                     Group group = GroupDAO.getInstance().getByIdDecrypted(groupId, theUser);
-                    return buildFromResultSet(rs, 1, group);
+                    return buildFromResultSet(rs, group);
                 }
             }
         }
@@ -227,7 +227,7 @@ public class GroupAccessControlDAO
 
 
     public GroupAccessControl getGac(final Group group, final String passwordId)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
     	if(group == null || passwordId == null) {
     		return null;
     	}
@@ -246,7 +246,7 @@ public class GroupAccessControlDAO
             ps.setString(2, passwordId);
             ps.setMaxRows(1);
             try(ResultSet rs = ps.executeQuery()) {
-	            return rs.next() ? buildFromResultSet(rs, 1, group) : null;
+	            return rs.next() ? buildFromResultSet(rs, group) : null;
             }
         }
     }
@@ -268,7 +268,7 @@ public class GroupAccessControlDAO
     }
 
     public GroupAccessControl create(Group group, AccessControledObject item, PasswordPermission permission)
-    	throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+    	throws SQLException, GeneralSecurityException {
     	return create(group, item, permission, true);
     }
 
@@ -331,16 +331,16 @@ public class GroupAccessControlDAO
     	}
     }
 
-    static GroupAccessControl buildFromResultSet(final ResultSet rs, final int startIdx,
-                                                  final AccessControlDecryptor decryptor)
+    static GroupAccessControl buildFromResultSet(final ResultSet rs,
+                                                 final AccessControlDecryptor decryptor)
             throws SQLException, GeneralSecurityException {
 	    return GroupAccessControl.builder()
-                .withItemId(rs.getString(startIdx))
+                .withItemId(rs.getString(1))
                 .withModifyKey(
-                        KeyUtils.decryptPrivateKey(rs.getBytes(startIdx+1), decryptor.getKeyDecrypter()))
+                        KeyUtils.decryptPrivateKey(rs.getBytes(1 +1), decryptor.getKeyDecrypter()))
                 .withReadKey(
-                        KeyUtils.decryptPublicKey(rs.getBytes(startIdx+2), decryptor.getKeyDecrypter()))
-                .withAccessorId(rs.getString(startIdx+3))
+                        KeyUtils.decryptPublicKey(rs.getBytes(1 +2), decryptor.getKeyDecrypter()))
+                .withAccessorId(rs.getString(1 +3))
                 .build();
 
     }

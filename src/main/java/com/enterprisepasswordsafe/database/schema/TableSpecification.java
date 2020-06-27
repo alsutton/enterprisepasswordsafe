@@ -29,19 +29,19 @@ public class TableSpecification
 	 * The name of the table.
 	 */
 
-	private String m_name;
+	private final String m_name;
 
 	/**
 	 * The columns in the table.
 	 */
 
-	private List<ColumnSpecification> m_columnSpecs;
+	private final List<ColumnSpecification> m_columnSpecs;
 
 	/**
 	 * The indices in the table
 	 */
 	
-	private List<IndexSpecification> m_indexes;
+	private final List<IndexSpecification> m_indexes;
 	
 	/**
 	 * Constructor.

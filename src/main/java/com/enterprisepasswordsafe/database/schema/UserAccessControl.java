@@ -96,7 +96,7 @@ public final class UserAccessControl
 			createIfNotPresent(MKEY_COLUMN);
 			createIfNotPresent(RKEY_COLUMN);
 			createTableIfNotPresent(USER_ID_COLUMN);
-			renameColumn("password_id", ITEM_ID_COLUMN);
+			renameColumn(ITEM_ID_COLUMN);
 		}
 	}
 

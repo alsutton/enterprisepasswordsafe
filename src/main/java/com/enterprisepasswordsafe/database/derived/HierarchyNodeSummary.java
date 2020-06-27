@@ -27,13 +27,13 @@ public class HierarchyNodeSummary
 	 * The ID for the node.
 	 */
 	
-	private String id;
+	private final String id;
 	
 	/**
 	 * The parentage text for the node
 	 */
 	
-	private String parentage;
+	private final String parentage;
 	
 	/**
 	 * Constructor stores information

@@ -44,16 +44,15 @@ public class IPZoneDAO
 	}
 
     @Override
-    IPZone newInstance(ResultSet rs, int startIndex) throws SQLException {
+    IPZone newInstance(ResultSet rs) throws SQLException {
         return new IPZone(rs);
     }
 
-    public IPZone create( String name, int version, String firstIp, String lastIp )
+    public void create(String name, int version, String firstIp, String lastIp )
 		throws SQLException {
 		IPZone newZone = new IPZone(name, version, firstIp, lastIp);
 		store(newZone);
-		return newZone;
-	}
+    }
 
     public void store( final IPZone zone )
         throws SQLException {

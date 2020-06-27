@@ -32,11 +32,6 @@ import java.io.IOException;
 public final class IntegrationModuleScripts extends HttpServlet {
 
 	/**
-	 *
-	 */
-	private static final long serialVersionUID = 3241549479926431269L;
-
-	/**
 	 * The parameter name for the integration module name.
 	 */
 
@@ -54,10 +49,6 @@ public final class IntegrationModuleScripts extends HttpServlet {
 
 	public static final String IM_MODULE = "module";
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
     	throws ServletException, IOException {
@@ -77,10 +68,6 @@ public final class IntegrationModuleScripts extends HttpServlet {
     	}
     	request.getRequestDispatcher("/admin/im_scripts.jsp").forward(request, response);
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

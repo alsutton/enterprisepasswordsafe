@@ -16,10 +16,6 @@
 
 package com.enterprisepasswordsafe.database;
 
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
-
 /**
  * A factory for access controlled objects.
  */
@@ -31,28 +27,22 @@ public interface AccessControledObjectDAO {
 	 * 
 	 * @param fetchingUser The user the object is being fetched for.
 	 * @param id The ID of the object to fetch.
-	 * 
-	 * @throws SQLException
-	 * @throws GeneralSecurityException 
-	 * @throws UnsupportedEncodingException 
-	 */
+	 *
+     */
 
 	AccessControledObject getById(final User fetchingUser, final String id)
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException;
+    ;
 
 	/**
 	 * Delete an access controlled object via its' ID
 	 * 
 	 * @param deletingUser The user deleting the object
 	 * @param aco The object being deleted.
-	 * 
-	 * @throws SQLException
-	 * @throws GeneralSecurityException 
-	 * @throws UnsupportedEncodingException 
-	 */
+	 *
+     */
 
 	void delete(final User deletingUser, final AccessControledObject aco)
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException;
+    ;
 	
 	/**
 	 * Gets an access controlled object for a specific user. This method should apply
@@ -60,6 +50,6 @@ public interface AccessControledObjectDAO {
 	 */
 
 	AccessControledObject getByIdForUser(final User theUser, final String id)
-    	throws SQLException, GeneralSecurityException, UnsupportedEncodingException;
+    ;
 	
 }

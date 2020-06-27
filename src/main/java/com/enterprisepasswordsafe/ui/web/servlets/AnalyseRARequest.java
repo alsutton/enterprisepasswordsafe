@@ -36,31 +36,14 @@ import java.sql.SQLException;
 
 public final class AnalyseRARequest extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 8469518844488683757L;
-
-	/**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#getGenericErrorMessage()
-     */
-
     protected String getGenericErrorMessage() {
         return "You can not analyse the request at the current time.";
     }
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#getErrorPage()
-     */
 
     protected String getErrorPage() {
         return ServletPaths.getExplorerPath();
     }
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
     protected void doPost( final HttpServletRequest request, final HttpServletResponse response)
     	throws IOException, ServletException {
@@ -93,7 +76,7 @@ public final class AnalyseRARequest extends HttpServlet {
 	    		request.setAttribute("aco", aco);
 	    	}
 		} catch (UnsupportedEncodingException e) {
-			; // Do nothing, the password could not be accessed
+			// Do nothing, the password could not be accessed
 		} catch (GeneralSecurityException e) {
 			throw new ServletException("You can not analyse the request at the current time.", e);
 		} catch (SQLException e) {

@@ -23,8 +23,8 @@ public class RestrictedAccessEnforcer {
 
     private static final String REASON_PAGE = "/system/view_password_reason.jsp";
 
-    private ConfigurationDAO configurationDAO;
-    private ServletUtils servletUtils;
+    private final ConfigurationDAO configurationDAO;
+    private final ServletUtils servletUtils;
 
     public RestrictedAccessEnforcer() {
         configurationDAO = ConfigurationDAO.getInstance();

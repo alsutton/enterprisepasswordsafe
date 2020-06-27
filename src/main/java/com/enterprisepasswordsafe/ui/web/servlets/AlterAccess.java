@@ -33,7 +33,7 @@ import java.sql.SQLException;
 
 public final class AlterAccess extends HttpServlet {
 
-	private UserClassifier userClassifier = new UserClassifier();
+	private final UserClassifier userClassifier = new UserClassifier();
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)

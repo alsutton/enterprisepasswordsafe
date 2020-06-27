@@ -25,7 +25,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -115,7 +114,7 @@ public final class Group
 
     private int status;
 
-    private static ThreadLocal<Cipher> sEncryptionCipherThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Cipher> sEncryptionCipherThreadLocal = new ThreadLocal<>();
 
     /**
      * Creates a new instance of Group using the specified values.
@@ -161,7 +160,7 @@ public final class Group
      */
 
     public Group(final String name)
-            throws NoSuchAlgorithmException, NoSuchProviderException {
+            throws NoSuchAlgorithmException {
         this(IDGenerator.getID(), name, true);
     }
 

@@ -32,15 +32,6 @@ import java.sql.SQLException;
 
 public final class DeleteIMScript extends HttpServlet {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 5482677056310736379L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -56,10 +47,6 @@ public final class DeleteIMScript extends HttpServlet {
     		throw new ServletException("The script can not be deleted at this time.", sqle);
     	}
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

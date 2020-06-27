@@ -37,31 +37,31 @@ public class AuthenticationSourceConfigurationOption
 	 * The order to display this option on screen.
 	 */
 	
-	private int displayOrder;
+	private final int displayOrder;
 	
 	/**
 	 * The name to show the user.
 	 */
 	
-	private String displayName;
+	private final String displayName;
 	
 	/**
 	 * The internal name.
 	 */
 	
-	private String internalName;
+	private final String internalName;
 	
 	/**
 	 * The type of option
 	 */
 	
-	private String optionType;
+	private final String optionType;
 	
 	/**
 	 * The possible values
 	 */
 	
-	private Set<AuthenticationSourceConfigurationOptionValue> values;
+	private final Set<AuthenticationSourceConfigurationOptionValue> values;
 
 	/**
 	 * The value for this parameter

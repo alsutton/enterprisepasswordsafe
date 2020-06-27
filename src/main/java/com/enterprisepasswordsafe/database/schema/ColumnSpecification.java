@@ -42,25 +42,25 @@ public final class ColumnSpecification
 	 * The name of the table.
 	 */
 
-	private String name;
+	private final String name;
 
 	/**
 	 * The type.
 	 */
 
-	private Integer type;
+	private final Integer type;
 
 	/**
 	 * Whether or not this column should only contain unique values.
 	 */
 
-	private boolean uniqueOnly;
+	private final boolean uniqueOnly;
 
 	/**
 	 * Whether or not this column should allow null values
 	 */
 
-	private boolean rejectNulls;
+	private final boolean rejectNulls;
 
 	/**
 	 * Constructor.

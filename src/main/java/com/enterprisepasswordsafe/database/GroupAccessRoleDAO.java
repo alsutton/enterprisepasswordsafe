@@ -41,12 +41,11 @@ public final class GroupAccessRoleDAO
 		super(GET_ALL_SQL, GET_SQL, DELETE_SQL);
 	}
 
-	public GroupAccessRole create(final String itemId, final String actorId, final String role)
+	public void create(final String itemId, final String actorId, final String role)
 		throws SQLException {
 		GroupAccessRole gar = new GroupAccessRole(itemId, actorId, role);
 		store(gar);
-		return gar;
-	}
+    }
 
 	public void store( final GroupAccessRole role )
 		throws SQLException {

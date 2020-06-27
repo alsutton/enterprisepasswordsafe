@@ -14,15 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/**
- * 
- */
 package com.enterprisepasswordsafe.ui.web.jsptags;
-
-import java.io.IOException;
 
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.TagSupport;
+import java.io.IOException;
 
 /**
  * Tag to check for an existing value for a text input tag. 
@@ -73,8 +69,7 @@ public class TextInputTag extends TagSupport {
 			}
 							
 
-			String outputValue = 
-				(String) pageContext.getRequest().getParameter(name);
+			String outputValue = pageContext.getRequest().getParameter(name);
 			if( outputValue == null
 			||	outputValue.length() == 0 ) {
 				outputValue = value;

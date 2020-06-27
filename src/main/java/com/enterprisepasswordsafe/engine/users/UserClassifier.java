@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class UserClassifier {
     public static final String ADMIN_USER_ID = "0";
 
-    private MembershipDAO membershipDAO;
+    private final MembershipDAO membershipDAO;
 
     public UserClassifier() {
         membershipDAO = MembershipDAO.getInstance();

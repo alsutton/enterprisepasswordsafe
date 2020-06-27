@@ -19,6 +19,7 @@ package com.enterprisepasswordsafe.database;
 import com.enterprisepasswordsafe.engine.integration.PasswordChanger;
 import com.enterprisepasswordsafe.engine.integration.PasswordChangerProperty;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -43,7 +44,7 @@ public final class IntegrationModuleDAO
 	}
 
     @Override
-    IntegrationModule newInstance(ResultSet rs, int startIndex) throws SQLException {
+    IntegrationModule newInstance(ResultSet rs) throws SQLException {
         return new IntegrationModule(rs);
     }
 
@@ -54,7 +55,7 @@ public final class IntegrationModuleDAO
     	// a configuration problem.
     	Class<?> integratorClass = Class.forName(module.getClassName());
 
-    	PasswordChanger changer = (PasswordChanger) integratorClass.newInstance();
+    	PasswordChanger changer = (PasswordChanger) integratorClass.getDeclaredConstructor().newInstance();
     	changer.install(BOMFactory.getDatabaseAbstractionLayer().getConnection());
 
     	// Delete the details of the node.
@@ -67,7 +68,7 @@ public final class IntegrationModuleDAO
     	// allows the uninstaller to stop the removal if uninstallation
     	// will cause a configuration problem.
     	Class<?> integratorClass = Class.forName(module.getClassName());
-    	PasswordChanger changer = (PasswordChanger) integratorClass.newInstance();
+    	PasswordChanger changer = (PasswordChanger) integratorClass.getDeclaredConstructor().newInstance();
     	changer.uninstall(BOMFactory.getDatabaseAbstractionLayer().getConnection());
 
     	// Delete the details of the node.
@@ -88,15 +89,15 @@ public final class IntegrationModuleDAO
     }
 
     public PasswordChanger getPasswordChangerInstance(final IntegrationModule module)
-    	throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     	Class<?> integratorClass = Class.forName(module.getClassName());
-        return (PasswordChanger) integratorClass.newInstance();
+        return (PasswordChanger) integratorClass.getDeclaredConstructor().newInstance();
     }
 
     public List<PasswordChangerProperty> getPasswordChangerProperties( final IntegrationModule module )
-    	throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     	Class<?> integratorClass = Class.forName(module.getClassName());
-    	PasswordChanger changer = (PasswordChanger) integratorClass.newInstance();
+    	PasswordChanger changer = (PasswordChanger) integratorClass.getDeclaredConstructor().newInstance();
     	return changer.getProperties();
     }
 

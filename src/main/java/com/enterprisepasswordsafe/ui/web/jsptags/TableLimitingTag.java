@@ -14,15 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/**
- * 
- */
 package com.enterprisepasswordsafe.ui.web.jsptags;
-
-import java.io.IOException;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
+import java.io.IOException;
 
 /**
  * Tag to check for an existing value for a text input tag. 
@@ -77,7 +73,7 @@ public class TableLimitingTag extends TagSupport {
 	/**
 	 * Set the current entry number.
 	 * 
-	 * @param newCurrentIndex The current entry number.
+	 * @param newCounterVariable The current entry number.
 	 */
 	public void setCounterVariable(String newCounterVariable) {
 		counterVariable = newCounterVariable;

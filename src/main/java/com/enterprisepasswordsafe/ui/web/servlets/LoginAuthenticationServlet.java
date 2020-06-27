@@ -35,7 +35,7 @@ public abstract class LoginAuthenticationServlet extends HttpServlet {
 
 	public static final String USER_OBJECT_SESSION_ATTRIBUTE = "UserObject";
 
-	private UserClassifier userClassifier = new UserClassifier();
+	private final UserClassifier userClassifier = new UserClassifier();
 
     final void storeUserInformation(final HttpSession session, final User theUser)
         throws SQLException, NoSuchAlgorithmException {

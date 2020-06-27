@@ -92,7 +92,7 @@ public final class GroupAccessRolesTable
 
 		if(schemaID < SchemaVersion.SCHEMA_201112) {
 			createTableIfNotPresent(ACTOR_ID_COLUMN);
-			renameColumn("password_id", ITEM_ID_COLUMN);
+			renameColumn(ITEM_ID_COLUMN);
 		}
 	}
 

@@ -91,7 +91,7 @@ public final class UserAccessRoles
 
 		if(schemaID < SchemaVersion.SCHEMA_201112) {
 			createTableIfNotPresent(ROLE_COLUMN);
-			renameColumn("password_id", ITEM_ID_COLUMN);
+			renameColumn(ITEM_ID_COLUMN);
 		}
 	}
 

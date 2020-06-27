@@ -26,7 +26,7 @@ import java.security.PublicKey;
  */
 
 public final class GroupAccessControl extends AccessControl {
-    private Group group;
+    private final Group group;
 
     public GroupAccessControl(final String newGroupId, final String newItemId,
             final PrivateKey newModifyKey, final PublicKey newReadKey) {

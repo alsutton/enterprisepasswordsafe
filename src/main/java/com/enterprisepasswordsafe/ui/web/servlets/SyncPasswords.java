@@ -33,15 +33,10 @@ import java.sql.SQLException;
 
 
 /**
- * Syncrhonizes the users external and internal passwords.
+ * Synchronises the users external and internal passwords.
  */
 
 public final class SyncPasswords extends LoginAuthenticationServlet {
-
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1603457738677810283L;
 
 	/**
 	 * The parameter name for the internal password
@@ -73,25 +68,14 @@ public final class SyncPasswords extends LoginAuthenticationServlet {
 
     private static final String ERROR_PAGE = "/Login";
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#getGenericErrorMessage()
-     */
     protected String getGenericErrorMessage() {
         return GENERIC_ERROR_MESSAGE;
     }
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#getErrorPage()
-     */
     protected String getErrorPage() {
         return ERROR_PAGE;
     }
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.BaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest,
-     *      javax.servlet.http.HTTPServletResponse)
-     */
     @Override
 	protected void doPost( final HttpServletRequest request, final HttpServletResponse response)
     		throws ServletException, IOException {
@@ -149,9 +133,6 @@ public final class SyncPasswords extends LoginAuthenticationServlet {
         }
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Handle synchronizing a users EPS and login source password";

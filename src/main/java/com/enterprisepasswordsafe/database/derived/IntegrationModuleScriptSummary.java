@@ -22,31 +22,31 @@ implements Comparable<IntegrationModuleScriptSummary> {
 	 * The ID of the script.
 	 */
 	
-	private String scriptId;
+	private final String scriptId;
 	
 	/**
 	 * The name of the script;
 	 */
 	
-	private String name;
+	private final String name;
 	
 	/**
 	 * The id of the integration module the script is configured for
 	 */
 	
-	private String moduleId;
+	private final String moduleId;
 	
 	/**
 	 * The name of the integration module the script is configured for
 	 */
 	
-	private String moduleName;
+	private final String moduleName;
 	
 	/**
 	 * Whether or not the script is active.
 	 */
 	
-	private boolean isActive;
+	private final boolean isActive;
 	
 	/**
 	 * Constructor. Stores the information passed to it.

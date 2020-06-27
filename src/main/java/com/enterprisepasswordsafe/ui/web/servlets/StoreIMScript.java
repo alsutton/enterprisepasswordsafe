@@ -35,11 +35,6 @@ import java.util.Enumeration;
 public final class StoreIMScript extends HttpServlet {
 
 	/**
-	 *
-	 */
-	private static final long serialVersionUID = 7953428908985752405L;
-
-	/**
 	 * The message shown when the script is store successfully.
 	 */
 
@@ -58,10 +53,6 @@ public final class StoreIMScript extends HttpServlet {
 
 	public static final int MODULE_CONFIG_PREFIX_LENGTH = MODULE_CONFIG_PREFIX.length();
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -111,10 +102,6 @@ public final class StoreIMScript extends HttpServlet {
     		throw new ServletException("The script could not be stored at the current time.", sqle);
     	}
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

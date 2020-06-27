@@ -5,9 +5,10 @@ public enum PasswordPermission {
     READ(true, false, 'V', "1", "R"),
     MODIFY(true, true, 'M', "2", "RM");
 
-    public boolean allowsRead, allowsModification;
-    private char charRepresentation;
-    private String[] stringRepresentations;
+    public final boolean allowsRead;
+    public final boolean allowsModification;
+    private final char charRepresentation;
+    private final String[] stringRepresentations;
 
     PasswordPermission(boolean allowsRead, boolean allowsModification,
                        char charRepresentation, String... stringRepresentations) {

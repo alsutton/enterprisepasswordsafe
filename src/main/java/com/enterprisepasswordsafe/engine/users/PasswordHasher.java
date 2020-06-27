@@ -36,7 +36,7 @@ public class PasswordHasher {
                 System.arraycopy(saltedHash, 1, hash, 0, hash.length);
                 break;
             case 2:
-                int saltLength = (int)saltedHash[1];
+                int saltLength = saltedHash[1];
                 salt = new byte[saltLength];
                 System.arraycopy(saltedHash,2,salt,0,saltLength);
                 hash = new byte[saltedHash.length - (saltLength+2)];

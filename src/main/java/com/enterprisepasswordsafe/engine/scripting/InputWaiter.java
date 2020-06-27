@@ -7,9 +7,9 @@ import java.io.PushbackInputStream;
 class InputWaiter extends Thread {
 
     private static final int PUSHBACK_SIZE = 1024;
-    private PushbackInputStream reader;
-    private String text;
-    private long waitTimeout;
+    private final PushbackInputStream reader;
+    private final String text;
+    private final long waitTimeout;
     private boolean textFound = false;
     private IOException ioException;
 
@@ -55,7 +55,7 @@ class InputWaiter extends Thread {
         } catch( IOException ioe ) {
             ioException = ioe;
         } catch( InterruptedException ie ) {
-
+            // Continue if interrupted
         }
     }
 

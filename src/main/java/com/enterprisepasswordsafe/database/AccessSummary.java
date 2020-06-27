@@ -26,37 +26,37 @@ public class AccessSummary
 	 * The actor id.
 	 */
 	
-	private String id;
+	private final String id;
 	
 	/**
 	 * The actor name.
 	 */
 	
-	private String name;
+	private final String name;
 
 	/**
 	 * Whether or not this actor can perform a read.
 	 */
 	
-	private boolean canRead;
+	private final boolean canRead;
 	
 	/**
 	 * Whether or not this actor can perform a read.
 	 */
 	
-	private boolean canModify;
+	private final boolean canModify;
 	
 	/**
 	 * Whether or not this actor can approve restricted access requests.
 	 */
 	
-	private boolean canApproveRARequests;
+	private final boolean canApproveRARequests;
 	
 	/**
 	 * Whether or not this actor can approve restricted access requests.
 	 */
 	
-	private boolean canViewHistory;
+	private final boolean canViewHistory;
 	
 	/**
 	 * Constructor stores values.

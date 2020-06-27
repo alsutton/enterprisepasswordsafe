@@ -33,15 +33,7 @@ import java.sql.SQLException;
  */
 
 public final class DeleteIMScriptStage2 extends HttpServlet {
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -6614533166280135283L;
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -59,10 +51,6 @@ public final class DeleteIMScriptStage2 extends HttpServlet {
     	}
     	response.sendRedirect(response.encodeRedirectURL("/admin/IntegrationModuleScripts"));
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

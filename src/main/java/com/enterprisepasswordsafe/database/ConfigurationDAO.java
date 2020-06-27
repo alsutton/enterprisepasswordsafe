@@ -178,7 +178,7 @@ public final class ConfigurationDAO
      * Class holding a cached configuration value.
      */
 
-    private class CachedValue {
+    private static class CachedValue {
     	/**
     	 * The maximum life of a cached entry.
     	 */

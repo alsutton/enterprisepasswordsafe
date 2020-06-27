@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 public class BackButtonDetector {
 
-    private ConfigurationDAO configurationDAO;
+    private final ConfigurationDAO configurationDAO;
 
     public BackButtonDetector() {
         configurationDAO = ConfigurationDAO.getInstance();

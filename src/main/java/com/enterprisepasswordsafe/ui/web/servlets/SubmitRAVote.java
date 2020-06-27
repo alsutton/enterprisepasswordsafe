@@ -33,15 +33,6 @@ import java.sql.SQLException;
 
 public final class SubmitRAVote extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 6172797092993696539L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
     	throws ServletException, IOException {
@@ -74,10 +65,6 @@ public final class SubmitRAVote extends HttpServlet {
         	throw new ServletException("You can not submit your vote at the current time.", sqle);
         }
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

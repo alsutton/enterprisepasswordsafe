@@ -18,6 +18,7 @@ package com.enterprisepasswordsafe.database.vendorspecific;
 
 import com.enterprisepasswordsafe.database.vendorspecific.implementations.GenericDAL;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,11 +29,11 @@ import java.util.logging.Logger;
 public class DALFactory
 {
 	public static DALInterface getDAL( final String databaseType )
-		throws InstantiationException, 
-		IllegalAccessException {
+			throws InstantiationException,
+			IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 		Class<? extends DALInterface> dalClass = getDALClass(databaseType);
 		Logger.getAnonymousLogger().log(Level.INFO, "Using DAL "+dalClass.getName());
-		return dalClass.newInstance();
+		return dalClass.getDeclaredConstructor().newInstance();
 	}
 
 	private static Class<? extends DALInterface> getDALClass(final String databaseType) {

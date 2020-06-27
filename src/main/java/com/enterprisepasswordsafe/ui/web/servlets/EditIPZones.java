@@ -25,22 +25,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
-
 /**
  * Servlet to send the user to the page to list the authentication sources.
  */
 
 public final class EditIPZones extends HttpServlet {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -7585735168389727767L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
 	@Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -51,10 +41,6 @@ public final class EditIPZones extends HttpServlet {
     		throw new ServletException("The IP zone list is unavailable at the current time.", sqle);
     	}
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

@@ -27,6 +27,6 @@ public interface PasswordGenerator {
      *
      * @return The randomly generated password
      */
-    public String getRandomPassword();
+    String getRandomPassword();
 
 }

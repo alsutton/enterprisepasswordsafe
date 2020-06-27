@@ -96,7 +96,7 @@ public final class RestrictedAccessRequestsTable
 
 		if(schemaID < SchemaVersion.SCHEMA_201112) {
 			createTableIfNotPresent(REQUEST_ID_COLUMN);
-			renameColumn("password_id", ITEM_ID_COLUMN);
+			renameColumn(ITEM_ID_COLUMN);
 		}
 	}
 

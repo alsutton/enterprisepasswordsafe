@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 public abstract class HierarchyManipulator {
 
-    HierarchyNodeDAO hierarchyNodeDAO;
+    final HierarchyNodeDAO hierarchyNodeDAO;
 
     public HierarchyManipulator() {
         this(HierarchyNodeDAO.getInstance());
@@ -18,7 +18,7 @@ public abstract class HierarchyManipulator {
         this.hierarchyNodeDAO = hierarchyNodeDAO;
     }
 
-    public abstract HierarchyNode performAction(final HierarchyNode node, final HierarchyNode newParent)
+    public abstract void performAction(final HierarchyNode node, final HierarchyNode newParent)
             throws SQLException, GeneralSecurityException;
 
     void ensureParentIsValid(final HierarchyNode newParent)
@@ -66,13 +66,12 @@ public abstract class HierarchyManipulator {
             super(hierarchyNodeDAO);
         }
 
-        public HierarchyNode performAction(final HierarchyNode node, final HierarchyNode newParent)
+        public void performAction(final HierarchyNode node, final HierarchyNode newParent)
                 throws SQLException, GeneralSecurityException {
             ensureParentIsValid(newParent);
             ensureOperationWontCauseInfiniteRecursion(node, newParent);
             node.setParentId(newParent.getNodeId());
             hierarchyNodeDAO.store(node);
-            return node;
         }
     }
 
@@ -82,10 +81,10 @@ public abstract class HierarchyManipulator {
             super(hierarchyNodeDAO);
         }
 
-        public HierarchyNode performAction(final HierarchyNode node, final HierarchyNode newParent)
+        public void performAction(final HierarchyNode node, final HierarchyNode newParent)
                 throws SQLException, GeneralSecurityException {
             ensureParentIsValid(newParent);
-            return performCopy(node, newParent);
+            performCopy(node, newParent);
         }
 
         HierarchyNode performCopy(final HierarchyNode node, final HierarchyNode newParent)
@@ -102,11 +101,11 @@ public abstract class HierarchyManipulator {
             super(hierarchyNodeDAO);
         }
 
-        public HierarchyNode performAction(final HierarchyNode node, final HierarchyNode newParent)
+        public void performAction(final HierarchyNode node, final HierarchyNode newParent)
             throws SQLException, GeneralSecurityException {
             ensureParentIsValid(newParent);
             ensureOperationWontCauseInfiniteRecursion(node, newParent);
-            return deepCopyToWork(node, newParent);
+            deepCopyToWork(node, newParent);
         }
 
         private HierarchyNode deepCopyToWork(final HierarchyNode node, final HierarchyNode newParent)

@@ -8,8 +8,8 @@ import java.sql.SQLException;
 
 public class Summaries {
 
-    HierarchyTools hierarchyTools;
-    HierarchyNodeDAO hierarchyNodeDAO;
+    final HierarchyTools hierarchyTools;
+    final HierarchyNodeDAO hierarchyNodeDAO;
 
     public Summaries() {
         hierarchyTools = new HierarchyTools();

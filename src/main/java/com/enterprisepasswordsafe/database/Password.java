@@ -119,7 +119,7 @@ public final class Password
 
     private byte[] encryptedPasswordProperties;
 
-    private PasswordPropertiesSerializer passwordPropertiesSerializer = new PasswordPropertiesSerializer();
+    private final PasswordPropertiesSerializer passwordPropertiesSerializer = new PasswordPropertiesSerializer();
 
     public Password() throws NoSuchAlgorithmException, NoSuchProviderException {
     	super();

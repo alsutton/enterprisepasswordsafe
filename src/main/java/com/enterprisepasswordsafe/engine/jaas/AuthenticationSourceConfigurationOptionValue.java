@@ -27,13 +27,13 @@ public class AuthenticationSourceConfigurationOptionValue
 	 * The name to show the user.
 	 */
 	
-	private String displayName;
+	private final String displayName;
 	
 	/**
 	 * The value for this option
 	 */
 	
-	private String value;
+	private final String value;
 
 	/**
 	 * Constructor. Stores the values passed.

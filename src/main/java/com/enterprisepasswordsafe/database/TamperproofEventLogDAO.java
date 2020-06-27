@@ -63,7 +63,7 @@ public class TamperproofEventLogDAO {
     private static final String WRITE_SQL =
               "INSERT INTO event_log(dt_l, item_id, event, user_id, stamp_b) VALUES (?, ?, ?, ?, ?)";
 
-    private HierarchyTools hierarchyTools;
+    private final HierarchyTools hierarchyTools;
 
 	private TamperproofEventLogDAO( ) {
 		super();
@@ -117,7 +117,7 @@ public class TamperproofEventLogDAO {
 
     private void sendEmail(final PreparedStatement writePreparedStatement, final String logLevel,
                            TamperproofEventLog eventLogEntry, final AccessControledObject item )
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
         String sendEmails = ConfigurationDAO.getValue(
                         ConfigurationOption.SMTP_ENABLED + "." + logLevel, null);
         if(sendEmails == null || sendEmails.charAt(0) != 'N') {

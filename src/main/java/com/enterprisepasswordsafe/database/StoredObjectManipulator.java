@@ -17,11 +17,11 @@ import java.util.logging.Logger;
 abstract class StoredObjectManipulator<T>
     extends StoredObjectFetcher<T> {
 
-    private String getByIdSql;
+    private final String getByIdSql;
 
-    private String getByNameSql;
+    private final String getByNameSql;
 
-    private String getCountSql;
+    private final String getCountSql;
 
     StoredObjectManipulator(final String getByIdSql, final String getByNameSql, final String getCountSql) {
         this.getByIdSql = getByIdSql;

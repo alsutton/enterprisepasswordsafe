@@ -61,13 +61,13 @@ public final class HierarchyNode
      * The id of this node.
      */
 
-    private String nodeId;
+    private final String nodeId;
 
     /**
      * The name of this node.
      */
 
-    private String name;
+    private final String name;
 
     /**
      * The parent of this node.

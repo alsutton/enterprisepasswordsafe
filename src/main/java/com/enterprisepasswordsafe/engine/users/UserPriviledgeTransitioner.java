@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 public class UserPriviledgeTransitioner {
 
-    private UserClassifier userClassifier = new UserClassifier();
+    private final UserClassifier userClassifier = new UserClassifier();
 
     public void makeAdmin(final User adminUser, final User theUser)
             throws SQLException, IOException, GeneralSecurityException {

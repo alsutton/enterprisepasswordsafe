@@ -24,6 +24,7 @@ import com.enterprisepasswordsafe.engine.integration.PasswordChangerProperty;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +46,7 @@ public abstract class EditIMScriptBase extends HttpServlet {
      */
 
     protected void handleRequest(final HttpServletRequest request, final IntegrationModuleScript scriptDetails)
-    	throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+			throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     	IntegrationModule module =
     		IntegrationModuleDAO.getInstance().getById(scriptDetails.getModuleId());
 
@@ -61,7 +62,6 @@ public abstract class EditIMScriptBase extends HttpServlet {
      * Populate a Set with objects containing the display name, internal name, and
      * current value of the integration module properties.
      *
-     * @param bom The business object manager.
      * @throws IllegalAccessException
      * @throws InstantiationException
      * @throws ClassNotFoundException
@@ -71,7 +71,7 @@ public abstract class EditIMScriptBase extends HttpServlet {
     		final HttpServletRequest request,
     		final IntegrationModule module,
     		final IntegrationModuleScript scriptDetails)
-    	throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException{
+			throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     	final Set<ScriptProperties> properties = new TreeSet<>();
 
     	Map<String,String> currentProperties = IntegrationModuleConfigurationDAO.
@@ -110,7 +110,7 @@ public abstract class EditIMScriptBase extends HttpServlet {
      * the script properties.
      */
 
-    public class ScriptProperties
+    public static class ScriptProperties
     	implements Comparable<ScriptProperties> {
     	private final String displayName;
     	private final String internalName;

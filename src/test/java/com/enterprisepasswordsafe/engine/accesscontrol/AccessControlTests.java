@@ -20,7 +20,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 
 public class AccessControlTests {
 
@@ -70,7 +73,7 @@ public class AccessControlTests {
 
     @Test
     public void testComparisonFailsMatchWithRHSNoModifyKey()
-            throws GeneralSecurityException, UnsupportedEncodingException {
+            throws GeneralSecurityException {
         KeyPair testKeys = generateTestKeys();
         AccessControl accessControl1 = new AccessControl("1", null,
                 testKeys.getPrivate(), testKeys.getPublic());
@@ -81,7 +84,7 @@ public class AccessControlTests {
 
     @Test
     public void testComparisonFailsMatchWithLHSNoModifyKey()
-            throws GeneralSecurityException, UnsupportedEncodingException {
+            throws GeneralSecurityException {
         KeyPair testKeys = generateTestKeys();
         AccessControl accessControl1 = new AccessControl("1", null,
                 testKeys.getPrivate(), testKeys.getPublic());
@@ -92,7 +95,7 @@ public class AccessControlTests {
 
     @Test
     public void testComparisonMatchesWithDifferentKeys()
-            throws GeneralSecurityException, UnsupportedEncodingException {
+            throws GeneralSecurityException {
         KeyPair testKeys1 = generateTestKeys();
         AccessControl accessControl1 = new AccessControl("1", null,
                 testKeys1.getPrivate(), testKeys1.getPublic());
@@ -103,7 +106,7 @@ public class AccessControlTests {
     }
 
     private KeyPair generateTestKeys()
-            throws NoSuchAlgorithmException, NoSuchProviderException {
+            throws NoSuchAlgorithmException {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(1024);
         return kpg.generateKeyPair();

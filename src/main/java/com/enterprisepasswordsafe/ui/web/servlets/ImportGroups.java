@@ -49,7 +49,6 @@ public final class ImportGroups extends ImporterServlet {
     @Override
 	protected void setImportAttributes(final HttpServletRequest request) {
     	request.setAttribute("groupDAO", GroupDAO.getInstance());
-    	return;		// Do nothing
     }
 
 }

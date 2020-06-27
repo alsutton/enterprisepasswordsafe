@@ -41,7 +41,7 @@ public class PasswordSearchAction implements NodeObjectAction {
 
     private int resultCount;
 
-    private boolean userIsAdministrator;
+    private final boolean userIsAdministrator;
 
     private final Summaries summaries = new Summaries();
 

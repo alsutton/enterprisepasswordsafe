@@ -140,13 +140,12 @@ public final class Configure extends HttpServlet {
         response.sendRedirect(request.getContextPath()+"/admin/Configure");
     }
 
-    private String setRequestAttributeFromConfiguration(final HttpServletRequest request, final ConfigurationDAO cDAO,
-                                                        ConfigurationOption option)
+    private void setRequestAttributeFromConfiguration(final HttpServletRequest request, final ConfigurationDAO cDAO,
+                                                      ConfigurationOption option)
             throws SQLException {
         final String value = cDAO.get(option);
         final String paramName = JSTLParameterNameSanitiser.santiseName(option.getPropertyName());
         request.setAttribute(paramName, value);
-        return value;
     }
 
     private void setConfigurationFromRequestParameter(final HttpServletRequest request,

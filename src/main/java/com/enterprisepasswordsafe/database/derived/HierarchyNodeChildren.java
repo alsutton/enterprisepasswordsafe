@@ -31,7 +31,7 @@ public class HierarchyNodeChildren {
      * The list of child container nodes.
      */
 
-    private Collection<HierarchyNode> nodes;
+    private final Collection<HierarchyNode> nodes;
 
     /**
      * The set of child object nodes.

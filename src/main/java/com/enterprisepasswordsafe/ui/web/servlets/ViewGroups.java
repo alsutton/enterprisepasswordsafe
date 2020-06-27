@@ -23,22 +23,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 /**
  * Servlet to direct the user to the edit groups screen.
  */
 
 public final class ViewGroups extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -4384219019638735497L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException {
@@ -50,9 +40,6 @@ public final class ViewGroups extends HttpServlet {
     	}
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to direct the user to the edit groups screen";

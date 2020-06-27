@@ -25,23 +25,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
-
 /**
  * Servlet to send the user to the page to edit a password restriction
  */
 
 public final class PasswordRestrictionsEditStage1 extends HttpServlet {
-
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 7614623208658201905L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
-
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -54,10 +42,6 @@ public final class PasswordRestrictionsEditStage1 extends HttpServlet {
     	}
     	request.getRequestDispatcher("/admin/pr_edit.jsp").forward(request, response);
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

@@ -26,7 +26,7 @@ public final class UsernameEqualsSearchTest implements SearchTest {
      * The username to test for.
      */
 
-    private String testUsername;
+    private final String testUsername;
 
     /**
      * Constructor. Store the username to test for.

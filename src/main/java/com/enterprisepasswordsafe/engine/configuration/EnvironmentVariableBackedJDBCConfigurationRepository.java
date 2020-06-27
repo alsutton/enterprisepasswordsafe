@@ -16,15 +16,12 @@
 
 package com.enterprisepasswordsafe.engine.configuration;
 
-import java.security.GeneralSecurityException;
-
 public class EnvironmentVariableBackedJDBCConfigurationRepository
         implements JDBCConfigurationRepository {
 
 	private JDBCConnectionInformation connectionInformation;
 
-	public JDBCConnectionInformation load()
-			throws GeneralSecurityException {
+	public JDBCConnectionInformation load() {
 		synchronized (this) {
 			if(connectionInformation == null) {
 				connectionInformation = new GenericJDBCConnectionInformation(

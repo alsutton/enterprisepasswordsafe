@@ -184,8 +184,8 @@ public final class CreateNewPassword extends AbstractPasswordManipulatingServlet
     }
 
     private static class UsernameAndPassword {
-        String username;
-        String password;
+        final String username;
+        final String password;
 
         UsernameAndPassword(final String username, final String password) {
             this.username = username;

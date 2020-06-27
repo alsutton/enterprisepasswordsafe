@@ -21,7 +21,7 @@ package com.enterprisepasswordsafe.engine.utils;
  */
 public class StringUtils {
 
-    public static final String removeLeadingAndTailingWhitespace(final String string) {
+    public static String removeLeadingAndTailingWhitespace(final String string) {
         if (string == null) {
             return null;
         }

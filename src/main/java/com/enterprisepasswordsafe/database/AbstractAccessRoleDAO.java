@@ -8,9 +8,9 @@ import java.util.Map;
 
 public abstract class AbstractAccessRoleDAO<T> {
 
-    private String getAllSql;
-    private String getIndividualSql;
-    private String deleteSql;
+    private final String getAllSql;
+    private final String getIndividualSql;
+    private final String deleteSql;
 
     AbstractAccessRoleDAO(final String getAllSql, final String getIndividualSql, final String deleteSql) {
         this.getAllSql = getAllSql;

@@ -44,8 +44,8 @@ public final class Explorer extends HttpServlet {
 
     private static final String INCLUDE_EMPTY_ATTRIBUTE = "_include_empty";
 
-	private UserClassifier userClassifier = new UserClassifier();
-	private HierarchyTools hierarchyTools = new HierarchyTools();
+	private final UserClassifier userClassifier = new UserClassifier();
+	private final HierarchyTools hierarchyTools = new HierarchyTools();
 
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -161,11 +161,11 @@ public final class Explorer extends HttpServlet {
     }
 
 
-    private abstract class PasswordComparator implements Comparator<Password>, Serializable {
+    private abstract static class PasswordComparator implements Comparator<Password>, Serializable {
 
-        protected abstract String getKeyString(Object passwordObject) throws Exception;
+        protected abstract String getKeyString(Object passwordObject);
 
-        protected abstract String getSecondaryString(Object passwordObject) throws Exception;
+        protected abstract String getSecondaryString(Object passwordObject);
 
         @Override
 		public int compare(final Password passwordObject0, final Password passwordObject1) {
@@ -212,13 +212,8 @@ public final class Explorer extends HttpServlet {
 				return caseInsensitiveComparison;
 			}
 
-			int caseSensitiveComparison = key0.compareTo(key1);
-			if( caseSensitiveComparison != 0 ) {
-				return caseSensitiveComparison;
-			}
-
-			return  0;
-		}
+            return key0.compareTo(key1);
+        }
     }
 
     private class UsernameComparator extends PasswordComparator {

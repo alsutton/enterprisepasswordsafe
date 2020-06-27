@@ -14,17 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/**
- * 
- */
 package com.enterprisepasswordsafe.ui.web.jsptags;
 
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 
+import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
 import java.util.Calendar;
-
-import javax.servlet.jsp.tagext.TagSupport;
 
 
 /**
@@ -72,8 +68,8 @@ public class DateInputTag extends TagSupport {
 			}
 			
 			String dayParameter = prefix+"_day";
-	        String currentSetting = 
-	        	(String) pageContext.getRequest().getParameter(dayParameter);
+	        String currentSetting =
+					pageContext.getRequest().getParameter(dayParameter);
 	        if( currentSetting == null || currentSetting.length() == 0 ) {
 	        	currentSetting = day;
 	        }	        
@@ -84,7 +80,7 @@ public class DateInputTag extends TagSupport {
 	        }
 
 	        String monthParameter = prefix+"_month";
-	        currentSetting = (String) pageContext.getRequest().getParameter(monthParameter);
+	        currentSetting = pageContext.getRequest().getParameter(monthParameter);
 	        if( currentSetting == null || currentSetting.length() == 0 ) {
 	        	currentSetting = month;
 	        }	        
@@ -97,7 +93,7 @@ public class DateInputTag extends TagSupport {
 	        Calendar cal = Calendar.getInstance();
 	        int currentYear = cal.get(Calendar.YEAR);	        
 	        String yearParameter = prefix+"_year";
-	        currentSetting = (String) pageContext.getRequest().getParameter(yearParameter);
+	        currentSetting = pageContext.getRequest().getParameter(yearParameter);
 	        if( currentSetting == null || currentSetting.length() == 0 ) {
 	        	currentSetting = year;
 	        }	        
@@ -197,8 +193,6 @@ public class DateInputTag extends TagSupport {
 	 * Output a select list with a specific value set.
 	 * 
 	 * @param name The name for the select list.
-	 * @param start The start of the list values.
-	 * @param end The end of the list value.
 	 * @param selected The default selected value.
 	 */
 	

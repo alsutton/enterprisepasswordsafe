@@ -16,29 +16,23 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
+import com.enterprisepasswordsafe.engine.Repositories;
+import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.Repositories;
-import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
+import java.io.IOException;
 
 public class SetupJDBCConfiguration extends HttpServlet {
 
     @Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        try {
-            JDBCConnectionInformation connectionInformation = Repositories.jdbcConfigurationRepository.load();
-            request.setAttribute(VerifyJDBCConfiguration.JDBC_CONFIG_PROPERTY, connectionInformation);
-            request.getRequestDispatcher("/admin/configure_jdbc.jsp").forward(request, response);
-        } catch(GeneralSecurityException e) {
-            throw new ServletException(e);
-        }
+        JDBCConnectionInformation connectionInformation = Repositories.jdbcConfigurationRepository.load();
+        request.setAttribute(VerifyJDBCConfiguration.JDBC_CONFIG_PROPERTY, connectionInformation);
+        request.getRequestDispatcher("/admin/configure_jdbc.jsp").forward(request, response);
     }
 
     @Override

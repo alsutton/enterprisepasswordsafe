@@ -136,11 +136,8 @@ public class ApprovalRequestMailer
     /**
      * Sends an Email to to register an event.
      *
-     * @param conn
-     *            The connection to the database.
+     * @param recipient The recipient to sent the email to.
      *
-     * @throws SQLException
-     *             Thrown if there is a storing retrieving the information.
      * @throws AddressException
      *             Thrown if there is a problem sending the event Email.
      * @throws MessagingException

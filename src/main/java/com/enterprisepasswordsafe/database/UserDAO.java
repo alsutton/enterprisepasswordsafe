@@ -158,7 +158,7 @@ public final class UserDAO extends StoredObjectManipulator<User> {
             DELETE_UACS, DELETE_UARS, DELETE_USER_MEMBERSHIPS, DELETE_USER_SQL
     };
 
-    private UserClassifier userClassifier = new UserClassifier();
+    private final UserClassifier userClassifier = new UserClassifier();
 
 	/**
 	 * Private constructor to prevent instantiation
@@ -168,9 +168,9 @@ public final class UserDAO extends StoredObjectManipulator<User> {
 	    super(GET_BY_ID_SQL, GET_BY_NAME_SQL, GET_COUNT_SQL);
 	}
 
-	User newInstance(ResultSet rs, int startIndex)
+	User newInstance(ResultSet rs)
             throws SQLException {
-	    return new User(rs, startIndex);
+	    return new User(rs, 1);
     }
 
     /**

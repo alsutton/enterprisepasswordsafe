@@ -14,15 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/**
- * 
- */
 package com.enterprisepasswordsafe.ui.web.jsptags;
 
+import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
 import java.util.Iterator;
-
-import javax.servlet.jsp.tagext.TagSupport;
 
 /**
  * Tag to check for an existing value for a text input tag. 
@@ -57,8 +53,7 @@ public class IteratedSelectListTag extends TagSupport {
 			pageContext.getOut().print(name);
 			pageContext.getOut().print("\">");
 			
-			String selectedValue = 
-				(String) pageContext.getRequest().getParameter(name);
+			String selectedValue = pageContext.getRequest().getParameter(name);
 			if( selectedValue == null
 			||	selectedValue.length() == 0 ) {
 				selectedValue = value;

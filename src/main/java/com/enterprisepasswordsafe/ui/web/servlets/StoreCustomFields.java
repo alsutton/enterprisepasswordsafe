@@ -34,15 +34,6 @@ import java.sql.SQLException;
 
 public final class StoreCustomFields extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -5130185999368612035L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -91,10 +82,6 @@ public final class StoreCustomFields extends HttpServlet {
 	    	throw new ServletException("The custom fields can not be altered at this time.", sqle);
 	    }
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

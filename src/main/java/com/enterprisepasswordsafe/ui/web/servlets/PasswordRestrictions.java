@@ -25,21 +25,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
-
 /**
  * Servlet to send the user to the page to list the password restrictions.
  */
 
 public final class PasswordRestrictions extends HttpServlet {
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 231907272953841365L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -51,10 +41,6 @@ public final class PasswordRestrictions extends HttpServlet {
     	request.getRequestDispatcher("/admin/passwordrestrictions.jsp").forward(request, response);
 
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

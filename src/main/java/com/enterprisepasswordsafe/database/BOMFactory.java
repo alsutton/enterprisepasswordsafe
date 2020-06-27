@@ -20,7 +20,7 @@ import com.enterprisepasswordsafe.database.vendorspecific.DALInterface;
 import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
 
-import java.security.GeneralSecurityException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -32,7 +32,7 @@ public final class BOMFactory {
 
 	//---------------------------------------
 
-	private static ThreadLocal<DatabaseAccessManager> localInstance =  new ThreadLocal<>();
+	private static final ThreadLocal<DatabaseAccessManager> localInstance =  new ThreadLocal<>();
 
 	/**
 	 * Gets an instance.
@@ -46,13 +46,7 @@ public final class BOMFactory {
 			return currentInstance;
 		}
 
-		JDBCConnectionInformation connectionInformation;
-		try {
-			connectionInformation = Repositories.jdbcConfigurationRepository.load();
-		} catch (GeneralSecurityException e) {
-			return null;
-		}
-
+		JDBCConnectionInformation connectionInformation  = Repositories.jdbcConfigurationRepository.load();
 		currentInstance = new DatabaseAccessManager(connectionInformation);
 		localInstance.set(currentInstance);
 		return currentInstance;
@@ -70,13 +64,12 @@ public final class BOMFactory {
 
 	/**
 	 * Gets the database abstraction layer currently in use
-	 * @throws ClassNotFoundException
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
 
 	public static DALInterface getDatabaseAbstractionLayer()
-		throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+			throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 		return getInstance().getDatabaseAbstractionLayer();
 	}
 

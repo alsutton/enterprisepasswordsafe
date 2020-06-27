@@ -19,14 +19,16 @@ package com.enterprisepasswordsafe.engine.accesscontrol;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.UnsupportedEncodingException;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 
 public class UserAccessControlTests {
 
     @Test
     public void testBuilder()
-            throws GeneralSecurityException, UnsupportedEncodingException {
+            throws GeneralSecurityException {
         KeyPair testKeys = generateTestKeys();
         UserAccessControl testUac = UserAccessControl.builder()
                 .withAccessorId("Accessor")
@@ -43,7 +45,7 @@ public class UserAccessControlTests {
 
     @Test
     public void testBuilderCopyFrom()
-            throws GeneralSecurityException, UnsupportedEncodingException {
+            throws GeneralSecurityException {
         KeyPair testKeys = generateTestKeys();
         UserAccessControl firstUac = UserAccessControl.builder()
                 .withAccessorId("Accessor")

@@ -35,15 +35,6 @@ import java.util.TreeSet;
 
 public final class ViewRARequests extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -1579953695564789934L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
 	@Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
     		throws ServletException {
@@ -66,9 +57,6 @@ public final class ViewRARequests extends HttpServlet {
     	}
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to store the users Email settings in the database";

@@ -29,13 +29,13 @@ public class ExpiringAccessiblePasswords {
      * The list of expiring passwords (i.e. those in the warning period).
      */
 
-    private Set<Password> expiring;
+    private final Set<Password> expiring;
 
     /**
      * The List of expired passwords.
      */
 
-    private Set<Password> expired;
+    private final Set<Password> expired;
 
     /**
      * Constructor. Initialises lists.

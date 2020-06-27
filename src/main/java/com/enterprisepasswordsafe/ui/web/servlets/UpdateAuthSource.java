@@ -27,22 +27,12 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
 
-
 /**
  * Servlet to update an authentication source.
  */
 
 public final class UpdateAuthSource extends AuthSourceModificationServlet {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -4453688809730207708L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
         throws ServletException, IOException {
@@ -64,9 +54,6 @@ public final class UpdateAuthSource extends AuthSourceModificationServlet {
         }
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to update an authentication source.";

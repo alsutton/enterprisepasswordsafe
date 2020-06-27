@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
@@ -37,18 +36,11 @@ import java.sql.SQLException;
  */
 public final class UpdateHierarchyPermissions extends HttpServlet {
 	/**
-	 *
-	 */
-	private static final long serialVersionUID = 6885443016602105290L;
-
-
-	/**
 	 * The access authenticator
 	 */
 
 	private static final AccessApprover accessApprover =
 		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
-
 
     /**
      * The extension for parameters which hold the new permission settings.
@@ -62,11 +54,6 @@ public final class UpdateHierarchyPermissions extends HttpServlet {
 
     public static final String ORIGINAL_PERMISSIONS_EXTENSION = "_orig";
 
-    /**
-     * @throws UnsupportedEncodingException
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -98,16 +85,10 @@ public final class UpdateHierarchyPermissions extends HttpServlet {
     /**
      * Update the permissions for a specific user.
      *
-     * @param conn
-     *            The connection to the database.
-     * @param request
-     *            The request being serviced.
-     * @param theNode
-     *            The node being altered.
-     * @param adminGroup
-     *            The admin group used to decrypt the users key.
-     * @param paramName
-     *            The name of the parameter holding the new permissions.
+     * @param request The request being serviced.
+     * @param adminGroup The admin group used to decrypt the users key.
+	 * @param node The node being altered.
+     * @param paramName The name of the parameter holding the new permissions.
      *
      * @throws SQLException Thrown if there is a problem accessing the database.
      * @throws GeneralSecurityException Thrown if there is a problem encrypting the rule.
@@ -140,9 +121,6 @@ public final class UpdateHierarchyPermissions extends HttpServlet {
         HierarchyNodeAccessRuleDAO.getInstance().setAccessibleByUser(node, user, rule);
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to update the permissions on a hierarchy node.";

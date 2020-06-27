@@ -26,19 +26,19 @@ public class HierarchyNodeAccessRule
 	 * The ID of the actor this rule is for.
 	 */
 	
-	private String actorId;
+	private final String actorId;
 	
 	/**
 	 * The name of the actor this rule is for.
 	 */
 	
-	private String actorName;
+	private final String actorName;
 	
 	/**
 	 * The rule.
 	 */
 	
-	private byte rule;
+	private final byte rule;
 	
 	/**
 	 * Constructor, stores relevant values.

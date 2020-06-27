@@ -16,8 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.integration;
 
-import java.io.IOException;
-import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
@@ -31,26 +29,26 @@ public interface PasswordChanger {
 	/**
 	 * The property name for the password username.
 	 */
-	
-	public static final String USERNAME_PROPERTY = "username";
+
+	String USERNAME_PROPERTY = "username";
 	
 	/**
 	 * The property name for the passwords' old password.
 	 */
-	
-	public static final String OLD_PASSWORD = "old_password";
+
+	String OLD_PASSWORD = "old_password";
 	
 	/**
 	 * The property name for the passwords' new password.
 	 */
-	
-	public static final String NEW_PASSWORD = "new_password";
+
+	String NEW_PASSWORD = "new_password";
 	
 	/**
 	 * The property name for the passwords' system.
 	 */
-	
-	public static final String SYSTEM = "system";
+
+	String SYSTEM = "system";
 	
 	/**
 	 * Change a specific passsword.
@@ -59,14 +57,12 @@ public interface PasswordChanger {
 	 * @param pluginProperties The properties configured by the EPS administrator.
 	 * @param passwordProperties The properties relating to the password to change.
 	 * @param script The script to run.
-	 * 
-	 * @throws RemoteException Thrown if there is a problem changing the password.
-	 * @throws IOException Thrown if there is a problem communicating with the remote system.
+	 *
 	 */
-	
-	public void rollbackChange( Connection conn, Map<String,String> pluginProperties, 
-			Map<String,String> passwordProperties, String script )
-		throws RemoteException, IOException;
+
+	void rollbackChange(Connection conn, Map<String, String> pluginProperties,
+						Map<String, String> passwordProperties, String script)
+	;
 
 	/**
 	 * Rollback a password change. This is usually called if a password change 
@@ -76,36 +72,34 @@ public interface PasswordChanger {
 	 * @param pluginProperties The properties configured by the EPS administrator.
 	 * @param passwordProperties The properties relating to the password to change.
 	 * @param script The script originally executed.
-	 * 
-	 * @throws RemoteException Thrown if there is a problem changing the password.
-	 * @throws IOException Thrown if there is a problem communicating with the remote system.
+	 *
 	 */
-	
-	public void changePassword( Connection conn, Map<String,String> pluginProperties, 
-			Map<String,String> passwordProperties, String script )
-		throws RemoteException, IOException;
+
+	void changePassword(Connection conn, Map<String, String> pluginProperties,
+						Map<String, String> passwordProperties, String script)
+	;
 
 	/**
 	 * Get the List of PasswordChangerProperty's which this plugin requires.
 	 *
 	 * @return The List of ChangerProperties.
 	 */
-	
-	public List<PasswordChangerProperty> getProperties();
+
+	List<PasswordChangerProperty> getProperties();
 	
 	/**
 	 * Method executed when the integration module is installed.
 	 * 
 	 * @param conn The connection to the database.
 	 */
-	
-	public void install(Connection conn) throws Exception;
+
+	void install(Connection conn);
 	
 	/**
 	 * Method executed when the integration module is uninstalled.
 	 * 
 	 * @param conn The connection to the database.
 	 */
-	
-	public void uninstall(Connection conn) throws Exception;
+
+	void uninstall(Connection conn);
 }

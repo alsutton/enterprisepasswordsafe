@@ -65,10 +65,10 @@ public final class PasswordGenerator implements com.enterprisepasswordsafe.engin
      * @return A generated password.
      */
     public String generate(final HttpServletRequest request, boolean startSpecial) {
-        int upperCount = extractValue(request, "upper", 1);
-        int lowerCount = extractValue(request, "lower", 1);
-        int numericCount = extractValue(request, "numeric", 1);
-        int specialCount = extractValue(request, "special", 1);
+        int upperCount = extractValue(request, "upper");
+        int lowerCount = extractValue(request, "lower");
+        int numericCount = extractValue(request, "numeric");
+        int specialCount = extractValue(request, "special");
         String chars = request.getParameter("chars");
         if( chars == null ) {
         	chars = EMPTY_STRING;
@@ -246,18 +246,15 @@ public final class PasswordGenerator implements com.enterprisepasswordsafe.engin
      *            The servlet request to extract the value from.
      * @param parameterName
      *            The name of the parameter to extract the value from.
-     * @param defaultValue
-     *            The default value if none can be extracted.
-     *
      * @return The numeric value of a parameter.
      */
 
     private int extractValue(final HttpServletRequest request,
-            final String parameterName, final int defaultValue) {
+                             final String parameterName) {
         try {
             return Integer.parseInt(request.getParameter(parameterName));
         } catch (NumberFormatException nfe) {
-            return defaultValue;
+            return 1;
         }
     }
 

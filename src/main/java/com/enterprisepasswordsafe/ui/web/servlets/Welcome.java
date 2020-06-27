@@ -50,7 +50,7 @@ public final class Welcome extends PasswordSafeBaseServlet {
 
     private static final String FORCED_CHANGE_PASSWORD = "/nomenu/Profile";
 
-    private UserClassifier userClassifier = new UserClassifier();
+    private final UserClassifier userClassifier = new UserClassifier();
 
 	@Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)

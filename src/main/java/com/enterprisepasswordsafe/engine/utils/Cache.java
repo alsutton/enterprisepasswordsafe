@@ -24,9 +24,9 @@ import org.apache.commons.collections4.map.LRUMap;
  * @author alsutton
  *
  * @param <K> The cache key type
- * @param <T> The cache object type
+ * @param <V> The cache object type
  */
-public class Cache<K,T> {
+public class Cache<K, V> {
 
 	/**
 	 * The default maximum size for the cache.
@@ -36,7 +36,7 @@ public class Cache<K,T> {
 	/**
 	 * The LRUMap which backs the cache.
 	 */
-	private final LRUMap cacheMap;
+	private final LRUMap<K, V> cacheMap;
 
 	/**
 	 * Constructor.
@@ -45,7 +45,7 @@ public class Cache<K,T> {
 	 */
 
 	public Cache(final int size) {
-		cacheMap = new LRUMap(size);
+		cacheMap = new LRUMap<>(size);
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class Cache<K,T> {
 	 * Put an entry into the cache.
 	 */
 
-	public void put(K key, T object) {
+	public void put(K key, V object) {
 		cacheMap.put(key, object);
 	}
 
@@ -67,9 +67,8 @@ public class Cache<K,T> {
 	 * Get an object from the cache
 	 */
 
-	@SuppressWarnings("unchecked")
-	public T get(K key) {
-		return (T) cacheMap.get(key);
+	public V get(K key) {
+		return cacheMap.get(key);
 	}
 
 	/**

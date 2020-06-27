@@ -98,7 +98,7 @@ public final class UserAccessControlDAO
 	}
 
 	public void write(final UserAccessControl uac, final User user )
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException
+		throws SQLException, GeneralSecurityException
 	{
 		write(uac, user.getKeyEncrypter());
 	}
@@ -116,7 +116,7 @@ public final class UserAccessControlDAO
 	}
 
     public UserAccessControl getUac(final User user, final AccessControledObject item)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        throws SQLException, GeneralSecurityException {
         if (item == null) {
             return null;
         }
@@ -135,7 +135,7 @@ public final class UserAccessControlDAO
             ps.setString(2, itemId);
             ps.setMaxRows(1);
             try(ResultSet rs = ps.executeQuery()) {
-	            return rs.next() ? buildFromResultSet(rs, 1, user) : null;
+	            return rs.next() ? buildFromResultSet(rs, user) : null;
             }
         }
     }
@@ -169,7 +169,7 @@ public final class UserAccessControlDAO
             try(ResultSet rs = ps.executeQuery()) {
 	            while(rs.next()) {
 	            	try {
-	            		final UserAccessControl ac = buildFromResultSet(rs, 1, user);
+	            		final UserAccessControl ac = buildFromResultSet(rs, user);
 	            		if(ac.getReadKey() != null || ac.getModifyKey() != null) {
 	            			encryptionList.add(ac);
 	            		}
@@ -226,22 +226,22 @@ public final class UserAccessControlDAO
     }
 
     public void update(final UserAccessControl uac, final Encrypter encrypter)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
 // TODO: Look at improved update
     	delete(uac);
     	write(uac, encrypter);
     }
 
-	static UserAccessControl buildFromResultSet(final ResultSet rs, final int startIdx,
-												  final AccessControlDecryptor decryptor)
+	static UserAccessControl buildFromResultSet(final ResultSet rs,
+                                                final AccessControlDecryptor decryptor)
 			throws SQLException, GeneralSecurityException {
 		return UserAccessControl.builder()
-				.withItemId(rs.getString(startIdx))
+				.withItemId(rs.getString(1))
 				.withModifyKey(
-						KeyUtils.decryptPrivateKey(rs.getBytes(startIdx+1), decryptor.getKeyDecrypter()))
+						KeyUtils.decryptPrivateKey(rs.getBytes(1 +1), decryptor.getKeyDecrypter()))
 				.withReadKey(
-						KeyUtils.decryptPublicKey(rs.getBytes(startIdx+2), decryptor.getKeyDecrypter()))
-				.withAccessorId(rs.getString(startIdx+3))
+						KeyUtils.decryptPublicKey(rs.getBytes(1 +2), decryptor.getKeyDecrypter()))
+				.withAccessorId(rs.getString(1 +3))
 				.build();
 
 	}

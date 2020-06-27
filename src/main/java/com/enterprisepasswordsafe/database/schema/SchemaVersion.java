@@ -47,7 +47,7 @@ public class SchemaVersion {
 	public static final long CURRENT_SCHEMA = SCHEMA_201212;
 
 
-	private ConfigurationDAO configurationDAO;
+	private final ConfigurationDAO configurationDAO;
 
 	public SchemaVersion() {
 		configurationDAO = ConfigurationDAO.getInstance();

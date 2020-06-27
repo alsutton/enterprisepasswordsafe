@@ -34,7 +34,7 @@ import java.util.List;
 
 public final class ViewObjectEvents extends HttpServlet {
 
-	private UserClassifier userClassifier = new UserClassifier();
+	private final UserClassifier userClassifier = new UserClassifier();
 
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)

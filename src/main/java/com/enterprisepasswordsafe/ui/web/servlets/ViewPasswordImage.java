@@ -41,7 +41,7 @@ import java.io.OutputStream;
 
 public final class ViewPasswordImage extends HttpServlet {
 
-    private UserClassifier userClassifier = new UserClassifier();
+    private final UserClassifier userClassifier = new UserClassifier();
 
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
