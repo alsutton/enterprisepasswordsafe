@@ -27,6 +27,7 @@ import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditi
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -42,10 +43,6 @@ import java.util.List;
  */
 
 public final class EditHierarchy extends HttpServlet {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 5081239248366681865L;
 
 	/**
 	 * The access authenticator
@@ -79,7 +76,7 @@ public final class EditHierarchy extends HttpServlet {
     public static final String DEEP_COPY_ACTION = "o";
 
     /**
-     * The action text for cuting an item.
+     * The action text for cutting an item.
      */
 
     public static final String CUT_ACTION = "u";
@@ -90,8 +87,15 @@ public final class EditHierarchy extends HttpServlet {
 
     public static final String PASTE_ACTION = "p";
 
-    private UserClassifier userClassifier = new UserClassifier();
-    private HierarchyTools hierarchyTools = new HierarchyTools();
+    private UserClassifier userClassifier;
+    private HierarchyTools hierarchyTools;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        userClassifier = new UserClassifier();
+        hierarchyTools = new HierarchyTools();
+    }
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -338,11 +342,12 @@ public final class EditHierarchy extends HttpServlet {
             }
 
             HierarchyNode theNode = hnDAO.getById(nodeId);
-            if (theNode != null) {
-                nodeManipulator.performAction(theNode, node);
-            } else {
+            if (theNode == null) {
                 log("Unable to work on node " + nodeId + " - Node was unavailable.");
+                continue;
             }
+
+            nodeManipulator.performAction(theNode, node);
         }
     }
 
