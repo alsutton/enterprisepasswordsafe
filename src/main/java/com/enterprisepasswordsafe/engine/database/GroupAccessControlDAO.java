@@ -21,7 +21,6 @@ import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -39,7 +38,7 @@ import java.util.TreeSet;
 
 public class GroupAccessControlDAO
     extends AbstractAccessControlDAO
-    implements AccessControlDAOInterface<Group, GroupAccessControl>, ExternalInterface {
+    implements AccessControlDAOInterface<Group, GroupAccessControl> {
 
     /**
      * The fields needed to construct a GroupAccessControl from a ResultSet.
@@ -347,7 +346,7 @@ public class GroupAccessControlDAO
     }
 
     public void update(final Group group, final GroupAccessControl gac)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
 // TODO: Look at improving update
     	delete(gac);
     	write(group, gac);

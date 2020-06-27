@@ -18,7 +18,6 @@ package com.enterprisepasswordsafe.engine.reports;
 
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -27,8 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class AccessReport
-    implements ExternalInterface {
+public class AccessReport {
 
     private static final String GET_ACCESSIBLE_PASSWORDS_FOR_USER_SQL =
             "SELECT item_id FROM user_access_control WHERE user_id = ?";

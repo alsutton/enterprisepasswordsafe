@@ -18,14 +18,12 @@ package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
-public abstract class AccessControlDAO
-	implements ExternalInterface {
+public abstract class AccessControlDAO {
 
     private UserClassifier userClassifier = new UserClassifier();
 

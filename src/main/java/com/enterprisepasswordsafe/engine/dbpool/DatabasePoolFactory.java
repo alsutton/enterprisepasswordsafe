@@ -18,12 +18,11 @@ package com.enterprisepasswordsafe.engine.dbpool;
 
 import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
-public class DatabasePoolFactory implements ExternalInterface {
+public class DatabasePoolFactory {
 
     private static DatabasePool mSharedInstance;
 

@@ -16,34 +16,27 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import java.io.UnsupportedEncodingException;
-import java.security.*;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Calendar;
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
 import com.enterprisepasswordsafe.engine.UserAccessControlDecryptor;
 import com.enterprisepasswordsafe.engine.users.PasswordHasher;
 import com.enterprisepasswordsafe.engine.users.UserAccessKeyEncryptionHandler;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.users.UserPasswordEncryptionHandler;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Object representing a user in the system.
  */
 public final class User
-    implements Comparable<User>, EntityWithAccessRights, UserAccessControlDecryptor, ExternalInterface {
+    implements Comparable<User>, EntityWithAccessRights, UserAccessControlDecryptor {
 
     /**
      * The size of the group access key in bits.

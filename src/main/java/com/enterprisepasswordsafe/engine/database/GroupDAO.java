@@ -18,7 +18,6 @@ package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.UnsupportedEncodingException;
@@ -30,7 +29,7 @@ import java.util.List;
 /**
  * Data access object for the group objects.
  */
-public class GroupDAO extends GroupStoreManipulator implements ExternalInterface {
+public class GroupDAO extends GroupStoreManipulator {
 
     /**
      * The clause for excluding reserved system groups

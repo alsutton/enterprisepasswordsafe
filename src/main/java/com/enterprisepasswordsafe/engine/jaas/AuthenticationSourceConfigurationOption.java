@@ -16,15 +16,13 @@
 
 package com.enterprisepasswordsafe.engine.jaas;
 
-import com.enterprisepasswordsafe.proguard.JavaBean;
-
 import java.util.Set;
 
 /**
  * Class representing a configuration object for an authentication source.
  */
 public class AuthenticationSourceConfigurationOption
-	implements Comparable<AuthenticationSourceConfigurationOption>, JavaBean {
+	implements Comparable<AuthenticationSourceConfigurationOption> {
 
 	/**
 	 * The types of configuration.

@@ -20,12 +20,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.proguard.JavaBean;
 
 /**
  * Class holding the lists of expired and expiring passwords.
  */
-public class ExpiringAccessiblePasswords implements JavaBean {
+public class ExpiringAccessiblePasswords {
     /**
      * The list of expiring passwords (i.e. those in the warning period).
      */

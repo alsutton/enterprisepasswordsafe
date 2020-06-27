@@ -21,13 +21,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Object handling the storage of the details of an integration module.
  */
 public final class IntegrationModule
-        implements Serializable, ExternalInterface {
+        implements Serializable {
 	
     /**
 	 * 

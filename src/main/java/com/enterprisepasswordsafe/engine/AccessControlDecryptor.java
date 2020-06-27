@@ -16,18 +16,14 @@
 
 package com.enterprisepasswordsafe.engine;
 
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-
 import com.enterprisepasswordsafe.engine.database.Decrypter;
 import com.enterprisepasswordsafe.engine.database.Encrypter;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Interface implemented by any object capable of decrypting an access control.
  */
 
-public interface AccessControlDecryptor extends ExternalInterface {
+public interface AccessControlDecryptor {
 
     /**
      * Gets the key decrypter method for use with the keystore

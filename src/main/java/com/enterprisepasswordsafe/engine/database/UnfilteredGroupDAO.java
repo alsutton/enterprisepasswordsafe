@@ -1,8 +1,6 @@
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
-public class UnfilteredGroupDAO extends GroupStoreManipulator implements ExternalInterface {
+public class UnfilteredGroupDAO extends GroupStoreManipulator {
 
     /**
      * The SQL to get a particular group by its' ID (includes disabled groups).

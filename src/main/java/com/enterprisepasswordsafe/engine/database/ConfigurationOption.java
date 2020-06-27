@@ -17,9 +17,8 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
-public enum ConfigurationOption implements ExternalInterface {
+public enum ConfigurationOption {
 
     ALLOW_BACK_BUTTON_TO_ACCESS_PASSWORD("password.back_to_password_allowed", "false"),
     DAYS_BEFORE_EXPIRY_TO_WARN("EPASSWARN", null),

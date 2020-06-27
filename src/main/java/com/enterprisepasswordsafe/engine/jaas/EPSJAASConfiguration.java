@@ -16,15 +16,12 @@
 
 package com.enterprisepasswordsafe.engine.jaas;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.Configuration;
-
-public final class EPSJAASConfiguration extends Configuration implements ExternalInterface {
+public final class EPSJAASConfiguration extends Configuration {
 
     public static final String DATABASE_APPLICATION_CONFIGURATION = "Database";
 

@@ -16,8 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.dbabstraction;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -25,7 +23,7 @@ import java.sql.SQLException;
  * Interface implemented by all Database Abstraction Layer classes.
  */
 
-public interface DALInterface extends ExternalInterface
+public interface DALInterface
 {
 	/**
 	 * Add any parameters needed when creating a new database to

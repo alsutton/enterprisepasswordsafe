@@ -19,20 +19,16 @@ package com.enterprisepasswordsafe.engine.database;
 import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
 import com.enterprisepasswordsafe.engine.dbabstraction.DALInterface;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Factory for handling and releasing business object managers.
  */
 
-public final class BOMFactory
-    implements ExternalInterface {
+public final class BOMFactory {
 
 	//---------------------------------------
 

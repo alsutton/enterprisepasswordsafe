@@ -24,13 +24,12 @@ import java.sql.SQLException;
 import java.util.*;
 
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Data access object for hierarchy node access rules.
  */
 
-public abstract class HierarchyNodeAccessRuleDAO implements ExternalInterface {
+public abstract class HierarchyNodeAccessRuleDAO {
 
     /**
      * The values for an accessibility rule.

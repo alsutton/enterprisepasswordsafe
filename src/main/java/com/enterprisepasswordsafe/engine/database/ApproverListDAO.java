@@ -25,13 +25,12 @@ import java.util.Set;
 
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Data access object for the user objects.
  */
 
-public final class ApproverListDAO implements ExternalInterface {
+public final class ApproverListDAO {
 
 	/**
 	 * SQL to count the number of approvers in this list.

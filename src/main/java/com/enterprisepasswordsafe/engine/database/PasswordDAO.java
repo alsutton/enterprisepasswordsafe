@@ -26,7 +26,6 @@ import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
 import com.enterprisepasswordsafe.engine.passwords.PasswordPermissionApplier;
 import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -36,8 +35,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public final class PasswordDAO
-        extends PasswordStoreManipulator
-        implements ExternalInterface {
+        extends PasswordStoreManipulator  {
 
     private static final int DEFAULT_PASSWORD_EXPIRY_WARNING_DAYS = 7;
 

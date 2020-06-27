@@ -23,11 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 public final class ConfigurationDAO
-        extends JDBCBase
-        implements ExternalInterface {
+        extends JDBCBase {
 
     private static final String GET_SQL =
             "SELECT property_value FROM configuration WHERE property_name = ?";

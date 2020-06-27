@@ -16,6 +16,14 @@
 
 package com.enterprisepasswordsafe.engine.dbpool;
 
+import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
+import com.enterprisepasswordsafe.engine.database.schema.SchemaVersion;
+import com.enterprisepasswordsafe.engine.dbabstraction.DALFactory;
+import com.enterprisepasswordsafe.engine.dbabstraction.DALInterface;
+import org.apache.commons.dbcp2.*;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.Connection;
@@ -25,16 +33,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
-import com.enterprisepasswordsafe.engine.database.schema.SchemaVersion;
-import com.enterprisepasswordsafe.engine.dbabstraction.DALFactory;
-import com.enterprisepasswordsafe.engine.dbabstraction.DALInterface;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-import org.apache.commons.dbcp2.*;
-import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-
-public final class DatabasePool implements ExternalInterface, AutoCloseable {
+public final class DatabasePool implements AutoCloseable {
 
     private static final Object VERIFICATION_LOCK = new Object();
 

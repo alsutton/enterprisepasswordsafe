@@ -24,7 +24,6 @@ package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -33,8 +32,7 @@ import java.security.GeneralSecurityException;
  * Object representing a password from the past.
  */
 public final class HistoricalPassword
-        extends PasswordBase
-        implements ExternalInterface {
+        extends PasswordBase {
 
     private static final PasswordUtils<HistoricalPassword> passwordUtils = new PasswordUtils<>();
 

@@ -17,7 +17,6 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,9 +25,8 @@ import java.sql.SQLException;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
-public class HistoricalPasswordDAO implements ExternalInterface {
+public class HistoricalPasswordDAO {
 
     public static final String HISTORICAL_PASSWORD_FIELDS = PasswordBase.PASSWORD_BASE_FIELDS + ", pass.dt_l";
 

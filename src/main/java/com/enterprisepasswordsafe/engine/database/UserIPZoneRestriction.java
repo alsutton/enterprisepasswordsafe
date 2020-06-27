@@ -16,15 +16,13 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
  * Representation of a restriction for a user when they are trying to log in from a given zone.
  */
-public class UserIPZoneRestriction implements ExternalInterface {
+public class UserIPZoneRestriction {
 
     /**
      * The character to represent an "allow" rule. 

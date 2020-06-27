@@ -23,11 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-import com.enterprisepasswordsafe.proguard.JavaBean;
 
 public class PasswordRestriction
-        implements Serializable, ExternalInterface {
+        implements Serializable {
 
     private static final String NO_LIMITS_STRING = "There are no restrictions on the contents of the password.";
 
@@ -282,7 +280,7 @@ public class PasswordRestriction
         return count == 1 ? "character" : "characters";
     }
 
-    public static class Summary implements JavaBean {
+    public static class Summary {
 
         public final String id;
 

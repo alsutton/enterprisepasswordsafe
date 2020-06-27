@@ -18,7 +18,6 @@ package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import javax.crypto.SecretKey;
 import java.io.UnsupportedEncodingException;
@@ -33,8 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class MembershipDAO
-		extends JDBCBase
-		implements ExternalInterface {
+		extends JDBCBase {
 
     private static final Object MEMBERSHIP_MARKER = new Object();
 

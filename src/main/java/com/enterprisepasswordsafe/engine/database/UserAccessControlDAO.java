@@ -17,12 +17,10 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.AccessControlDecryptor;
-import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
 import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import javax.crypto.BadPaddingException;
 import java.io.UnsupportedEncodingException;
@@ -40,7 +38,7 @@ import java.util.logging.Logger;
 
 public final class UserAccessControlDAO
 		extends AbstractAccessControlDAO
-		implements ExternalInterface, AccessControlDAOInterface<User, UserAccessControl> {
+		implements AccessControlDAOInterface<User, UserAccessControl> {
 
     public static final String UAC_FIELDS = " uac.item_id, uac.mkey, uac.rkey, uac.user_id ";
 

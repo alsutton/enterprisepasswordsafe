@@ -16,14 +16,12 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.JavaBean;
-
 /**
  * An access rul for a hierarchy node.
  */
 
 public class HierarchyNodeAccessRule
-	implements Comparable<HierarchyNodeAccessRule>, JavaBean {
+	implements Comparable<HierarchyNodeAccessRule> {
 	/**
 	 * The ID of the actor this rule is for.
 	 */
@@ -83,7 +81,7 @@ public class HierarchyNodeAccessRule
 	/**
 	 * Compare with another hierarchy node access rule.
 	 * 
-	 * @param o The other rule.
+	 * @param otherRule The other rule.
 	 */
 	public int compareTo(HierarchyNodeAccessRule otherRule) {
 		return actorName.compareToIgnoreCase(otherRule.actorName);

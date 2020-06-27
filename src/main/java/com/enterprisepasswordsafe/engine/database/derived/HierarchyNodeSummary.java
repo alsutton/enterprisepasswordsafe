@@ -16,14 +16,12 @@
 
 package com.enterprisepasswordsafe.engine.database.derived;
 
-import com.enterprisepasswordsafe.proguard.JavaBean;
-
 /**
  * A class holding the summary of a node.
  */
 
 public class HierarchyNodeSummary
-	implements Comparable<HierarchyNodeSummary>, JavaBean {
+	implements Comparable<HierarchyNodeSummary> {
 
 	/**
 	 * The ID for the node.

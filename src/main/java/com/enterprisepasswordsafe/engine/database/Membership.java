@@ -25,12 +25,11 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
-import com.enterprisepasswordsafe.proguard.JavaBean;
 
 /**
  * Object representing the membership of a user in a group.
  */
-public class Membership implements JavaBean {
+public class Membership {
 
     /**
      * The ID of the user involved in the membership.

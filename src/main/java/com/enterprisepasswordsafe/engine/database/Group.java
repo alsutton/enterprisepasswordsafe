@@ -30,14 +30,12 @@ import javax.crypto.SecretKey;
 
 import com.enterprisepasswordsafe.engine.GroupAccessControlDecryptor;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 
 /**
  * Object representation of a group within the system.
  */
 public final class Group
-    implements Comparable<Group>, EntityWithAccessRights, GroupAccessControlDecryptor, ExternalInterface {
+    implements Comparable<Group>, EntityWithAccessRights, GroupAccessControlDecryptor {
 
 	/**
 	 * The group statuses

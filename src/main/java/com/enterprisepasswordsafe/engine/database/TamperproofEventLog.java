@@ -22,9 +22,7 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-
 import com.enterprisepasswordsafe.engine.logging.LogEventHasher;
-import com.enterprisepasswordsafe.proguard.JavaBean;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -35,8 +33,7 @@ import java.util.Calendar;
 /**
  * Object representing an entry in the event log.
  */
-public final class TamperproofEventLog
-    implements JavaBean {
+public final class TamperproofEventLog {
 
 	/**
 	 * Dummy userId - Used to indicate no user was involved.

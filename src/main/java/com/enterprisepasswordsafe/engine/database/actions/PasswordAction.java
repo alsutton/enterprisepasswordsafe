@@ -18,7 +18,6 @@ package com.enterprisepasswordsafe.engine.database.actions;
 
 import com.enterprisepasswordsafe.engine.database.HierarchyNode;
 import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Interface implemented by objects wishing to perform an action on a password.
@@ -26,7 +25,7 @@ import com.enterprisepasswordsafe.proguard.ExternalInterface;
  * @author Al Sutton
  */
 
-public interface PasswordAction extends ExternalInterface{
+public interface PasswordAction {
     /**
      * Process a particular password.
      *

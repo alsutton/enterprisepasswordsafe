@@ -16,20 +16,15 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.enterprisepasswordsafe.engine.integration.PasswordChanger;
 import com.enterprisepasswordsafe.engine.integration.PasswordChangerProperty;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 public final class IntegrationModuleDAO
-        extends StoredObjectFetcher<IntegrationModule>
-    	implements ExternalInterface {
+        extends StoredObjectFetcher<IntegrationModule> {
 
     private static final String GET_SQL = "SELECT module_id, name, className FROM intmodules WHERE module_id = ? ";
 

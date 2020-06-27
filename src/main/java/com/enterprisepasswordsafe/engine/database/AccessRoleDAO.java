@@ -23,13 +23,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.enterprisepasswordsafe.engine.database.AccessRole.ApproverSummary;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Data access object for the user objects.
  */
-public final class AccessRoleDAO
-	implements ExternalInterface {
+public final class AccessRoleDAO {
 
 	/**
 	 * The SQL to get an access role for a particular actor

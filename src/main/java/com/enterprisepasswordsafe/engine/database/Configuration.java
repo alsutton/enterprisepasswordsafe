@@ -16,8 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 /**
  * Object responsible for handling user configuration options.
  */

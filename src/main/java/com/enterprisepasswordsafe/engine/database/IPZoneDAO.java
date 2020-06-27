@@ -16,16 +16,13 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 public class IPZoneDAO
-    extends StoredObjectFetcher<IPZone>
-	implements ExternalInterface {
+    extends StoredObjectFetcher<IPZone> {
 
     private static final String GET_ZONES =
         "SELECT ip_zone_id, name, ip_version, ip_start, ip_end FROM ip_zones ORDER BY name ";

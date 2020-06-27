@@ -24,12 +24,11 @@ import java.sql.SQLException;
 import java.util.StringTokenizer;
 
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 /**
  * Representation of an IP address range which rules can be set for.
  */
-public class IPZone implements ExternalInterface {
+public class IPZone {
     /**
      * The ID of this IP zone
      */

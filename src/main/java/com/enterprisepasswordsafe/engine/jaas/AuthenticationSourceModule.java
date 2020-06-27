@@ -16,26 +16,24 @@
 
 package com.enterprisepasswordsafe.engine.jaas;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.util.Set;
 
 /**
  * Authentication source module interface. Implemented by JAAS modules which
  * can be configured by the user.
  */
-public interface AuthenticationSourceModule extends ExternalInterface {
+public interface AuthenticationSourceModule {
 
 	/**
 	 * Return the configuration options for this module.
 	 * 
 	 * @return The Set of configuration options.
 	 */
-	public Set<AuthenticationSourceConfigurationOption> getConfigurationOptions();
+	Set<AuthenticationSourceConfigurationOption> getConfigurationOptions();
 	
 	/**
 	 * Get the notes to display on the configuration page.
 	 */
-	
-	public String getConfigurationNotes();
+
+	String getConfigurationNotes();
 }

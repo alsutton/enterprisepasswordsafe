@@ -16,12 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.integration;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 /**
  * Object holding the details of a property relevant to the password changer.
  */
-public class PasswordChangerProperty implements ExternalInterface {
+public class PasswordChangerProperty {
 
 	/**
 	 * The internal name of the property.

@@ -16,13 +16,11 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.JavaBean;
-
 /**
  * Summary of a group holding only it's group name and id.
  */
 public class AccessSummary
-	implements Comparable<AccessSummary>, JavaBean {
+	implements Comparable<AccessSummary> {
 	
 	/**
 	 * The actor id.

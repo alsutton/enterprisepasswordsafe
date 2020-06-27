@@ -22,11 +22,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 public final class IntegrationModuleConfigurationDAO
-		extends JDBCBase
-		implements ExternalInterface {
+		extends JDBCBase {
 
 	private static final String ALL_PASSWORDS_MARKER = "*";
 

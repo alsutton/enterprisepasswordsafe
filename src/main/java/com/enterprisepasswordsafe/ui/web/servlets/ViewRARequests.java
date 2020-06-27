@@ -30,7 +30,6 @@ import com.enterprisepasswordsafe.engine.database.ApproverListDAO;
 import com.enterprisepasswordsafe.engine.database.RestrictedAccessRequest;
 import com.enterprisepasswordsafe.engine.database.RestrictedAccessRequestDAO;
 import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.proguard.JavaBean;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
 /**
@@ -84,7 +83,7 @@ public final class ViewRARequests extends HttpServlet {
      */
 
     public static class RASummary
-    	implements Comparable<RASummary>, JavaBean {
+    	implements Comparable<RASummary> {
 
     	/**
     	 * The ID of the summary.

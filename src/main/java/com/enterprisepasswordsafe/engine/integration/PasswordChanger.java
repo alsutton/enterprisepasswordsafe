@@ -16,8 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.integration;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
@@ -28,7 +26,7 @@ import java.util.Map;
  * The interface implemented by any class which can change the password
  * on a remote machine.
  */
-public interface PasswordChanger extends ExternalInterface {
+public interface PasswordChanger {
 	
 	/**
 	 * The property name for the password username.

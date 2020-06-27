@@ -44,7 +44,6 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.sf.proguard:proguard-gradle:6.2.2'
         classpath 'com.bmuschko:gradle-tomcat-plugin:2.5'
         classpath 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'
     }
@@ -67,80 +66,4 @@ jacocoTestReport {
         csv.enabled false
         html.destination file("${buildDir}/reports/coverage")
     }
-}
-
-task proguard(type: proguard.gradle.ProGuardTask, dependsOn: jar) {
-    configurations.runtime.each {
-        println it
-    }
-
-    injars jar.archivePath
-
-    outjars 'passwordsafe.jar'
-
-    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
-    libraryjars "${System.getProperty('java.home')}/lib/jce.jar"
-    libraryjars(configurations.runtime)
-
-    printmapping 'proguard.map'
-
-    dontusemixedcaseclassnames
-    dontshrink
-
-    keepclassmembers 'class * extends java.lang.Enum { \
-        public static **[] values(); \
-        public static ** valueOf(java.lang.String); \
-    }'
-
-    keepclassmembers 'class * implements java.io.Serializable { \
-        static final long serialVersionUID; \
-        static final java.io.ObjectStreamField[] serialPersistentFields; \
-        private void writeObject(java.io.ObjectOutputStream); \
-        private void readObject(java.io.ObjectInputStream); \
-        java.lang.Object writeReplace(); \
-        java.lang.Object readResolve(); \
-    }'
-
-    keep 'public class * implements javax.servlet.Filter'
-    keep 'public class * implements javax.servlet.Servlet'
-
-    keep 'public class com.enterprisepasswordsafe.engine.configuration.JDBCConfiguration'
-    keep 'public class * implements com.enterprisepasswordsafe.engine.dbabstraction.AbstractDAL'
-    keep 'public interface com.enterprisepasswordsafe.engine.integration.PasswordChanger'
-    keep 'public class com.enterprisepasswordsafe.engine.integration.PasswordChangerProperty'
-    keep 'public class * implements com.enterprisepasswordsafe.engine.integration.PasswordChanger { \
-        public void rollbackChange(java.sql.Connection, java.util.Map, java.util.Map, java.lang.String); \
-        public void changePassword(java.sql.Connection, java.util.Map, java.util.Map, java.lang.String); \
-        public java.util.List getProperties(); \
-        public void install(java.sql.Connection); \
-        public void uninstall(java.sql.Connection); \
-    }'
-    keepclassmembers 'public class * implements javax.security.auth.spi.LoginModule { \
-        void initialize(javax.security.auth.Subject, javax.security.auth.callback.CallbackHandler, java.util.Map<java.lang.String,?>, java.util.Map<java.lang.String,?>); \
-        boolean login(); \
-        boolean commit(); \
-        boolean abort(); \
-        boolean logout(); \
-    }'
-
-    keep 'public interface com.enterprisepasswordsafe.proguard.ExternalInterface'
-    keep 'public class * implements com.enterprisepasswordsafe.proguard.ExternalInterface { \
-        public *** *; \
-        public *** *(...); \
-    }'
-
-    keep 'public interface com.enterprisepasswordsafe.proguard.JavaBean'
-    keep 'public class * implements com.enterprisepasswordsafe.proguard.JavaBean { \
-        void set*(***); \
-        void set*(int, ***); \
-        boolean is*(); \
-        boolean is*(int); \
-        *** get*(); \
-        *** get*(int); \
-    }'
-
-    keepclassmembers 'public class com.enterprisepasswordsafe.engine.database.ConfigurationListenersDAO { \
-        void addListener( java.lang.String, com.enterprisepasswordsafe.engine.database.ConfigurationListenersDAO$ConfigurationListener ); \
-    }'
-
 }

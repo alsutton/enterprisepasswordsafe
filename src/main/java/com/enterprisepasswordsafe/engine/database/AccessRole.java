@@ -16,9 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-import com.enterprisepasswordsafe.proguard.JavaBean;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -26,7 +23,7 @@ import java.sql.SQLException;
  * Base class for all access roles for restricted access items.
  */
 
-public abstract class AccessRole implements ExternalInterface {
+public abstract class AccessRole {
 	/**
 	 * The requestor-only role
 	 */
@@ -156,7 +153,7 @@ public abstract class AccessRole implements ExternalInterface {
 	 */
 
 	public static class ApproverSummary
-		implements Comparable<ApproverSummary>, JavaBean {
+		implements Comparable<ApproverSummary> {
 		/**
 		 * The ID of the approver.
 		 */

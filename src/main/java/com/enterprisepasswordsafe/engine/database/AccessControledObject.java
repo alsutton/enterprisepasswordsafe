@@ -16,15 +16,13 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.JavaBean;
-
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
 /**
  * Interface implemented by all objects which are subject to access control.
  */
-public interface AccessControledObject extends JavaBean {
+public interface AccessControledObject {
 	
 	/**
 	 * Return the ID of the object

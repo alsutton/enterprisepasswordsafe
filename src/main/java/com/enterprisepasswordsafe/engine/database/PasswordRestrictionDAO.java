@@ -16,8 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,8 +23,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PasswordRestrictionDAO
-	implements ExternalInterface {
+public class PasswordRestrictionDAO {
 
     private static final String GET_SQL =
             "SELECT restriction_id, name, min_numeric, min_lower, min_upper, " +

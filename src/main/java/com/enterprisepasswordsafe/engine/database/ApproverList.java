@@ -16,13 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
-
 /**
  * Class holding the list of approvers for a particular item.
  */
-public class ApproverList
-    implements ExternalInterface {
+public class ApproverList {
 
 	/**
 	 * The state marker for a user who has approved a request.

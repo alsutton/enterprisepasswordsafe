@@ -17,7 +17,6 @@
 package com.enterprisepasswordsafe.engine.database;
 
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,8 +24,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LocationDAO
-	implements ExternalInterface {
+public class LocationDAO {
 
 	private static final String GET_BY_NAME_SQL = "select id from locations where name = ?";
 

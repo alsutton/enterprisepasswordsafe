@@ -3,14 +3,13 @@ package com.enterprisepasswordsafe.engine.database;
 import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.Cache;
-import com.enterprisepasswordsafe.proguard.ExternalInterface;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserSummaryDAO extends StoredObjectManipulator<UserSummary> implements ExternalInterface {
+public class UserSummaryDAO extends StoredObjectManipulator<UserSummary> {
 
     private static final String GET_SUMMARY_BY_ID =
             "SELECT   user_id, user_name, full_name "
