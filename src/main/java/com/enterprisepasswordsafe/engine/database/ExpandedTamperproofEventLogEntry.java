@@ -84,12 +84,13 @@ public final class ExpandedTamperproofEventLogEntry
 	public static ExpandedTamperproofEventLogEntry from(final ResultSet rs, final User user, final Group adminGroup,
 														final boolean validateTamperstamp) throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
 		return new ExpandedTamperproofEventLogEntry(new UserClassifier(), new LogEventHasher(), new LogEventParser(),
-				AccessControlDAO.getInstance(), UserDAO.getInstance(), rs, user, adminGroup, validateTamperstamp);
+				AccessControlDAO.getInstance(), UserDAO.getInstance(), new PasswordUtils<>(), rs, user, adminGroup,
+				validateTamperstamp);
 	}
 
 	ExpandedTamperproofEventLogEntry(final UserClassifier userClassifier, final LogEventHasher logEventHasher,
 									 final LogEventParser logEventParser, final AccessControlDAO accessControlDAO,
-									 final UserDAO userDAO, final ResultSet rs,
+									 final UserDAO userDAO, final PasswordUtils<Password> passwordUtils, final ResultSet rs,
 									 final User validatingUser, final Group adminGroup,
 									 boolean validateTamperstamp)
 			throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
@@ -114,20 +115,20 @@ public final class ExpandedTamperproofEventLogEntry
 		}
 
 		if (itemId != null) {
-			populateObjectDetails(rs, validatingUser);
+			populateObjectDetails(rs, validatingUser, passwordUtils);
 		}
 	}
 
-	private void populateObjectDetails(ResultSet rs, User validatingUser)
+	private void populateObjectDetails(ResultSet rs, User validatingUser, PasswordUtils<Password> passwordUtils)
 			throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
 		AccessControl ac = accessControlDAO.getReadAccessControl(validatingUser, itemId);
 		if (ac == null) {
 			return;
 		}
 
-		Password pass = new Password();
+		Password pass;
 		try {
-			PasswordUtils.decrypt(pass, ac, rs.getBytes(7));
+			pass = passwordUtils.decrypt(ac, rs.getBytes(7));
 			item = pass.getUsername() + " @ " + pass.getLocation();
 		} catch (Exception e) {
 			Logger.getLogger(LOG_TAG).log(Level.SEVERE, "Problem fetching object", e);
