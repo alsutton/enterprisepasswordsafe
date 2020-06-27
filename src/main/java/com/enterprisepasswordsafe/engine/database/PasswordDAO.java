@@ -24,7 +24,6 @@ import com.enterprisepasswordsafe.engine.database.actions.password.ExpiringAcces
 import com.enterprisepasswordsafe.engine.database.derived.ExpiringAccessiblePasswords;
 import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
 import com.enterprisepasswordsafe.engine.passwords.PasswordPermissionApplier;
-import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 
 import java.io.IOException;
@@ -125,7 +124,6 @@ public final class PasswordDAO
      *
      * @throws SQLException Thrown if there is a problem accessing the database.
      * @throws GeneralSecurityException Thrown if there is a problem decrypting the data.
-     * @throws InvalidLicenceException Thrown if the current EPS licence is invalid.
      * @throws IOException Thrown if there is an IOException
      */
 

@@ -16,7 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.database;
 
-import com.enterprisepasswordsafe.engine.utils.InvalidLicenceException;
 import com.enterprisepasswordsafe.engine.utils.KeyUtils;
 
 import javax.crypto.SecretKey;
@@ -89,12 +88,10 @@ public final class MembershipDAO
      *
      * @throws SQLException If there was a problem writing to the database.
      * @throws GeneralSecurityException Thrown if there was a decryption problem.
-     * @throws UnsupportedEncodingException
-     * @throws InvalidLicenceException Thrown if there EPS licence is not valid.
      */
 
     public void write(final User user, Membership membership)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        throws SQLException, GeneralSecurityException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_MEMBERSHIP_SQL)) {
             ps.setString(1, membership.getUserId());
             ps.setString(2, membership.getGroupId());
@@ -298,12 +295,10 @@ public final class MembershipDAO
      * @param groupId The ID of the group to delete the membership for.
      *
      * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem decrypting.
-     * @throws UnsupportedEncodingException
-     */
+	 */
 
     public void delete(final String userId, final String groupId)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException {
     	runResultlessParameterisedSQL(DELETE_MEMBERSHIP_SQL, userId, groupId);
     }
 
@@ -325,7 +320,7 @@ public final class MembershipDAO
             return;
         }
 
-        List<Membership> memberships = new ArrayList<Membership>();
+        List<Membership> memberships = new ArrayList<>();
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_MEMBERSHIPS_FOR_USER_SQL)) {
             ps.setString(1, user.getId());
             try(ResultSet rs = ps.executeQuery()) {
@@ -359,7 +354,7 @@ public final class MembershipDAO
      */
 
     public Map<String,Object> getMemberships(final String id) throws SQLException {
-        Map<String, Object> membershipMap = new HashMap<String,Object>();
+        Map<String, Object> membershipMap = new HashMap<>();
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_USER_MEMBERSHIPS_SQL)) {
             ps.setString(1, id);
             try(ResultSet rs = ps.executeQuery()) {
