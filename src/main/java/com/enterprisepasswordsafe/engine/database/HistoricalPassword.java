@@ -36,6 +36,8 @@ public final class HistoricalPassword
         extends PasswordBase
         implements ExternalInterface {
 
+    private static final PasswordUtils<HistoricalPassword> passwordUtils = new PasswordUtils<>();
+
     /**
      * The timestamp field.
      */
@@ -56,7 +58,7 @@ public final class HistoricalPassword
             throws IOException, GeneralSecurityException {
         super(passwordId);
         this.timestamp = timestamp;
-        PasswordUtils.decrypt(this, ac, data);
+        passwordUtils.decrypt(this, ac, data);
     }
 
     /**

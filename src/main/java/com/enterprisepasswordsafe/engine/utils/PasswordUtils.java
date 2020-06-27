@@ -34,7 +34,7 @@ import com.enterprisepasswordsafe.engine.database.PasswordBase;
  * @author alsutton
  *
  */
-public final class PasswordUtils {
+public final class PasswordUtils<T extends PasswordBase> {
 	/**
 	 * The property name used to store the username
 	 */
@@ -121,9 +121,10 @@ public final class PasswordUtils {
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	public static void decrypt(final PasswordBase password, final AccessControl ac, final byte[] data)
+	public T decrypt(final T password, final AccessControl ac, final byte[] data)
 		throws IOException, GeneralSecurityException {
 		decrypt(password, ac, data, new Properties());
+		return password;
 	}
 
 	/**
@@ -135,7 +136,7 @@ public final class PasswordUtils {
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	public static PasswordBase decrypt(final AccessControl ac, final byte[] data)
+	public Password decrypt(final AccessControl ac, final byte[] data)
 		throws IOException, GeneralSecurityException {
         Password password = new Password();
 		decrypt(password, ac, data, new Properties());
