@@ -93,7 +93,7 @@ public final class AllPasswordsCSV extends BaseExporter {
 
             String notes = password.getNotes();
             int notesSize = notes.length();
-            StringBuffer store = new StringBuffer(notesSize);
+            StringBuilder store = new StringBuilder(notesSize);
             for (int i = 0; i < notesSize; i++) {
                 char thisChar = notes.charAt(i);
                 if (Character.isWhitespace(thisChar)) {

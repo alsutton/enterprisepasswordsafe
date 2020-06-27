@@ -16,21 +16,13 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
+import com.enterprisepasswordsafe.engine.jaas.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.jaas.ActiveDirectoryDomainLoginModule;
-import com.enterprisepasswordsafe.engine.jaas.ActiveDirectoryLoginModule;
-import com.enterprisepasswordsafe.engine.jaas.ActiveDirectoryNonAnonymousLoginModule;
-import com.enterprisepasswordsafe.engine.jaas.AuthenticationSourceModule;
-import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
-import com.enterprisepasswordsafe.engine.jaas.JndiLoginModuleDummy;
-import com.enterprisepasswordsafe.engine.jaas.LDAPLoginModule;
-import com.enterprisepasswordsafe.engine.jaas.LDAPSearchAndBindLoginModule;
+import java.io.IOException;
 
 
 /**
@@ -56,21 +48,28 @@ public final class AddAuthSourceStage2 extends HttpServlet {
     	request.setAttribute("type", type);
     	AuthenticationSourceModule module;
 
-        if (type.equals(EPSJAASConfiguration.LDAP_APPLICATION_CONFIGURATION)) {
-        	module = new LDAPLoginModule();
-        } else if (type.equals(EPSJAASConfiguration.RFC2307_APPLICATION_CONFIGURATION)) {
-        	module = new JndiLoginModuleDummy();
-        } else if (type.equals(EPSJAASConfiguration.LDAP_SANDB_APPLICATION_CONFIGURATION)) {
-        	module = new LDAPSearchAndBindLoginModule();
-        } else if (type.equals(EPSJAASConfiguration.AD_APPLICATION_CONFIGURATION)) {
-        	module = new ActiveDirectoryLoginModule();
-        } else if (type.equals(EPSJAASConfiguration.AD_NONANON_APPLICATION_CONFIGURATION)) {
-        	module = new ActiveDirectoryNonAnonymousLoginModule();
-	    } else if (type.equals(EPSJAASConfiguration.AD_DOMAIN_APPLICATION_CONFIGURATION)) {
-	    	module = new ActiveDirectoryDomainLoginModule();
-	    } else {
-	    	throw new ServletException("Unknown source type.");
-	    }
+		switch (type) {
+			case EPSJAASConfiguration.LDAP_APPLICATION_CONFIGURATION:
+				module = new LDAPLoginModule();
+				break;
+			case EPSJAASConfiguration.RFC2307_APPLICATION_CONFIGURATION:
+				module = new JndiLoginModuleDummy();
+				break;
+			case EPSJAASConfiguration.LDAP_SANDB_APPLICATION_CONFIGURATION:
+				module = new LDAPSearchAndBindLoginModule();
+				break;
+			case EPSJAASConfiguration.AD_APPLICATION_CONFIGURATION:
+				module = new ActiveDirectoryLoginModule();
+				break;
+			case EPSJAASConfiguration.AD_NONANON_APPLICATION_CONFIGURATION:
+				module = new ActiveDirectoryNonAnonymousLoginModule();
+				break;
+			case EPSJAASConfiguration.AD_DOMAIN_APPLICATION_CONFIGURATION:
+				module = new ActiveDirectoryDomainLoginModule();
+				break;
+			default:
+				throw new ServletException("Unknown source type.");
+		}
 
         request.setAttribute("name", "");
         request.setAttribute("id", "");

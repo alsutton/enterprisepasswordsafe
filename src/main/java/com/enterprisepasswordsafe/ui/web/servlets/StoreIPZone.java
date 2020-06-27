@@ -161,9 +161,7 @@ public final class StoreIPZone extends HttpServlet {
 
     private String createZeroFields(int count) {
         StringBuilder result = new StringBuilder(count*6);
-        for(int i = 0 ; i < count ; i++) {
-            result.append("0:");
-        }
+        result.append("0:".repeat(Math.max(0, count)));
         return result.toString();
     }
 

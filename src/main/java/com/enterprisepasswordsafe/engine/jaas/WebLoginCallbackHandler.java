@@ -59,8 +59,7 @@ public final class WebLoginCallbackHandler implements CallbackHandler {
 
     public void handle(final Callback[] callbacks)
             throws UnsupportedCallbackException {
-        for (int i = 0; i < callbacks.length; i++) {
-            Callback thisCallback = callbacks[i];
+        for (Callback thisCallback : callbacks) {
             if (thisCallback instanceof NameCallback) {
                 ((NameCallback) thisCallback).setName(username);
             } else if (thisCallback instanceof PasswordCallback) {

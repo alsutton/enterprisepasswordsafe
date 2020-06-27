@@ -191,8 +191,7 @@ public final class Explorer extends HttpServlet {
         	}
         }
 
-        private int compareKeys(final Password passwordObject0, final Password passwordObject1)
-				throws Exception {
+        private int compareKeys(final Password passwordObject0, final Password passwordObject1) {
 			int primaryKeyComparison = compareIndividualKeys(getKeyString(passwordObject0), getKeyString(passwordObject1));
 			return primaryKeyComparison == 0 ?
 					compareIndividualKeys(getSecondaryString(passwordObject0), getSecondaryString(passwordObject1))

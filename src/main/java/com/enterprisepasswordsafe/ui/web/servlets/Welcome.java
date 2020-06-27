@@ -146,13 +146,13 @@ public final class Welcome extends PasswordSafeBaseServlet {
     	List<String> returnValue = null;
 
     	if(!GroupDAO.getInstance().idExists(Group.ALL_USERS_GROUP_ID)) {
-    		returnValue = new ArrayList<String>();
+    		returnValue = new ArrayList<>();
     		returnValue.add("Group containing all users");
     	}
 
         if(!GroupDAO.getInstance().idExists(Group.NON_VIEWING_GROUP_ID)) {
             if(returnValue == null) {
-                returnValue = new ArrayList<String>();
+                returnValue = new ArrayList<>();
             }
             returnValue.add("Ability to have users who can't view passwords");
         }

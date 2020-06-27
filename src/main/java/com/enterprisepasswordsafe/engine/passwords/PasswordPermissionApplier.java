@@ -1,7 +1,6 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
 import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 
 import java.io.UnsupportedEncodingException;
@@ -44,7 +43,7 @@ public class PasswordPermissionApplier {
             String userId = thisEntry.getKey();
             User theUser = userDAO.getByIdDecrypted(userId, adminGroup);
             if( theUser != null ) {
-                addPermission(theUser, newPassword, userAccessControlDAO, thisEntry.getValue());
+                userAccessControlDAO.create(theUser, newPassword, thisEntry.getValue());
             }
         }
     }
@@ -56,14 +55,8 @@ public class PasswordPermissionApplier {
             final String groupId = thisEntry.getKey();
             Group theGroup = groupDAO.getByIdDecrypted(groupId, adminUser);
             if( theGroup != null ) {
-                addPermission(theGroup, newPassword, groupAccessControlDAO, thisEntry.getValue());
+                groupAccessControlDAO.create(theGroup, newPassword, thisEntry.getValue());
             }
         }
-    }
-
-    private void addPermission(EntityWithAccessRights entity, Password newPassword,
-                               AccessControlDAOInterface acDAO, PasswordPermission permission)
-            throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-        acDAO.create(entity, newPassword, permission);
     }
 }

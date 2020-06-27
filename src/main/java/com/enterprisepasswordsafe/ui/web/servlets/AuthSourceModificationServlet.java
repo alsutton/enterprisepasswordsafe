@@ -16,11 +16,10 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Base class for servlets modifing the parameters of an authentication source.
@@ -56,7 +55,7 @@ public abstract class AuthSourceModificationServlet extends HttpServlet {
      */
 
 	protected final Map<String,String> extractAuthParameters(final HttpServletRequest request) {
-        Map<String,String> authParams = new HashMap<String,String>();
+        Map<String,String> authParams = new HashMap<>();
 
         for(Map.Entry<String,String[]> thisEntry : request.getParameterMap().entrySet()) {
             if (thisEntry.getKey().startsWith(PROPERTY_NAME_PREFIX)) {

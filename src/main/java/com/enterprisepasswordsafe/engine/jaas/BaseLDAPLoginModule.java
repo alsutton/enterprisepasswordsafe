@@ -49,7 +49,7 @@ abstract class BaseLDAPLoginModule extends BaseLoginModule{
     }
 
     Hashtable<String,Object> getNoAuthEnvironment(final Object url) {
-        Hashtable<String,Object> env = new Hashtable<String,Object>();
+        Hashtable<String,Object> env = new Hashtable<>();
         env.put(Context.INITIAL_CONTEXT_FACTORY,"com.sun.jndi.ldap.LdapCtxFactory");
         env.put(Context.PROVIDER_URL, url);
         return env;

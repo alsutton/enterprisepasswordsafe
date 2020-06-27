@@ -101,7 +101,7 @@ public class TamperproofEventLogDAO {
 
     private void write(final String logLevel, TamperproofEventLog eventLogEntry,
     		final AccessControledObject item, boolean sendEmail)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
         String userId = eventLogEntry.getUserId();
         if (userId == null) {
         	userId = TamperproofEventLog.DUMMY_USER_ID;

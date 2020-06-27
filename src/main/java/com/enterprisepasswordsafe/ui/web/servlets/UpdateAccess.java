@@ -17,7 +17,6 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.accesscontrol.*;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -286,9 +285,10 @@ public final class UpdateAccess extends HttpServlet {
 	}
 
     private boolean needsUpdate(AccessControl adminAc, AccessControl currentAccessControl,
-								AccessControlDAOInterface accessControlDAO, EntityWithAccessRights entity,
-								Password thePassword, String access, AccessControlBuilder accessControlBuilder)
-			throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
+								GroupAccessControlDAO accessControlDAO,
+								Group entity, Password thePassword, String access,
+								AccessControlBuilder<GroupAccessControl> accessControlBuilder)
+			throws GeneralSecurityException, SQLException {
         PasswordPermission permission = PasswordPermission.fromRepresentation(access);
 		if( currentAccessControl == null ) {
 			accessControlDAO.create(entity, thePassword, permission);
@@ -300,12 +300,31 @@ public final class UpdateAccess extends HttpServlet {
 				return true;
 			}
 		}
+		return false;
+	}
 
+	private boolean needsUpdate(AccessControl adminAc, AccessControl currentAccessControl,
+								UserAccessControlDAO accessControlDAO,
+								User entity, Password thePassword, String access,
+								AccessControlBuilder<UserAccessControl> accessControlBuilder)
+			throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
+		PasswordPermission permission = PasswordPermission.fromRepresentation(access);
+		if( currentAccessControl == null ) {
+			accessControlDAO.create(entity, thePassword, permission);
+			return true;
+		} else {
+			accessControlBuilder = accessControlBuilder.copyFrom(currentAccessControl);
+			if(updateAccessControl(adminAc, currentAccessControl, permission, accessControlBuilder)) {
+				accessControlDAO.update(entity, accessControlBuilder.build());
+				return true;
+			}
+		}
 		return false;
 	}
 
 	private boolean updateAccessControl(AccessControl adminAc, AccessControl currentAccessControl,
-										PasswordPermission permission, AccessControlBuilder accessControlBuilder) {
+										PasswordPermission permission,
+										AccessControlBuilder<? extends AccessControl> accessControlBuilder) {
 		boolean changed = false;
 		if( permission.allowsRead && currentAccessControl.getReadKey() == null ) {
 			accessControlBuilder.withReadKey(adminAc.getReadKey());

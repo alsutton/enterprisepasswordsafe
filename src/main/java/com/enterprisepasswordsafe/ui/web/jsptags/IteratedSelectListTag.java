@@ -109,7 +109,7 @@ public class IteratedSelectListTag extends TagSupport {
 
     public static String encode(final String data) {
         int stringLength = data.length();
-        StringBuffer buffer = new StringBuffer(stringLength);
+        StringBuilder buffer = new StringBuilder(stringLength);
         boolean lastWasNewline = false;
         for (int i = 0; i < stringLength; i++) {
             char c = data.charAt(i);

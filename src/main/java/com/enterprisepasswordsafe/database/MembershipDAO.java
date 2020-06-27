@@ -116,15 +116,14 @@ public final class MembershipDAO
      * @throws UnsupportedEncodingException
      */
 
-    public Membership create(final User user, final Group group)
+    public void create(final User user, final Group group)
     	throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
         Membership membership = getMembership(user, group);
         if( membership == null) {
             membership = new Membership(user, group);
             write(user, membership);
         }
-        return membership;
-    }
+	}
 
     /**
      * Creates a new membership for a user to a group
@@ -184,11 +183,10 @@ public final class MembershipDAO
 	 *
 	 * @throws SQLException Thrown if there is a problem accessing the database.
 	 * @throws GeneralSecurityException Thrown if there is a problem decrypting.
-	 * @throws UnsupportedEncodingException
 	 */
 
 	public Membership getMembership(final User user, final Group group)
-	    throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+	    throws SQLException, GeneralSecurityException {
 		return getMembership(user, group.getGroupId());
 	}
 

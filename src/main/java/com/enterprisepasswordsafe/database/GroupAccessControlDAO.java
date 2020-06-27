@@ -38,7 +38,7 @@ import java.util.TreeSet;
 
 public class GroupAccessControlDAO
     extends AbstractAccessControlDAO
-    implements AccessControlDAOInterface<Group, GroupAccessControl> {
+        implements AccessControlDAOInterface<Group, GroupAccessControl> {
 
     /**
      * The fields needed to construct a GroupAccessControl from a ResultSet.
@@ -162,7 +162,7 @@ public class GroupAccessControlDAO
     }
 
     public GroupAccessControl getGac(final Group group, final Password password)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
         if(password == null) {
             return null;
         }
@@ -171,7 +171,7 @@ public class GroupAccessControlDAO
     }
 
     public GroupAccessControl getGac(final User user, final Group group, final String itemId)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
         if(user == null || group == null || itemId == null) {
             return null;
         }

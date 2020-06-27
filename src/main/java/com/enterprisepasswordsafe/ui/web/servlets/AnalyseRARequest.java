@@ -77,13 +77,11 @@ public final class AnalyseRARequest extends HttpServlet {
 	    	}
 		} catch (UnsupportedEncodingException e) {
 			// Do nothing, the password could not be accessed
-		} catch (GeneralSecurityException e) {
-			throw new ServletException("You can not analyse the request at the current time.", e);
-		} catch (SQLException e) {
+		} catch (GeneralSecurityException | SQLException e) {
 			throw new ServletException("You can not analyse the request at the current time.", e);
 		}
 
-        request.getRequestDispatcher("/system/ra_vote.jsp").forward(request, response);
+		request.getRequestDispatcher("/system/ra_vote.jsp").forward(request, response);
     }
 
     /**

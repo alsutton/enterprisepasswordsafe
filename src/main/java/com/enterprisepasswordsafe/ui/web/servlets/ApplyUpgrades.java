@@ -76,10 +76,8 @@ public final class ApplyUpgrades extends HttpServlet {
             if(!groupDAO.idExists(Group.NON_VIEWING_GROUP_ID)) {
                 groupDAO.write(new Group(Group.NON_VIEWING_GROUP_ID, "Non-viewing Users", true));
             }
-    	} catch(SQLException sqle) {
+    	} catch(SQLException | GeneralSecurityException sqle) {
     		throw new ServletException("The upgrades could not be performed", sqle);
-    	} catch(GeneralSecurityException gse) {
-    		throw new ServletException("The upgrades could not be performed", gse);
     	}
 
         ServletUtils.getInstance().generateMessage(request, "The upgrades have been performed");

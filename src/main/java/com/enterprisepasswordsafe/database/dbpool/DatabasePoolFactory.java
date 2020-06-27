@@ -19,7 +19,6 @@ package com.enterprisepasswordsafe.database.dbpool;
 import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
 
-import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
 public class DatabasePoolFactory {
@@ -45,7 +44,7 @@ public class DatabasePoolFactory {
     }
 
     public synchronized DatabasePool getInstance()
-            throws SQLException, ClassNotFoundException, GeneralSecurityException {
+            throws SQLException, ClassNotFoundException {
         if(mSharedInstance == null) {
             setConfiguration(Repositories.jdbcConfigurationRepository.load());
         }

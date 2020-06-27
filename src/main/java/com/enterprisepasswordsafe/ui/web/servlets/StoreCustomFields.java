@@ -59,7 +59,7 @@ public final class StoreCustomFields extends HttpServlet {
 	    	}
 
 	    	if( action != null && action.equals("add") ) {
-	    		StringBuffer fieldNameBuffer = new StringBuffer("custom_fn");
+	    		StringBuilder fieldNameBuffer = new StringBuilder("custom_fn");
 	    		if( i < 10 ) {
 	    			fieldNameBuffer.append('0');
 	    		}

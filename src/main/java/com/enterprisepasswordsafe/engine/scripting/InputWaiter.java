@@ -23,7 +23,7 @@ class InputWaiter extends Thread {
         long startTime = System.currentTimeMillis();
 
         int searchTextLength = text.length();
-        StringBuffer textHold = new StringBuffer( searchTextLength );
+        StringBuilder textHold = new StringBuilder( searchTextLength );
         int currentFoundIdx = 0;
         try {
             int thisChar;

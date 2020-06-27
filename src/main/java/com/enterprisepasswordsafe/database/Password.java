@@ -121,7 +121,7 @@ public final class Password
 
     private final PasswordPropertiesSerializer passwordPropertiesSerializer = new PasswordPropertiesSerializer();
 
-    public Password() throws NoSuchAlgorithmException, NoSuchProviderException {
+    public Password() throws NoSuchAlgorithmException {
     	super();
     }
 
@@ -225,14 +225,13 @@ public final class Password
      *            The expiry date for the password.
      *
      * @throws NoSuchAlgorithmException Thrown if the encryption algorithm is unavailable.
-     * @throws NoSuchProviderException Thrown if the encryption provider is unavailable.
      */
 
     public Password(final String newPasswordId, final String newUsername,
             final String newPassword, final String newLocation,
             final String newNotes, final AuditingLevel newAudited,
             final boolean newHistoryStored, final long newExpiry)
-            throws NoSuchAlgorithmException, NoSuchProviderException {
+            throws NoSuchAlgorithmException {
         super(newPasswordId, newUsername, newPassword, newLocation, newNotes, newExpiry);
 
         setEnabled(true);

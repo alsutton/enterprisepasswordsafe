@@ -48,10 +48,8 @@ public final class AddAuthSource extends AuthSourceModificationServlet {
         	request.setAttribute("error_page", "/admin/AuthSources");
         	AuthenticationSourceDAO.getInstance().create(name, type, parameters);
         	ServletUtils.getInstance().generateMessage(request, "The source has been created.");
-        } catch(SQLException sqle) {
+        } catch(SQLException | GeneralSecurityException sqle) {
         	throw new ServletException("There was a problem creating the authentication source.\n("+sqle.getMessage()+").", sqle);
-        } catch(GeneralSecurityException gse) {
-        	throw new ServletException("There was a problem creating the authentication source.\n("+gse.getMessage()+").", gse);
         }
 
         response.sendRedirect(request.getContextPath()+"/admin/AuthSources");

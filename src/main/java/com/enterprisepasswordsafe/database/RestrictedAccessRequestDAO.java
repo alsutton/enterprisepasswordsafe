@@ -125,7 +125,7 @@ public final class RestrictedAccessRequestDAO {
 
 	public List<RestrictedAccessRequest> getRARsForUser(final User user)
 	throws SQLException {
-		List<RestrictedAccessRequest> rars = new ArrayList<RestrictedAccessRequest>();
+		List<RestrictedAccessRequest> rars = new ArrayList<>();
 
 		int rarLifetime = getRARLifetime();
 		long requestCutoff = DateFormatter.getTimeInPast(rarLifetime);

@@ -79,7 +79,7 @@ public class SimpleTerminalInteractor {
 	 */
 	
 	public static String removeEscapeCharacters( String original ) {
-		StringBuffer newString = new StringBuffer(original.length());
+		StringBuilder newString = new StringBuilder(original.length());
 		for( int i = 0 ; i < original.length() ; i++) {
 			char thisChar = original.charAt(i);
 			if(thisChar == '\\') {
@@ -114,56 +114,53 @@ public class SimpleTerminalInteractor {
 	
 	public void runScript( Map<String,String> parameters, String script ) 
 		throws IOException {
-	
-		LineNumberReader lnr = new LineNumberReader( new StringReader( script ) );
-		try {
+
+		try (LineNumberReader lnr = new LineNumberReader(new StringReader(script))) {
 			String nextLine;
-			while((nextLine = lnr.readLine()) != null) {
+			while ((nextLine = lnr.readLine()) != null) {
 				try {
 					// Ignore blank lines and comments.
-					if( nextLine.trim().length() == 0 
-					||	nextLine.startsWith("#") ) {
+					if (nextLine.trim().length() == 0
+							|| nextLine.startsWith("#")) {
 						continue;
 					}
-					
+
 					int commandSpaceIdx = nextLine.indexOf(' ');
-					if( commandSpaceIdx == -1 ) {
-						throw new IOException( "Command not found.");
+					if (commandSpaceIdx == -1) {
+						throw new IOException("Command not found.");
 					}
-					
+
 					String command = nextLine.substring(0, commandSpaceIdx);
-					if			(command.equalsIgnoreCase("send") ) {
-						String outputLine = 
-							substituteParameters(
-									parameters,
-									nextLine.substring(commandSpaceIdx+1)
+					if (command.equalsIgnoreCase("send")) {
+						String outputLine =
+								substituteParameters(
+										parameters,
+										nextLine.substring(commandSpaceIdx + 1)
 								);
 						outputLine = removeEscapeCharacters(outputLine);
 						byte[] data = outputLine.getBytes();
 						stdin.write(data);
 						stdin.flush();
-					} else if	(command.equalsIgnoreCase("waitfor") ) {
-						String waitForText = 
-							substituteParameters(
-									parameters,
-									nextLine.substring(commandSpaceIdx+1)
+					} else if (command.equalsIgnoreCase("waitfor")) {
+						String waitForText =
+								substituteParameters(
+										parameters,
+										nextLine.substring(commandSpaceIdx + 1)
 								);
 						waitForString(waitForText);
 					} else {
-						throw new IOException("Command not recognised: "+command);
-					}					
-				} catch( IOException ioe ) {
+						throw new IOException("Command not recognised: " + command);
+					}
+				} catch (IOException ioe) {
 					Logger.
-						getLogger(getClass().toString()).
-							log(Level.WARNING, 
-								"Error procesung script at line "+lnr.getLineNumber()+":\""+nextLine+"\"",
-								ioe);
+							getLogger(getClass().toString()).
+							log(Level.WARNING,
+									"Error procesung script at line " + lnr.getLineNumber() + ":\"" + nextLine + "\"",
+									ioe);
 					throw ioe;
 				}
 			}
-		} finally {
-			lnr.close();
-		}		
+		}
 	}
 	
 	/**
@@ -197,7 +194,7 @@ public class SimpleTerminalInteractor {
 				newSize += value.toString().length();
 			}
 
-			StringBuffer newText = new StringBuffer( newSize );
+			StringBuilder newText = new StringBuilder( newSize );
 			
 			newText.append(textToModify.substring(0, startIdx));
 			if( value != null ) {

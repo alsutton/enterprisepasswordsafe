@@ -185,7 +185,7 @@ public final class HierarchyNodeDAO
      * Cache for node summaries.
      */
 
-    private final Cache<String,HierarchyNodeSummary> summaryCache = new Cache<String,HierarchyNodeSummary>();
+    private final Cache<String,HierarchyNodeSummary> summaryCache = new Cache<>();
 
 	private final UserClassifier userClassifier = new UserClassifier();
 

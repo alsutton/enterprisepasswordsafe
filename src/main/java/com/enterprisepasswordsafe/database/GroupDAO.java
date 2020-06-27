@@ -162,7 +162,7 @@ public class GroupDAO extends GroupStoreManipulator {
     }
 
     public Group getAdminGroup(final User theUser)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
         // Get the admin group either directly (if the user is an admin),
         // or indirectly (if the user is only a sub-admin).
         Group adminGroup = getById(Group.ADMIN_GROUP_ID);
@@ -183,7 +183,7 @@ public class GroupDAO extends GroupStoreManipulator {
     }
 
     public Group getByIdDecrypted(final String groupId, final User user)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
     	Group theGroup = userClassifier.isAdministrator(user) ?
                 UnfilteredGroupDAO.getInstance().getById(groupId) : getById(groupId);
     	if( theGroup == null || theGroup.getStatus() == Group.STATUS_DELETED) {

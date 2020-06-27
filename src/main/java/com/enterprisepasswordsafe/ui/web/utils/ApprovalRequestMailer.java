@@ -42,7 +42,7 @@ public class ApprovalRequestMailer
 	 * The list of mailers currently working.
 	 */
 
-	private static final List<ApprovalRequestMailer> activeMailers = new ArrayList<ApprovalRequestMailer>();
+	private static final List<ApprovalRequestMailer> activeMailers = new ArrayList<>();
 
 	/**
 	 * The set of approvers to send the messages to
@@ -91,7 +91,7 @@ public class ApprovalRequestMailer
 		subject = "EPS Access Request : "+request.getRequestId();
 		recipients = approvers;
 
-		StringBuffer messageTextBuffer = new StringBuffer();
+		StringBuilder messageTextBuffer = new StringBuilder();
 		messageTextBuffer.append(requester.getUserName());
 		String fullName = requester.getFullName();
 		if(fullName != null) {
