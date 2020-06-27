@@ -16,11 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.jaas;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.callback.*;
 
 /**
  * The JAAS callback handler.
@@ -32,13 +28,13 @@ public final class WebLoginCallbackHandler implements CallbackHandler {
      * The username for this callback handler.
      */
 
-    private String username;
+    private final String username;
 
     /**
      * The password for this callback handler.
      */
 
-    private char[] password;
+    private final char[] password;
 
     /**
      * Constructor. Stores information.

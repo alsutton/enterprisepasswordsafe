@@ -26,28 +26,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
 
 /**
  * Servlet to alter the event email settings.
  */
 
 public final class ViewPersonalFolder extends HttpServlet {
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 411859900127257878L;
-
-    /**
-     * @throws UnsupportedEncodingException
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
-    	throws IOException, ServletException {
+    	throws ServletException {
     	try {
 	        User thisUser = SecurityUtils.getRemoteUser(request);
 
@@ -66,9 +53,6 @@ public final class ViewPersonalFolder extends HttpServlet {
     	}
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to take the user to their personal passwords page.";

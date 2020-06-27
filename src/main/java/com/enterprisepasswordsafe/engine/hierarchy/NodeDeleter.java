@@ -13,7 +13,7 @@ import java.sql.SQLException;
 
 public class NodeDeleter {
 
-    private HierarchyNodeDAO hierarchyNodeDAO;
+    private final HierarchyNodeDAO hierarchyNodeDAO;
 
     public NodeDeleter() {
         hierarchyNodeDAO = HierarchyNodeDAO.getInstance();

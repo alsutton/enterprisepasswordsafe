@@ -17,10 +17,10 @@ public class AccessControl implements Comparable<AccessControl> {
     private static final int AES_KEY_SIZE_IN_BITS = 128;
     private static final int JCE_PROVIDER_BITS_PER_BYTE = 8;
 
-    private String itemId;
-    private String accessorId;
-    private PrivateKey modifyKey;
-    private PublicKey readKey;
+    private final String itemId;
+    private final String accessorId;
+    private final PrivateKey modifyKey;
+    private final PublicKey readKey;
 
     protected AccessControl(final String newItemId, final String newAccessorId,
                          final PrivateKey newModifyKey, final PublicKey newReadKey) {

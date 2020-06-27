@@ -7,7 +7,7 @@ public enum AuditingLevel {
     FULL("F", "Y", "full"),
     CREATOR_CHOOSE("C");
 
-    private String[] representations;
+    private final String[] representations;
 
     AuditingLevel(String... representations) {
         this.representations = representations;

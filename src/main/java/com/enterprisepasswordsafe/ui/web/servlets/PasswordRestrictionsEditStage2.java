@@ -34,11 +34,6 @@ import java.sql.SQLException;
 public final class PasswordRestrictionsEditStage2 extends HttpServlet {
 
 	/**
-	 *
-	 */
-	private static final long serialVersionUID = 7902867050803032684L;
-
-	/**
 	 * The parameter holding the id of this restriction.
 	 */
 
@@ -68,10 +63,6 @@ public final class PasswordRestrictionsEditStage2 extends HttpServlet {
 
     private static final String ERROR_PAGE = "/admin/PasswordRestrictionsEditStage1";
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -141,10 +132,6 @@ public final class PasswordRestrictionsEditStage2 extends HttpServlet {
         ServletUtils.getInstance().generateMessage(request, restriction.getName()+" has been updated.");
         response.sendRedirect(request.getContextPath()+"/admin/PasswordRestrictions");
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

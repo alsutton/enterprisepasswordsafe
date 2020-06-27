@@ -35,10 +35,10 @@ public final class CreatePassword extends HttpServlet {
 
 	private final UserClassifier userClassifier = new UserClassifier();
 
-	private HierarchyTools hierarchyTools = new HierarchyTools();
-	private ServletUtils servletUtils = new ServletUtils();
+	private final HierarchyTools hierarchyTools = new HierarchyTools();
+	private final ServletUtils servletUtils = new ServletUtils();
 
-	private ConfigurationDAO configurationDAO = ConfigurationDAO.getInstance();
+	private final ConfigurationDAO configurationDAO = ConfigurationDAO.getInstance();
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)

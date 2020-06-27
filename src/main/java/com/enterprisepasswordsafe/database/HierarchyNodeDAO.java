@@ -187,7 +187,7 @@ public final class HierarchyNodeDAO
 
     private final Cache<String,HierarchyNodeSummary> summaryCache = new Cache<String,HierarchyNodeSummary>();
 
-	private UserClassifier userClassifier = new UserClassifier();
+	private final UserClassifier userClassifier = new UserClassifier();
 
 	/**
 	 * Private constructor to prevent instantiation
@@ -198,9 +198,9 @@ public final class HierarchyNodeDAO
 	}
 
     @Override
-    HierarchyNode newInstance(ResultSet rs, int startIndex)
+    HierarchyNode newInstance(ResultSet rs)
             throws SQLException {
-        return new HierarchyNode(rs, startIndex);
+        return new HierarchyNode(rs, 1);
     }
 
     /**
@@ -358,7 +358,7 @@ public final class HierarchyNodeDAO
 
     private void addUserAccessControlAccessibleObjects(final HierarchyNode node, final User user,
                                                        Map<String,Password> results)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
         StringBuilder sql = new StringBuilder(GET_CHILD_OBJECTS_VIA_UAC_SQL);
         if(!userClassifier.isPriviledgedUser(user)) {
             sql.append("   AND (pass.enabled is null OR pass.enabled = 'Y')" );
@@ -382,7 +382,7 @@ public final class HierarchyNodeDAO
                 continue;
             }
 
-            addPasswordToResults(results, passwordId, rs,UserAccessControlDAO.buildFromResultSet(rs, 1, user));
+            addPasswordToResults(results, passwordId, rs,UserAccessControlDAO.buildFromResultSet(rs, user));
         }
     }
 
@@ -415,7 +415,7 @@ public final class HierarchyNodeDAO
         }
 
         Group group =  GroupDAO.getInstance().getByIdDecrypted(rs.getString(4), user);
-        addPasswordToResults(results, passwordId, rs, GroupAccessControlDAO.buildFromResultSet(rs, 1, group));
+        addPasswordToResults(results, passwordId, rs, GroupAccessControlDAO.buildFromResultSet(rs, group));
     }
 
     private void addPasswordToResults(Map<String,Password> results, String passwordId,

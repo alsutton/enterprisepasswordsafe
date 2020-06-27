@@ -158,13 +158,13 @@ public abstract class AccessRole {
 		 * The ID of the approver.
 		 */
 		
-		private String id;
+		private final String id;
 		
 		/**
 		 * The Email address of the approver.
 		 */
 		
-		private String email;
+		private final String email;
 		
 		/**
 		 * Constructor. Stores the data.

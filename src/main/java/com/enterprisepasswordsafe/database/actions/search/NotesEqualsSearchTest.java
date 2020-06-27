@@ -26,7 +26,7 @@ public final class NotesEqualsSearchTest implements SearchTest {
      * The string to test for.
      */
 
-    private String testSearchString;
+    private final String testSearchString;
 
     /**
      * Constructor. Store the string to test for.

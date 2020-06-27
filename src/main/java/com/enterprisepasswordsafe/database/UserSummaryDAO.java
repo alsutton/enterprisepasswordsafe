@@ -49,11 +49,11 @@ public class UserSummaryDAO extends StoredObjectManipulator<UserSummary> {
     }
 
     @Override
-    UserSummary newInstance(ResultSet rs, int startIndex) throws SQLException {
+    UserSummary newInstance(ResultSet rs) throws SQLException {
         return new UserSummary(
-                rs.getString(startIndex),
-                rs.getString(startIndex+1),
-                rs.getString(startIndex + 2));
+                rs.getString(1),
+                rs.getString(1 +1),
+                rs.getString(1 + 2));
     }
 
     public List<UserSummary> getSummaryList()

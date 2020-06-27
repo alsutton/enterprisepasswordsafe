@@ -18,6 +18,7 @@ package com.enterprisepasswordsafe.database.schema;
 
 import com.enterprisepasswordsafe.database.BOMFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -158,7 +159,7 @@ public final class PasswordsTable
      */
 
     private void createTypes()
-    	throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+			throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
 		Connection conn = BOMFactory.getDatabaseAbstractionLayer().getConnection();
 
     	try(Statement stmt = conn.createStatement()) {

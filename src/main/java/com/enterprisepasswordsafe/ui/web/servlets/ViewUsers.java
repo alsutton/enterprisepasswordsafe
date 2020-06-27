@@ -31,15 +31,6 @@ import java.sql.SQLException;
 
 public final class ViewUsers extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -691183766125446075L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
 	@Override
     protected void doGet(final HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
@@ -51,9 +42,6 @@ public final class ViewUsers extends HttpServlet {
     	}
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Gets the list of users which may be edited.";

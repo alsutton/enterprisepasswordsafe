@@ -46,13 +46,13 @@ public final class AuthenticationSourceSummary {
      * The ID for this source.
      */
 
-    private String id;
+    private final String id;
 
     /**
      * The name for this source.
      */
 
-    private String source;
+    private final String source;
 
     /**
      * Private constructor. Summaries should only come from the database via the

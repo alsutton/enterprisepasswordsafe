@@ -34,11 +34,6 @@ import java.sql.SQLException;
 public final class PasswordRestrictionsAddStage2 extends HttpServlet {
 
 	/**
-	 *
-	 */
-	private static final long serialVersionUID = -8477173227487790152L;
-
-	/**
 	 * The parameter holding the name of this restriction.
 	 */
 
@@ -90,10 +85,6 @@ public final class PasswordRestrictionsAddStage2 extends HttpServlet {
 
     public static final String LIFETIME_PARAMETER = "lifetime";
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -162,10 +153,6 @@ public final class PasswordRestrictionsAddStage2 extends HttpServlet {
 
         response.sendRedirect(request.getContextPath()+"/admin/PasswordRestrictions");
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

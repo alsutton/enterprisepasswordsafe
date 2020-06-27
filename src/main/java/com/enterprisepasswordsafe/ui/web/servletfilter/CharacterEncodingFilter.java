@@ -22,47 +22,28 @@
 
 package com.enterprisepasswordsafe.ui.web.servletfilter;
 
+import javax.servlet.*;
 import java.io.IOException;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
-
 /**
- * Filter to force the character encoding. This is neccessary for some 
+ * Filter to force the character encoding. This is necessary for some
  * servlet engines.
  */
 
 public final class CharacterEncodingFilter implements Filter {
-	/**
-	 * @see javax.servlet.Filter#init()
-	 */
-
+	@Override
 	public void init(FilterConfig config) {
 		// Do nothing
 	}
 
-	/**
-	 * Filter to check if the user needs to be bounced to a welcome page.
-	 * 
-	 * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest,
-	 *      javax.servlet.ServletResponse, javax.servlet.FilterChain)
-	 */
-
+	@Override
 	public void doFilter(ServletRequest request, ServletResponse response,
 			FilterChain chain) throws IOException, ServletException {
 		request.setCharacterEncoding("ISO-8859-1");
 		chain.doFilter(request, response);
 	}
 
-	/**
-	 * @see javax.servlet.Filter#destroy()
-	 */
-
+	@Override
 	public void destroy() {
 		// Do nothing
 	}

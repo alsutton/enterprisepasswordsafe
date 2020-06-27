@@ -21,9 +21,9 @@ public abstract class GroupStoreManipulator extends StoredObjectManipulator<Grou
     }
 
     @Override
-    Group newInstance(ResultSet rs, int startIndex)
+    Group newInstance(ResultSet rs)
             throws SQLException {
-        return new Group(rs, startIndex);
+        return new Group(rs, 1);
     }
 
     public void update(final Group group)

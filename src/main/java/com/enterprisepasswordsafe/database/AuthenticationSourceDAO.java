@@ -102,16 +102,15 @@ public class AuthenticationSourceDAO {
 	 * Creates a new authentication source.
 	 */
 
-	public AuthenticationSource create(final String name, final String jaasType,
-            final Map<String,String> properties)
+	public void create(final String name, final String jaasType,
+                       final Map<String,String> properties)
 		throws SQLException, GeneralSecurityException {
 		if( existsByName(name) )  {
 			throw new GeneralSecurityException("A source with that name already exists");
 		}
 		AuthenticationSource as = new AuthenticationSource(name, jaasType, properties);
 		store(as);
-		return as;
-	}
+    }
 
     /**
      * Retrieves the authentication source for a specific name.

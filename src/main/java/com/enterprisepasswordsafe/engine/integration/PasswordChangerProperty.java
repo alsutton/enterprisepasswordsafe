@@ -25,25 +25,25 @@ public class PasswordChangerProperty {
 	 * The internal name of the property.
 	 */
 	
-	private String internalName;
+	private final String internalName;
 	
 	/**
 	 * The display name for the property.
 	 */
 	
-	private String displayName;
+	private final String displayName;
 	
 	/**
 	 * The description of the password
 	 */
 	
-	private String description;
+	private final String description;
 	
 	/**
 	 * The default value for the property.
 	 */
 	
-	private String defaultValue;
+	private final String defaultValue;
 	
 	/**
 	 * Constructor. Stores the supplied details.

@@ -79,7 +79,7 @@ public final class AllPasswordsCSV extends BaseExporter {
         }
 
         @Override
-		public void process(final HierarchyNode node, final Password password) throws Exception {
+		public void process(final HierarchyNode node, final Password password) {
             if (password == null || password.getPasswordType() == Password.TYPE_PERSONAL) {
                 return;
             }

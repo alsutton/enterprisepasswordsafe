@@ -79,7 +79,7 @@ public final class TamperproofEventLog {
      * The tamperproof stamp.
      */
 
-    private byte[] tamperStamp;
+    private final byte[] tamperStamp;
 
     /**
      * Creates a new instance of EventLog.

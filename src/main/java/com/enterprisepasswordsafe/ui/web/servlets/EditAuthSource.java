@@ -26,21 +26,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
-
 /**
  * Servlet to send the user to the correct authentication source editing page.
  */
 
 public final class EditAuthSource extends HttpServlet {
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 8681730788890408072L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
     		throws ServletException, IOException {
@@ -60,9 +50,6 @@ public final class EditAuthSource extends HttpServlet {
         request.getRequestDispatcher("/admin/edit_authsource_configure.jsp").forward(request, response);
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Directs the user to the correct authentication source editing page.";

@@ -153,11 +153,10 @@ public abstract class PasswordBase
     /**
      * Constructor. Creates empty object ready for population.
      *
-     * @throws NoSuchProviderException
      * @throws NoSuchAlgorithmException
      */
 
-    public PasswordBase() throws NoSuchAlgorithmException, NoSuchProviderException {
+    public PasswordBase() throws NoSuchAlgorithmException {
         passwordId = IDGenerator.getID();
         generateKeys();
     }
@@ -212,13 +211,12 @@ public abstract class PasswordBase
      *            The expiry date for the password.
      *
      * @throws NoSuchAlgorithmException Thrown if the encryption algorithm is unavailable.
-     * @throws NoSuchProviderException Thrown if the encryption provider is unavailable.
      */
 
     public PasswordBase(final String newPasswordId, final String newUsername,
             final String newPassword, final String newLocation,
             final String newNotes, final long newExpiry)
-            throws NoSuchAlgorithmException, NoSuchProviderException {
+            throws NoSuchAlgorithmException {
         if (newPasswordId != null) {
             passwordId = newPasswordId;
         } else {

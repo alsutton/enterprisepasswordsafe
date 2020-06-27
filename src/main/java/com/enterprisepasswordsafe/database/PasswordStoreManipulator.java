@@ -39,16 +39,16 @@ public abstract class PasswordStoreManipulator
 
     private static final String DELETE_SQL = "DELETE FROM passwords WHERE password_id = ?";
 
-    PasswordStoreManipulator(String getByIdSql, String getByNameSql, String getCountSql) {
-        super(getByIdSql, getByNameSql, getCountSql);
+    PasswordStoreManipulator(String getByIdSql) {
+        super(getByIdSql, null, null);
     }
 
     @Override
-    Password newInstance(ResultSet rs, int startIdx)
+    Password newInstance(ResultSet rs)
             throws SQLException {
-        Password password = new Password(rs.getString(startIdx), rs.getBytes(startIdx + 1));
+        Password password = new Password(rs.getString(1), rs.getBytes(1 + 1));
 
-        int idx = startIdx + 2;
+        int idx = 1 + 2;
         String value = rs.getString(idx++);
         if (value != null) {
             password.setEnabled(value.equals("Y"));

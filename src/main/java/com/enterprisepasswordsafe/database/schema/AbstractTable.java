@@ -81,15 +81,15 @@ public abstract class AbstractTable {
 		}
 	}
 
-	void renameColumn(final String oldName, final ColumnSpecification columnSpecification)
+	void renameColumn(final ColumnSpecification columnSpecification)
 		throws SQLException {
-		if(!columnExists(oldName)) {
+		if(!columnExists("password_id")) {
 			return;
 		}
 
 		try {
 			BOMFactory.getDatabaseAbstractionLayer().renameColumn(getTableName(),
-				oldName, columnSpecification.getName(), columnSpecification.getType() );
+                    "password_id", columnSpecification.getName(), columnSpecification.getType() );
 		} catch(SQLException sqlex) {
 			throw sqlex;
 		} catch(Exception ex) {

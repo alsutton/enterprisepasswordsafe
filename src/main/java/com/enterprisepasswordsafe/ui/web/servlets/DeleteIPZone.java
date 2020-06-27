@@ -27,22 +27,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
-
 /**
  * Servlet to send the user to the page to list the authentication sources.
  */
 
 public final class DeleteIPZone extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 7784300056789406798L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -61,10 +51,6 @@ public final class DeleteIPZone extends HttpServlet {
         }
         response.sendRedirect(response.encodeRedirectURL("/admin/EditIPZones"));
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

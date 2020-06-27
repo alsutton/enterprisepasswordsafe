@@ -43,7 +43,7 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
     private static final String NEXT_PAGE_REDIRECT = "/system/Welcome";
     private static final String PASSWORD_SYNC_PAGE = "/passwordsync.jsp";
 
-    private UserClassifier userClassifier = new UserClassifier();
+    private final UserClassifier userClassifier = new UserClassifier();
 
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
@@ -145,7 +145,7 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
     }
 
     private void checkRemoteAndLocalPasswordsMatch(HttpServletRequest request, User user, String password)
-            throws ForwardException, UnsupportedEncodingException, NoSuchAlgorithmException {
+            throws ForwardException, NoSuchAlgorithmException {
         if (user.getAuthSource() == null
         ||  user.getAuthSource().equals(AuthenticationSource.DEFAULT_SOURCE.getSourceId())) {
             return;

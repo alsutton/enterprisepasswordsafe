@@ -26,13 +26,13 @@ public class PasswordSummary
 	 * The ID of the password.
 	 */
 	
-	private String passwordId;
+	private final String passwordId;
 	
 	/**
 	 * The string representation of a password.
 	 */
 	
-	private String representation;
+	private final String representation;
 	
 	/**
 	 * Constructor. Stores details.

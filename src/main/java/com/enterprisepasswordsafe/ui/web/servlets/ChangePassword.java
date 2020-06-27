@@ -41,7 +41,7 @@ import java.util.Set;
 
 public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 
-	private UserClassifier userClassifier = new UserClassifier();
+	private final UserClassifier userClassifier = new UserClassifier();
 
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
@@ -344,8 +344,8 @@ public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 	}
 
 	private static class Context {
-	    private Password password;
-	    private AccessControl accessControl;
+	    private final Password password;
+	    private final AccessControl accessControl;
 
         Context(Password password, AccessControl accessControl) {
 	        this.password = password;

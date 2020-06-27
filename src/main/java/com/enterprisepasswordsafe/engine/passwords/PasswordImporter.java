@@ -23,7 +23,7 @@ public class PasswordImporter {
 
     private static final int PERMISSION_HEADER_LENGTH = 3;
 
-    private PasswordDAO passwordDAO;
+    private final PasswordDAO passwordDAO;
 
     public PasswordImporter() {
         passwordDAO = PasswordDAO.getInstance();

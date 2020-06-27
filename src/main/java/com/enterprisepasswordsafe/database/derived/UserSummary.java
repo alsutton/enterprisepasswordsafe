@@ -32,13 +32,13 @@ public class UserSummary
      * The users name.
      */
 
-    private String name;
+    private final String name;
 
     /**
      * The users full name.
      */
 
-    private String fullName;
+    private final String fullName;
 
     /**
      * Constructor. Stores relevant information.

@@ -51,9 +51,9 @@ public final class ViewPassword extends HttpServlet {
 
 	public static final String SCRIPTS_IN_USE = "scripts";
 
-    private BackButtonDetector backButtonDetector = new BackButtonDetector();
-    private RestrictedAccessEnforcer restrictedAccessEnforcer = new RestrictedAccessEnforcer();
-    private UserClassifier userClassifier = new UserClassifier();
+    private final BackButtonDetector backButtonDetector = new BackButtonDetector();
+    private final RestrictedAccessEnforcer restrictedAccessEnforcer = new RestrictedAccessEnforcer();
+    private final UserClassifier userClassifier = new UserClassifier();
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)

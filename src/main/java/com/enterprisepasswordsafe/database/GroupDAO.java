@@ -98,7 +98,7 @@ public class GroupDAO extends GroupStoreManipulator {
     private static final String GET_SUMMARY_BY_SEARCH =
     		"SELECT " + GROUP_FIELDS + " FROM groups WHERE group_name like ? ";
 
-	private UserClassifier userClassifier = new UserClassifier();
+	private final UserClassifier userClassifier = new UserClassifier();
 
 	/**
 	 * Private constructor to prevent instantiation

@@ -140,10 +140,10 @@ public class AccessReport {
     }
 
     private static class Context {
-        PreparedStatement directlyAccessiblePS;
-        PreparedStatement groupAccessiblePS;
-        PrintWriter output;
-        String separator;
+        final PreparedStatement directlyAccessiblePS;
+        final PreparedStatement groupAccessiblePS;
+        final PrintWriter output;
+        final String separator;
 
         Context(PreparedStatement directlyAccessiblePS, PreparedStatement groupAccessiblePS,
                 PrintWriter output, String separator) {

@@ -57,7 +57,7 @@ public final class EPSJAASConfiguration extends Configuration {
 
     }
 
-    private Map<String,String> properties;
+    private final Map<String,String> properties;
 
     public EPSJAASConfiguration(final Map<String,String> newProperties) {
         properties = newProperties;

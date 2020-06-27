@@ -83,8 +83,8 @@ public abstract class BaseLoginModule implements LoginModule {
     }
 
     static class UserDetails {
-        String username;
-        String password;
+        final String username;
+        final String password;
 
         UserDetails(String username, String password) {
             this.username = username;

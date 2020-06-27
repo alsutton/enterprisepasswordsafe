@@ -103,7 +103,7 @@ public abstract class ImporterServlet extends HttpServlet {
 
     private static class ImportStatus {
         private int importCount = 0;
-        private List<String> errors = new ArrayList<>();
+        private final List<String> errors = new ArrayList<>();
 
         void increaseImportCount() {
             importCount++;

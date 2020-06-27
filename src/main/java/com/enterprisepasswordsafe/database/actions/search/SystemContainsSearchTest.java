@@ -26,7 +26,7 @@ public final class SystemContainsSearchTest implements SearchTest {
      * The system to test for.
      */
 
-    private String testSystem;
+    private final String testSystem;
 
     /**
      * Constructor. Store the system to test for.

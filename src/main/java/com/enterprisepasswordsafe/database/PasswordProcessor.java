@@ -46,7 +46,7 @@ public class PasswordProcessor {
                     + " WHERE mem.user_id = ? AND mem.group_id    = gac.group_id AND gac.item_id = pass.password_id ";
 
 
-    private UserClassifier userClassifier = new UserClassifier();
+    private final UserClassifier userClassifier = new UserClassifier();
 
     /**
      * Performs an action on all passwords stored in the database.

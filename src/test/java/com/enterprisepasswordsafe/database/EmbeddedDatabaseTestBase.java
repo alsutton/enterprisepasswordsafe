@@ -20,6 +20,7 @@ import com.enterprisepasswordsafe.engine.configuration.TestJDBCConfiguration;
 import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
@@ -29,7 +30,7 @@ abstract class EmbeddedDatabaseTestBase {
     @BeforeAll
     public static void initialise()
             throws SQLException, InstantiationException, IllegalAccessException,
-            ClassNotFoundException, IOException, GeneralSecurityException {
+            ClassNotFoundException, IOException, GeneralSecurityException, NoSuchMethodException, InvocationTargetException {
         TestJDBCConfiguration.forceTestingConfiguration();
     }
 

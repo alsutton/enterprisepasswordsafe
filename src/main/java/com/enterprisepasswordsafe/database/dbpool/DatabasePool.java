@@ -25,6 +25,7 @@ import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -37,7 +38,7 @@ public final class DatabasePool implements AutoCloseable {
 
     private static final Object VERIFICATION_LOCK = new Object();
 
-    private JDBCConnectionInformation connectionInformation;
+    private final JDBCConnectionInformation connectionInformation;
 
     public DatabasePool(final JDBCConnectionInformation connectionInformation) throws ClassNotFoundException, SQLException {
         this.connectionInformation = connectionInformation;
@@ -102,9 +103,7 @@ public final class DatabasePool implements AutoCloseable {
     }
 
     public void initialiseDatabase() throws SQLException,
-            InstantiationException, IllegalAccessException,
-            ClassNotFoundException, UnsupportedEncodingException,
-            GeneralSecurityException {
+            InstantiationException, IllegalAccessException, UnsupportedEncodingException, GeneralSecurityException, NoSuchMethodException, InvocationTargetException {
         DALInterface databaseAbstractionLayer = DALFactory.getDAL(connectionInformation.getDbType());
 
         try (Connection conn = getConnection()) {

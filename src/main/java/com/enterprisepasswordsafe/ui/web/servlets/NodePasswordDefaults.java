@@ -99,7 +99,7 @@ public final class NodePasswordDefaults extends HttpServlet {
         return "Displays the group permissions for a node.";
     }
 
-    public class ActorPermissions
+    public static class ActorPermissions
     	implements Comparable<ActorPermissions> {
 
     	private final String actorId;

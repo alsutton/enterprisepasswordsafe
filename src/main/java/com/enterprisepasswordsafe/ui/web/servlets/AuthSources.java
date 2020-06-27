@@ -25,23 +25,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
-
 /**
  * Servlet to send the user to the page to list the authentication sources.
  */
 
 public final class AuthSources extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 2806495714587429709L;
-
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
@@ -53,10 +42,6 @@ public final class AuthSources extends HttpServlet {
     	}
         request.getRequestDispatcher("/admin/authsources.jsp").forward(request, response);
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

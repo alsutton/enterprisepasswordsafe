@@ -9,7 +9,7 @@ import java.util.TreeMap;
 
 public class CustomFieldPopulator {
 
-    private ConfigurationDAO configurationDAO;
+    private final ConfigurationDAO configurationDAO;
 
     public CustomFieldPopulator() {
         configurationDAO = ConfigurationDAO.getInstance();

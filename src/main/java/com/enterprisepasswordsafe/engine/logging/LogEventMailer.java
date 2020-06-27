@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
 
 public class LogEventMailer {
 
-    private LogEventParser logEventParser;
+    private final LogEventParser logEventParser;
 
     public LogEventMailer() {
         logEventParser = new LogEventParser();

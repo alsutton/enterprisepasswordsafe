@@ -30,24 +30,16 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
-
 /**
  * Servlet to alter the personal details of a user (Full name and email).
  */
 public final class UpdateGroupHierarchyPermissions extends HttpServlet {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -2496830102248245147L;
-
-
 	/**
 	 * The access authenticator
 	 */
 
 	private static final AccessApprover accessApprover =
 		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
-
 
     /**
      * The extension for parameters which hold the new permission settings.
@@ -61,10 +53,6 @@ public final class UpdateGroupHierarchyPermissions extends HttpServlet {
 
     public static final String ORIGINAL_PERMISSIONS_EXTENSION = "_orig";
 
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -91,20 +79,13 @@ public final class UpdateGroupHierarchyPermissions extends HttpServlet {
 		response.sendRedirect(request.getContextPath()+"/subadmin/NodeGroupPermissions");
     }
 
-
     /**
      * Update the permissions for a specific user.
      *
-     * @param conn
-     *            The connection to the database.
-     * @param request
-     *            The request being serviced.
-     * @param theNode
-     *            The node being altered.
-     * @param adminGroup
-     *            The admin group used to decrypt the users key.
-     * @param paramName
-     *            The name of the parameter holding the new permissions.
+     * @param request The request being serviced.
+	 * @param hnarDAO The DAO for hierarchy node access rules.
+     * @param node The node being altered.
+     * @param paramName The name of the parameter holding the new permissions.
      *
      * @throws SQLException Thrown if there is a problem accessing the database.
 	 */
@@ -128,9 +109,6 @@ public final class UpdateGroupHierarchyPermissions extends HttpServlet {
         hnarDAO.setAccessibleByGroup(node, groupId, rule);
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to update the permissions on a hierarchy node.";

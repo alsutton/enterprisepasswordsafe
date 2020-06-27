@@ -74,7 +74,7 @@ public final class PasswordDAO
     	"SELECT password_id, password_data FROM passwords";
 
 	private PasswordDAO( ) {
-		super(GET_BY_ID_SQL, null, null);
+		super(GET_BY_ID_SQL);
 	}
 
 	public UserAccessControl storeNewPassword(final Password thePassword, final User creator )

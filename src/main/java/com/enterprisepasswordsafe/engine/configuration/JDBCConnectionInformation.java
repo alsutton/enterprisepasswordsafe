@@ -1,22 +1,16 @@
 package com.enterprisepasswordsafe.engine.configuration;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.GeneralSecurityException;
-import java.util.prefs.Preferences;
-
 public interface JDBCConnectionInformation {
 
-    public boolean isValid();
+    boolean isValid();
 
-    public String getDbType();
+    String getDbType();
 
-    public String getDriver();
+    String getDriver();
 
-    public String getUrl();
+    String getUrl();
 
-    public String getUsername();
+    String getUsername();
 
-    public String getPassword();
+    String getPassword();
 }

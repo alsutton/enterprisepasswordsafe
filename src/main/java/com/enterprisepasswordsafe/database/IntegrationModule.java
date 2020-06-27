@@ -37,13 +37,13 @@ public final class IntegrationModule
      * The id of this module.
      */
 
-    private String moduleId;
+    private final String moduleId;
 
     /**
      * The name of this module.
      */
 
-    private String name;
+    private final String name;
 
     /**
      * The class holding the details of this module.

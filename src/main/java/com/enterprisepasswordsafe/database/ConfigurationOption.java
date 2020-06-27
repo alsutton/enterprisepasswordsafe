@@ -52,8 +52,8 @@ public enum ConfigurationOption {
     SUBADMINS_HAVE_HISTORY_ACCESS("subadmin.access_history", "N"),
     VOTE_ON_OWN_RA_REQUESTS("rarSelfVote", "y");
 
-    private String mPropertyName;
-    private String mDefaultValue;
+    private final String mPropertyName;
+    private final String mDefaultValue;
 
     ConfigurationOption(final String propertyName, final String defaultValue) {
         mPropertyName = propertyName;

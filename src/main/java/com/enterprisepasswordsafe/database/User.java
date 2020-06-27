@@ -26,7 +26,6 @@ import com.enterprisepasswordsafe.engine.utils.IDGenerator;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
@@ -72,13 +71,13 @@ public final class User
      * The ID of this user.
      */
 
-    private String userId;
+    private final String userId;
 
     /**
      * The users login name.
      */
 
-    private String userName;
+    private final String userName;
 
     /**
      * The users Email address.
@@ -120,7 +119,7 @@ public final class User
      * The last time the user logged on.
      */
 
-    private long lastLogin;
+    private final long lastLogin;
 
     /**
      * The authentication source for the user.
@@ -140,7 +139,7 @@ public final class User
 
     private boolean disabled;
 
-    private PasswordHasher passwordHasher = new PasswordHasher();
+    private final PasswordHasher passwordHasher = new PasswordHasher();
 
     /**
      * Creates a new User object.
@@ -283,16 +282,6 @@ public final class User
             throws NoSuchAlgorithmException {
         password = passwordHasher.createHashWithRandomSalt(newPassword);
     }
-
-    /**
-     * Update the users login password.
-     *
-     * @param newPassword The new password.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem re-encrypting the users data.
-     * @throws UnsupportedEncodingException
-     */
 
     /**
      * Forces the user to change their password at the next login.

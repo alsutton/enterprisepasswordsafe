@@ -72,7 +72,7 @@ public class ExpandedTamperproofEventLogEntryTests {
         logEventParser = Mockito.mock(LogEventParser.class);
         accessControlDAO = Mockito.mock(AccessControlDAO.class);
         userDAO = Mockito.mock(UserDAO.class);
-        passwordUtils = Mockito.mock(PasswordUtils.class);
+        passwordUtils = (PasswordUtils<Password>) Mockito.mock(PasswordUtils.class);
         password = Mockito.mock(Password.class);
 
         testUserId = TEST_USER_ID;

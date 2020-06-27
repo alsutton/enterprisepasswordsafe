@@ -137,10 +137,10 @@ public final class MembershipDAO
      * @throws UnsupportedEncodingException
      */
 
-    public Membership create(final User user, final String groupId)
+    public void create(final User user, final String groupId)
             throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
-        return create(user, GroupDAO.getInstance().getById(groupId));
-    }
+		create(user, GroupDAO.getInstance().getById(groupId));
+	}
 
     /**
      * Creates a new membership for a user to a group
@@ -154,7 +154,7 @@ public final class MembershipDAO
      * @throws UnsupportedEncodingException
      */
 
-    public Membership create(final User remoteUser, final User user, final String groupId)
+    public void create(final User remoteUser, final User user, final String groupId)
             throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
         Group theGroup = UnfilteredGroupDAO.getInstance().getById(groupId);
 
@@ -171,8 +171,8 @@ public final class MembershipDAO
 			remoteUser, null,"Added {user:" + remoteUser.getId()
 				+ "} to the group {group:" + theGroup.getGroupId() + "}",true);
 
-        return create(user, GroupDAO.getInstance().getById(groupId));
-    }
+		create(user, GroupDAO.getInstance().getById(groupId));
+	}
 
     /**
 	 * Get a users membership of a group.
@@ -202,11 +202,10 @@ public final class MembershipDAO
 	 *
 	 * @throws SQLException Thrown if there is a problem accessing the database.
 	 * @throws GeneralSecurityException Thrown if there is a problem decrypting.
-	 * @throws UnsupportedEncodingException
-	 */
+     */
 
 	public Membership getMembership(final User user, final String groupId)
-	    throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+	    throws SQLException, GeneralSecurityException {
 	    if (user == null || groupId == null) {
 	        return null;
 	    }
@@ -305,11 +304,10 @@ public final class MembershipDAO
      * @throws SQLException Thrown if there is a problem accessing the database.
      *
      * @throws GeneralSecurityException
-     * @throws UnsupportedEncodingException
      */
 
     public void updateEncryptionOnKeys(final User user, final Encrypter encrypter)
-        throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+        throws SQLException, GeneralSecurityException {
         if (user == null) {
             return;
         }

@@ -42,7 +42,7 @@ public abstract class AbstractDAL
 	 * type.
 	 */
 
-	protected Map<Integer,String> translationMap = new Hashtable<>();
+	protected final Map<Integer,String> translationMap = new Hashtable<>();
 
 	/**
 	 * Whether or not the database expects the word column in the add clause.

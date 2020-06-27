@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 public abstract class StoredObjectFetcher<T>
     extends JDBCBase {
 
-    abstract T newInstance(ResultSet rs, int startIndex) throws SQLException;
+    abstract T newInstance(ResultSet rs) throws SQLException;
 
     T fetchObjectIfExists(String sql, final String... parameters)
             throws SQLException {
@@ -22,7 +22,7 @@ public abstract class StoredObjectFetcher<T>
             setParameters(ps, parameters);
             ps.setMaxRows(1);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? newInstance(rs, 1) : null;
+                return rs.next() ? newInstance(rs) : null;
             }
         }
     }
@@ -36,7 +36,7 @@ public abstract class StoredObjectFetcher<T>
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     try {
-                        results.add(newInstance(rs, 1));
+                        results.add(newInstance(rs));
                     } catch(Exception e) {
                         Logger.getAnonymousLogger().log(Level.SEVERE, "Error fetching object.", e);
                     }

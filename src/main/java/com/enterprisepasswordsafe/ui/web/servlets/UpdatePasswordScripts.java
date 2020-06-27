@@ -26,25 +26,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
-
 
 /**
  * Servlet to alter the scripts associated with a password.
  */
 public final class UpdatePasswordScripts extends HttpServlet {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = -110209754864336180L;
-
-    /**
-     * @throws UnsupportedEncodingException
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
-     */
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
@@ -82,9 +70,6 @@ public final class UpdatePasswordScripts extends HttpServlet {
     	}
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
     @Override
 	public String getServletInfo() {
         return "Servlet to alter the scripts associated with a password";

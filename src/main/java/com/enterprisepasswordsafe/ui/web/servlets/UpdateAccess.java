@@ -327,12 +327,11 @@ public final class UpdateAccess extends HttpServlet {
         return "Updates the access a user has to a password";
     }
 
-    private class RoleChangeContext {
+    private static class RoleChangeContext {
         final User currentUser;
         final User adminUser;
         final Group adminGroup;
         final Password password;
-
 
         private RoleChangeContext(User currentUser, User adminUser, Group adminGroup, Password password) {
             this.currentUser = currentUser;

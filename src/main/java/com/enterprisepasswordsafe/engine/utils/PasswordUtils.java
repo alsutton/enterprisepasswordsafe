@@ -117,11 +117,10 @@ public final class PasswordUtils<T extends PasswordBase> {
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	public T decrypt(final T password, final AccessControl ac, final byte[] data)
+	public void decrypt(final T password, final AccessControl ac, final byte[] data)
 		throws IOException, GeneralSecurityException {
 		decrypt(password, ac, data, new Properties());
-		return password;
-	}
+    }
 
 	/**
 	 * Decrypt the data in a password

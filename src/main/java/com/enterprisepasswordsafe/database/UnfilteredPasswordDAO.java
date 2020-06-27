@@ -17,7 +17,7 @@ public class UnfilteredPasswordDAO
             "SELECT " + PASSWORD_FIELDS + "  FROM passwords pass WHERE pass.password_id = ?";
 
     private UnfilteredPasswordDAO() {
-        super(GET_BY_ID, null, null);
+        super(GET_BY_ID);
     }
 
     public Password getById(final User user, final String id)

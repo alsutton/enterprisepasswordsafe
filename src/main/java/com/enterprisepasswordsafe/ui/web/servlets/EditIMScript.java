@@ -31,16 +31,7 @@ import java.io.IOException;
 
 public final class EditIMScript extends EditIMScriptBase {
 
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 965020656257493156L;
-
-    /**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
-    @Override
+	@Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
     	try {
@@ -58,10 +49,6 @@ public final class EditIMScript extends EditIMScriptBase {
 
     	request.getRequestDispatcher("/admin/im_scripts_edit.jsp").forward(request, response);
     }
-
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
 
     @Override
 	public String getServletInfo() {

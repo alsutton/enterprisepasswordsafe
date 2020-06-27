@@ -11,7 +11,7 @@ import java.util.*;
 
 public class HierarchyTools {
 
-    private HierarchyNodeDAO hierarchyNodeDAO;
+    private final HierarchyNodeDAO hierarchyNodeDAO;
 
     public HierarchyTools() {
         hierarchyNodeDAO = HierarchyNodeDAO.getInstance();

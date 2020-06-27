@@ -16,12 +16,11 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Servlet to send the user to the page to add a new password restriction
@@ -29,24 +28,13 @@ import javax.servlet.http.HttpServletResponse;
 
 public final class PasswordRestrictionsAddStage1 extends HttpServlet {
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = -4815432980278372332L;
-
-	/**
-     * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
-     *      (java.sql.Connection, javax.servlet.http.HTTPServletResponse)
-     */
+    @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
    		request.getRequestDispatcher("/admin/pr_add.jsp").forward(request, response);
     }
 
-    /**
-     * @see javax.servlet.Servlet#getServletInfo()
-     */
-
+    @Override
     public String getServletInfo() {
         return "Directs the user to the restriction adding page.";
     }

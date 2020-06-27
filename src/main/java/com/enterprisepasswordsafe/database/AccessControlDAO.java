@@ -25,7 +25,7 @@ import java.sql.SQLException;
 
 public abstract class AccessControlDAO {
 
-    private UserClassifier userClassifier = new UserClassifier();
+    private final UserClassifier userClassifier = new UserClassifier();
 
     public abstract AccessControl getAccessControl(final User user, final AccessControledObject item)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException;

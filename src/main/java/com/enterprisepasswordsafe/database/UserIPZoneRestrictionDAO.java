@@ -53,11 +53,10 @@ public final class UserIPZoneRestrictionDAO {
 		super();
 	}
 
-    public final UserIPZoneRestriction create( final String zoneId, final String userId, final int rule )
+    public final void create(final String zoneId, final String userId, final int rule )
     	throws SQLException {
     	UserIPZoneRestriction ipzr = new UserIPZoneRestriction(zoneId, userId, rule);
     	store(ipzr);
-    	return ipzr;
     }
 
     public final List<UserIPZoneRestriction> getApplicable( final String id, final String ip )

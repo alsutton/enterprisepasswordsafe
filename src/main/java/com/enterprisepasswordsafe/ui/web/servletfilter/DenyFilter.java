@@ -22,16 +22,11 @@
 
 package com.enterprisepasswordsafe.ui.web.servletfilter;
 
-import java.io.IOException;
-import java.util.logging.Logger;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Filter to block access to protected resources.
@@ -63,8 +58,6 @@ public final class DenyFilter implements Filter {
 
         Logger.getAnonymousLogger().warning("Denied attempt to access "+((HttpServletRequest)request).getRequestURL());
         res.sendError(HttpServletResponse.SC_FORBIDDEN);
-
-        return;
     }
 
     /**
