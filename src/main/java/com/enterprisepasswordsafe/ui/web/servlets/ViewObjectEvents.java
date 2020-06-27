@@ -16,22 +16,21 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.security.GeneralSecurityException;
-import java.util.Calendar;
-import java.util.List;
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.TamperproofEventLogDAO.EventsForDay;
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.TamperproofEventLogDAO.EventsForDay;
-import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.engine.utils.DateFormatter;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.security.GeneralSecurityException;
+import java.util.Calendar;
+import java.util.List;
 
 public final class ViewObjectEvents extends HttpServlet {
 

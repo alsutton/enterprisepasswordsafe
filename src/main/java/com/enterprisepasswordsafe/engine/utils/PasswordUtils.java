@@ -16,6 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.utils;
 
+import com.enterprisepasswordsafe.database.Password;
+import com.enterprisepasswordsafe.database.PasswordBase;
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -23,10 +27,6 @@ import java.security.GeneralSecurityException;
 import java.util.IllegalFormatException;
 import java.util.Map;
 import java.util.Properties;
-
-import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordBase;
 
 /**
  * Utilities for altering the way a password is represented.
@@ -101,14 +101,10 @@ public final class PasswordUtils<T extends PasswordBase> {
 	        }
         }
 
-    	StringWriter sw = new StringWriter();
-    	try {
-    		passwordProperties.store(sw, null);
-
-    		return ac.encrypt(sw.toString());
-    	} finally {
-    		sw.close();
-    	}
+		try (StringWriter sw = new StringWriter()) {
+			passwordProperties.store(sw, null);
+			return ac.encrypt(sw.toString());
+		}
 	}
 
 	/**

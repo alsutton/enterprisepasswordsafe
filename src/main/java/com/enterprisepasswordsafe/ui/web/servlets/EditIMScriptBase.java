@@ -16,19 +16,18 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
+import com.enterprisepasswordsafe.database.IntegrationModule;
+import com.enterprisepasswordsafe.database.IntegrationModuleConfigurationDAO;
+import com.enterprisepasswordsafe.database.IntegrationModuleDAO;
+import com.enterprisepasswordsafe.database.IntegrationModuleScript;
+import com.enterprisepasswordsafe.engine.integration.PasswordChangerProperty;
+
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-
-import com.enterprisepasswordsafe.engine.database.IntegrationModule;
-import com.enterprisepasswordsafe.engine.database.IntegrationModuleConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.IntegrationModuleDAO;
-import com.enterprisepasswordsafe.engine.database.IntegrationModuleScript;
-import com.enterprisepasswordsafe.engine.integration.PasswordChangerProperty;
 
 
 /**
@@ -73,7 +72,7 @@ public abstract class EditIMScriptBase extends HttpServlet {
     		final IntegrationModule module,
     		final IntegrationModuleScript scriptDetails)
     	throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException{
-    	final Set<ScriptProperties> properties = new TreeSet<ScriptProperties>();
+    	final Set<ScriptProperties> properties = new TreeSet<>();
 
     	Map<String,String> currentProperties = IntegrationModuleConfigurationDAO.
     											getInstance().
@@ -90,7 +89,7 @@ public abstract class EditIMScriptBase extends HttpServlet {
      		if( value == null || value.length() == 0 ) {
      			String valueObject = currentProperties.get(internalName);
      			if( valueObject != null ) {
-     				value = valueObject.toString();
+     				value = valueObject;
      			}
          		if( value == null || value.length() == 0 ) {
          			value = property.getDefaultValue();

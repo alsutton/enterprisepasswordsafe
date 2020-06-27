@@ -1,6 +1,6 @@
 package com.enterprisepasswordsafe.engine.users;
 
-import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.database.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

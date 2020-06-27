@@ -16,24 +16,23 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.actions.ChangePermissionsAction;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.actions.ChangePermissionsAction;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class UpdateNodePasswordDefaults extends HttpServlet {
 

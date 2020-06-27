@@ -16,20 +16,19 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
+import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
-import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 
 
 /**
@@ -85,13 +84,11 @@ public final class UpdateGroupHierarchyPermissions extends HttpServlet {
 	        }
 
 	        ServletUtils.getInstance().generateMessage(request, "Permissions updated.");
-    	} catch(SQLException sqle) {
-    		throw new ServletException("There was a problem updating the permissions.");
-    	} catch(GeneralSecurityException sqle) {
+    	} catch(SQLException | GeneralSecurityException sqle) {
     		throw new ServletException("There was a problem updating the permissions.");
     	}
 
-        response.sendRedirect(request.getContextPath()+"/subadmin/NodeGroupPermissions");
+		response.sendRedirect(request.getContextPath()+"/subadmin/NodeGroupPermissions");
     }
 
 
@@ -110,13 +107,12 @@ public final class UpdateGroupHierarchyPermissions extends HttpServlet {
      *            The name of the parameter holding the new permissions.
      *
      * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem encrypting the rule.
-     */
+	 */
 
     private void updatePermissions(final HttpServletRequest request,
     		final HierarchyNodeAccessRuleDAO hnarDAO, final HierarchyNode node,
             final String paramName )
-            throws SQLException, GeneralSecurityException {
+            throws SQLException {
         final String newRule = request.getParameter(paramName);
         final String groupId = paramName.substring(
                                 0,

@@ -16,16 +16,15 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.GroupDAO;
+import com.enterprisepasswordsafe.database.User;
+import org.apache.commons.csv.CSVRecord;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import org.apache.commons.csv.CSVRecord;
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 
 
 public final class ImportGroups extends ImporterServlet {
@@ -42,14 +41,10 @@ public final class ImportGroups extends ImporterServlet {
         throws ServletException {
     	try {
 			((GroupDAO)request.getAttribute("groupDAO")).importGroup(theUser, record);
-		} catch (UnsupportedEncodingException e) {
-			throw new ServletException("Group import failed.", e);
-		} catch (SQLException e) {
-			throw new ServletException("Group import failed.", e);
-		} catch (GeneralSecurityException e) {
+		} catch (UnsupportedEncodingException | SQLException | GeneralSecurityException e) {
 			throw new ServletException("Group import failed.", e);
 		}
-    }
+	}
 
     @Override
 	protected void setImportAttributes(final HttpServletRequest request) {

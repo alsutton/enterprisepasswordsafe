@@ -1,6 +1,6 @@
 package com.enterprisepasswordsafe.engine.logging;
 
-import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.database.*;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;

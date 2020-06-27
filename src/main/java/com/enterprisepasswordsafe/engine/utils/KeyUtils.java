@@ -16,20 +16,14 @@
 
 package com.enterprisepasswordsafe.engine.utils;
 
-import java.security.GeneralSecurityException;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.Decrypter;
+import com.enterprisepasswordsafe.database.Encrypter;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
-import com.enterprisepasswordsafe.engine.database.Decrypter;
-import com.enterprisepasswordsafe.engine.database.Encrypter;
+import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 public final class KeyUtils {
 
@@ -61,7 +55,7 @@ public final class KeyUtils {
      */
 
     public static SecretKey decryptSecretKey(final byte[] encryptedKey, final Decrypter keyDecrypter)
-    	throws SQLException, GeneralSecurityException {
+    	throws GeneralSecurityException {
         if(encryptedKey == null) {
             return null;
         }

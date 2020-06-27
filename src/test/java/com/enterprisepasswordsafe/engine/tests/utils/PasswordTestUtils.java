@@ -16,8 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.tests.utils;
 
+import com.enterprisepasswordsafe.database.Password;
+import com.enterprisepasswordsafe.database.PasswordDAO;
+import com.enterprisepasswordsafe.database.User;
 import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
-import com.enterprisepasswordsafe.engine.database.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;

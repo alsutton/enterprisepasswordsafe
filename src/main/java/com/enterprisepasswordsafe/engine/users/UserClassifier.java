@@ -1,8 +1,8 @@
 package com.enterprisepasswordsafe.engine.users;
 
-import com.enterprisepasswordsafe.engine.database.Group;
-import com.enterprisepasswordsafe.engine.database.MembershipDAO;
-import com.enterprisepasswordsafe.engine.database.User;
+import com.enterprisepasswordsafe.database.Group;
+import com.enterprisepasswordsafe.database.MembershipDAO;
+import com.enterprisepasswordsafe.database.User;
 
 import java.sql.SQLException;
 

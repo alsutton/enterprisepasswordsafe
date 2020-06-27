@@ -16,11 +16,10 @@
 
 package com.enterprisepasswordsafe.ui.web.utils;
 
-import java.util.Random;
+import com.enterprisepasswordsafe.database.PasswordRestriction;
 
 import javax.servlet.http.HttpServletRequest;
-
-import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
+import java.util.Random;
 
 /**
  * Utility class to assist in password generation.
@@ -202,7 +201,7 @@ public final class PasswordGenerator implements com.enterprisepasswordsafe.engin
         addCharsToBuffer(passwordCharacters, upperCount, PasswordRestriction.UPPER_PASSWORD_CHARS);
         addCharsToBuffer(passwordCharacters, lowerCount, PasswordRestriction.LOWER_PASSWORD_CHARS);
         addCharsToBuffer(passwordCharacters, numericCount, PasswordRestriction.NUMERIC_PASSWORD_CHARS);
-        if( specialChars != null && specialChars.length() > 0 ) {
+        if(specialChars.length() > 0) {
         	addCharsToBuffer(passwordCharacters, specialCount, specialChars);
         }
         length -= (upperCount + lowerCount + numericCount + specialCount);
@@ -217,10 +216,7 @@ public final class PasswordGenerator implements com.enterprisepasswordsafe.engin
         // Now randomise the order
         StringBuilder passwordBuffer = new StringBuilder(passwordCharacters.length());
 
-        if( specialChars != null
-        &&  !specialChars.isEmpty()
-        &&  specialCount > 0
-        &&  startSpecial) {
+        if(!specialChars.isEmpty() && specialCount > 0 && startSpecial) {
 	        // Always start with special. Solaris 10 likes this
 	        // and it's generally a good idea
 	        passwordBuffer.append(

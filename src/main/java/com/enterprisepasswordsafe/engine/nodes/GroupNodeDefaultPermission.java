@@ -1,6 +1,6 @@
 package com.enterprisepasswordsafe.engine.nodes;
 
-import com.enterprisepasswordsafe.engine.database.Group;
+import com.enterprisepasswordsafe.database.Group;
 
 /**
  * Class holding the details of the default permissions a group has for a node

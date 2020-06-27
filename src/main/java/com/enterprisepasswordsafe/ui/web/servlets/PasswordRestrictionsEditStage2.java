@@ -16,17 +16,16 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.PasswordRestriction;
+import com.enterprisepasswordsafe.database.PasswordRestrictionDAO;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.PasswordRestriction;
-import com.enterprisepasswordsafe.engine.database.PasswordRestrictionDAO;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * Adds a password restriction to the system

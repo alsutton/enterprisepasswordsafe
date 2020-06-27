@@ -16,18 +16,20 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.AuthenticationSource;
+import com.enterprisepasswordsafe.database.AuthenticationSourceDAO;
+import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.ui.web.utils.JSTLParameterNameSanitiser;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import com.enterprisepasswordsafe.ui.web.utils.StringUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.ui.web.utils.JSTLParameterNameSanitiser;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
-import com.enterprisepasswordsafe.ui.web.utils.StringUtils;
+import java.io.IOException;
+import java.sql.SQLException;
 
 
 public final class Configure extends HttpServlet {

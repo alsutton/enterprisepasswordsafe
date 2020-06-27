@@ -16,19 +16,18 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.util.Set;
+import com.enterprisepasswordsafe.database.Password;
+import com.enterprisepasswordsafe.database.PasswordDAO;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.database.derived.ExpiringAccessiblePasswords;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.Password;
-import com.enterprisepasswordsafe.engine.database.PasswordDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.derived.ExpiringAccessiblePasswords;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import java.io.IOException;
+import java.util.Set;
 
 
 /**

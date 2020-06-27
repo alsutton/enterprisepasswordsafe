@@ -16,9 +16,9 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets.authorisation;
 
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.User;
 
-import com.enterprisepasswordsafe.engine.database.User;
+import java.sql.SQLException;
 
 
 /**
@@ -31,14 +31,12 @@ public interface AccessApprover {
 	/**
 	 * Is the access authorised.
 	 *
-	 * @param bom The business object manager to access data with.
-	 * @param user The user attempting to access the resource.
+	 * @param theUser The user attempting to access the resource.
 	 *
 	 * @return true if the access is authorised, False if not.
 	 */
 
-	public boolean isAuthorised(final User theUser)
-		throws SQLException;
+	boolean isAuthorised(final User theUser) throws SQLException;
 
 
 }

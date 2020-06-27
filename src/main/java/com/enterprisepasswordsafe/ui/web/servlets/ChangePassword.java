@@ -16,23 +16,28 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
+import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.ui.web.utils.EmailerThread;
+import com.enterprisepasswordsafe.ui.web.utils.RedirectException;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.*;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
-import com.enterprisepasswordsafe.engine.utils.DateFormatter;
-import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.ui.web.utils.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
 
 public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 

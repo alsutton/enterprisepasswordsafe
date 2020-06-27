@@ -16,14 +16,12 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
+import com.enterprisepasswordsafe.database.GroupDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.GroupDAO;
 
 
 /**
@@ -43,7 +41,7 @@ public final class ViewGroups extends HttpServlet {
      */
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException {
     	try {
 	        request.setAttribute(BaseServlet.GROUPS_ATTRIBUTE, GroupDAO.getInstance().getAll());
 	        request.getRequestDispatcher("/admin/edit_groups.jsp").forward(request, response);

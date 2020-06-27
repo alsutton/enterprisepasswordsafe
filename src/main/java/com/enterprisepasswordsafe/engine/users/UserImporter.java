@@ -1,7 +1,7 @@
 package com.enterprisepasswordsafe.engine.users;
 
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.utils.PasswordGenerator;
 import org.apache.commons.csv.CSVRecord;
 
@@ -30,7 +30,7 @@ public class UserImporter {
     }
 
     public void importData(final User theImporter, final Group adminGroup,
-                             final PasswordGenerator passwordGenerator, CSVRecord record)
+                           final PasswordGenerator passwordGenerator, CSVRecord record)
             throws SQLException, GeneralSecurityException, IOException, MessagingException {
         Iterator<String> values = record.iterator();
         if (!values.hasNext()) {

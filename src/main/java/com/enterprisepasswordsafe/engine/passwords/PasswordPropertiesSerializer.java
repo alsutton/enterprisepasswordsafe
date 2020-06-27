@@ -1,9 +1,9 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
+import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.database.Password;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.database.Password;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 
 import java.io.IOException;

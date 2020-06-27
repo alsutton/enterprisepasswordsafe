@@ -16,17 +16,16 @@
 
 package com.enterprisepasswordsafe.ui.web.utils;
 
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
+import com.enterprisepasswordsafe.ui.web.servlets.LoginAuthenticationServlet;
+import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
-import com.enterprisepasswordsafe.ui.web.servlets.LoginAuthenticationServlet;
-import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 
 public final class SecurityUtils {
     /**

@@ -1,7 +1,10 @@
 package com.enterprisepasswordsafe.engine.hierarchy;
 
+import com.enterprisepasswordsafe.database.AccessControlDAO;
+import com.enterprisepasswordsafe.database.HierarchyNode;
+import com.enterprisepasswordsafe.database.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.database.User;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.database.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

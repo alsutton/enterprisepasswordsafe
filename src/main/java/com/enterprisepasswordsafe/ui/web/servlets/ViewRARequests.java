@@ -16,21 +16,18 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Set;
-import java.util.TreeSet;
+import com.enterprisepasswordsafe.database.ApproverListDAO;
+import com.enterprisepasswordsafe.database.RestrictedAccessRequest;
+import com.enterprisepasswordsafe.database.RestrictedAccessRequestDAO;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.ApproverListDAO;
-import com.enterprisepasswordsafe.engine.database.RestrictedAccessRequest;
-import com.enterprisepasswordsafe.engine.database.RestrictedAccessRequestDAO;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Servlet to alter the event email settings.
@@ -44,17 +41,16 @@ public final class ViewRARequests extends HttpServlet {
 	private static final long serialVersionUID = -1579953695564789934L;
 
     /**
-     * @throws UnsupportedEncodingException
      * @see com.enterprisepasswordsafe.passwordsafe.servlets.NoResponseBaseServlet#serviceRequest
      *      (java.sql.Connection, javax.servlet.http.HTTPServletRequest)
      */
 	@Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
-    		throws IOException, ServletException {
+    		throws ServletException {
     	try {
 	        User thisUser = SecurityUtils.getRemoteUser(request);
 
-	        Set<RASummary> summaries = new TreeSet<RASummary>();
+	        Set<RASummary> summaries = new TreeSet<>();
 
 	        ApproverListDAO alDAO = ApproverListDAO.getInstance();
 	        for(RestrictedAccessRequest rar : RestrictedAccessRequestDAO.getInstance().getRARsForUser(thisUser)) {

@@ -16,9 +16,9 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.engine.database.HierarchyNodePermissionDAO;
-import com.enterprisepasswordsafe.engine.database.UserSummaryDAO;
-import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.HierarchyNodePermissionDAO;
+import com.enterprisepasswordsafe.database.UserSummaryDAO;
+import com.enterprisepasswordsafe.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.nodes.UserNodeDefaultPermission;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -46,7 +46,7 @@ public class NodePasswordDefaultsUserQuery extends HttpServlet {
 		response.setDateHeader ("Expires", 0);
 
 		try {
-			List<UserNodeDefaultPermission> results= new ArrayList<UserNodeDefaultPermission>();
+			List<UserNodeDefaultPermission> results= new ArrayList<>();
 
 			final String searchQuery = request.getParameter("s");
 			if(searchQuery != null && !searchQuery.isEmpty()) {

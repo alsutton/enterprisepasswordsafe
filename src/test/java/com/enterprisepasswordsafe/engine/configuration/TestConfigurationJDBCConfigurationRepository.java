@@ -1,13 +1,11 @@
 package com.enterprisepasswordsafe.engine.configuration;
 
-import com.enterprisepasswordsafe.engine.dbabstraction.SupportedDatabase;
-
-import java.security.GeneralSecurityException;
+import com.enterprisepasswordsafe.database.vendorspecific.SupportedDatabase;
 
 public class TestConfigurationJDBCConfigurationRepository
     implements JDBCConfigurationRepository {
     @Override
-    public JDBCConnectionInformation load() throws GeneralSecurityException {
+    public JDBCConnectionInformation load() {
         return new JDBCConnectionInformation() {
             @Override
             public boolean isValid() {

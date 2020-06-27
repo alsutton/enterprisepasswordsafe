@@ -16,18 +16,17 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Map;
-import java.util.TreeMap;
+import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.ui.web.password.CustomFieldPopulator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.ui.web.password.CustomFieldPopulator;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.TreeMap;
 
 public final class CustomFields extends HttpServlet {
 

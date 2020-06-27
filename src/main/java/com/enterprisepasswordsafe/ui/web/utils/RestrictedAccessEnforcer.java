@@ -1,6 +1,6 @@
 package com.enterprisepasswordsafe.ui.web.utils;
 
-import com.enterprisepasswordsafe.engine.database.*;
+import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 
 import javax.servlet.http.HttpServletRequest;

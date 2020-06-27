@@ -16,14 +16,13 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
+import com.enterprisepasswordsafe.database.IntegrationModuleScriptDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.IntegrationModuleScriptDAO;
+import java.io.IOException;
 
 
 /**

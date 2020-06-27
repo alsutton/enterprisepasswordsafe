@@ -16,24 +16,23 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
-import java.util.Enumeration;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.derived.UserSummary;
 import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
 import com.enterprisepasswordsafe.engine.utils.StringUtils;
 import com.enterprisepasswordsafe.ui.web.EPSUIException;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
+import java.util.Enumeration;
 
 public final class UserServlet extends HttpServlet {
 

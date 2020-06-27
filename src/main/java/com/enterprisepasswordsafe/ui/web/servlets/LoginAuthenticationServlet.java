@@ -16,21 +16,20 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import org.apache.commons.codec.binary.Base64;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpSession;
-
-import com.enterprisepasswordsafe.engine.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.engine.database.ConfigurationOption;
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
-import com.enterprisepasswordsafe.engine.utils.DateFormatter;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import org.apache.commons.codec.binary.Base64;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.sql.SQLException;
 
 public abstract class LoginAuthenticationServlet extends HttpServlet {
 

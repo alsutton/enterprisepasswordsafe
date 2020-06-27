@@ -16,20 +16,19 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.ui.web.utils.JSTLParameterNameSanitiser;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.ui.web.utils.JSTLParameterNameSanitiser;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 
 public final class ConfigureEmail extends HttpServlet {
 
@@ -61,7 +60,7 @@ public final class ConfigureEmail extends HttpServlet {
 
     @Override
 	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
-    	throws ServletException, IOException {
+    	throws ServletException {
     	try {
 	        User thisUser = SecurityUtils.getRemoteUser(request);
 
@@ -105,7 +104,7 @@ public final class ConfigureEmail extends HttpServlet {
         }
 
         if ((value == null && originalValue != null)
-         || (value != null && (originalValue == null || !value.equals(originalValue)))) {
+         || (value != null && !value.equals(originalValue))) {
             String printValue = value;
             if (value == null) {
                 printValue = "";

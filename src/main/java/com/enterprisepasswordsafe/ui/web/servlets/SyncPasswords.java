@@ -16,9 +16,10 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.database.UserDAO;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
@@ -26,11 +27,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import com.enterprisepasswordsafe.engine.database.User;
-import com.enterprisepasswordsafe.engine.database.UserDAO;
-import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
-import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 
 
 /**
@@ -144,11 +143,9 @@ public final class SyncPasswords extends LoginAuthenticationServlet {
         } catch (GeneralSecurityException gse) {
         	ServletUtils.getInstance().generateErrorMessage(request, "There was a problem authorising your details", gse);
             request.getRequestDispatcher(ERROR_PAGE).forward(request, response);
-            return;
         } catch (SQLException sqle) {
         	ServletUtils.getInstance().generateErrorMessage(request, "There was a problem synchronizing your password", sqle);
             request.getRequestDispatcher(ERROR_PAGE).forward(request, response);
-            return;
         }
     }
 

@@ -16,16 +16,15 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import java.io.IOException;
-import java.sql.SQLException;
+import com.enterprisepasswordsafe.database.IPZone;
+import com.enterprisepasswordsafe.database.IPZoneDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.enterprisepasswordsafe.engine.database.IPZone;
-import com.enterprisepasswordsafe.engine.database.IPZoneDAO;
+import java.io.IOException;
+import java.sql.SQLException;
 
 
 /**

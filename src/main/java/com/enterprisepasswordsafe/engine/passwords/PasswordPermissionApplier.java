@@ -1,8 +1,8 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
+import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.schema.AccessControlDAOInterface;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
-import com.enterprisepasswordsafe.engine.database.*;
-import com.enterprisepasswordsafe.engine.database.schema.AccessControlDAOInterface;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;

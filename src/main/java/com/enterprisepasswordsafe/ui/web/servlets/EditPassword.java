@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
+import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.database.*;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -113,7 +113,7 @@ public final class EditPassword extends HttpServlet {
         servletUtils.setAttributeAllowingOverride(request, "location_text", password.getLocation());
         String hideLocations = ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_HIDE_SYSTEM_SELECTOR);
         if( hideLocations.charAt(0) == 'n') {
-            request.setAttribute( "locations_set",LocationDAO.getInstance().getAll() );
+            request.setAttribute( "locations_set", LocationDAO.getInstance().getAll() );
         }
     }
 
