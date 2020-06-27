@@ -153,13 +153,12 @@ public final class PasswordsTable
      * Code to migrate existing locations to be hierarchy positions.
      *
      * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws ClassNotFoundException
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
 
     private void createTypes()
-			throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
+			throws SQLException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 		Connection conn = BOMFactory.getDatabaseAbstractionLayer().getConnection();
 
     	try(Statement stmt = conn.createStatement()) {

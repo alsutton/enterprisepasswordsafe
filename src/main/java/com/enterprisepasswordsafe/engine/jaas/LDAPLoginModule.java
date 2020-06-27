@@ -41,7 +41,7 @@ public final class LDAPLoginModule
         try {
             Hashtable<String,Object> env = getSimpleAuthEnvironment();
 
-            StringBuffer principal = new StringBuffer();
+            StringBuilder principal = new StringBuilder();
             principal.append(options.get("prefix"));
             principal.append('=');
             principal.append(userDetails.username);

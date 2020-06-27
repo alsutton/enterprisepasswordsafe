@@ -31,8 +31,8 @@ public class JndiLoginModuleDummy implements AuthenticationSourceModule {
      */
     
 	public Set<AuthenticationSourceConfigurationOption> getConfigurationOptions() {
-    	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions = 
-    		new TreeSet<AuthenticationSourceConfigurationOption>();
+    	Set<AuthenticationSourceConfigurationOption> newConfigurationOptions =
+				new TreeSet<>();
     	
     	newConfigurationOptions.add(
     			new AuthenticationSourceConfigurationOption(

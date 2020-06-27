@@ -13,5 +13,5 @@ public interface AccessControlDAOInterface<T extends EntityWithAccessRights, U e
     U create(T entity, AccessControledObject object, PasswordPermission permission)
             throws SQLException, UnsupportedEncodingException, GeneralSecurityException;
     void update(T entity, U accessControl)
-            throws SQLException, UnsupportedEncodingException, GeneralSecurityException;
+            throws SQLException, GeneralSecurityException;
 }

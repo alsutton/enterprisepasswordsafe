@@ -16,10 +16,10 @@
 
 package com.enterprisepasswordsafe.ui.web.utils;
 
+import com.enterprisepasswordsafe.ui.web.servlets.BaseServlet;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
-import com.enterprisepasswordsafe.ui.web.servlets.BaseServlet;
 
 public final class ServletUtils {
 
@@ -194,7 +194,7 @@ public final class ServletUtils {
 
     public void generateErrorMessage(final HttpServletRequest request,
     		final String message, final Exception excpt) {
-        StringBuffer messageBuffer = new StringBuffer(80);
+        StringBuilder messageBuffer = new StringBuilder(80);
         messageBuffer.append(message);
         messageBuffer.append("\n(");
         messageBuffer.append(excpt.getMessage());

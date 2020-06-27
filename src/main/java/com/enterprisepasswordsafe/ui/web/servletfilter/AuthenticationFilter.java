@@ -148,7 +148,7 @@ public final class AuthenticationFilter implements Filter {
 
 		Map<String,String[]> parameters = request.getParameterMap();
         if( parameters != null ) {
-        	Map<String,String> paramMap = new HashMap<String,String>();
+        	Map<String,String> paramMap = new HashMap<>();
         	for(Map.Entry<String,String[]> thisEntry : parameters.entrySet()) {
         		String paramName = thisEntry.getKey();
         		paramMap.put(paramName, request.getParameter(paramName));

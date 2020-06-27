@@ -78,7 +78,7 @@ public final class UserIPZoneRestrictionDAO {
             ps.setString (3, dbString);
             ps.setString (4, id);
             try(ResultSet rs = ps.executeQuery()) {
-	            List<UserIPZoneRestriction> results = new ArrayList<UserIPZoneRestriction>();
+	            List<UserIPZoneRestriction> results = new ArrayList<>();
 	            while(rs.next()) {
 	                results.add(new UserIPZoneRestriction(rs));
 	            }
@@ -129,7 +129,7 @@ public final class UserIPZoneRestrictionDAO {
     }
 
     public final Map<String,String> getRulesForUser( final String id ) throws SQLException {
-        Map<String,String> rules = new HashMap<String,String>();
+        Map<String,String> rules = new HashMap<>();
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_BY_USER_ID_SQL)) {
             ps.setString(1, id);
             try(ResultSet rs = ps.executeQuery()) {

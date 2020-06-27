@@ -33,7 +33,7 @@ public final class CustomFields extends HttpServlet {
     @Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
-    	final Map<String,String> customFields = new TreeMap<String,String>();
+    	final Map<String,String> customFields = new TreeMap<>();
     	final ConfigurationDAO cDAO = ConfigurationDAO.getInstance();
 
     	try {

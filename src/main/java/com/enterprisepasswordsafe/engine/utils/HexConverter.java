@@ -62,9 +62,8 @@ public final class HexConverter {
      * @return The hex string equivalent.
      */
     public static String fromBytes(final byte[] data) {
-        StringBuffer hexBuffer = new StringBuffer();
-        for (int i = 0; i < data.length; i++) {
-            byte thisByte = data[i];
+        StringBuilder hexBuffer = new StringBuilder();
+        for (byte thisByte : data) {
             hexBuffer.append(HEX_BYTES[(thisByte & TOP_NIBBLE_MASK) >> NIBBLE_OVERWRITE_SHIFT_SIZE]);
             hexBuffer.append(HEX_BYTES[thisByte & BOTTOM_NIBBLE_MASK]);
         }

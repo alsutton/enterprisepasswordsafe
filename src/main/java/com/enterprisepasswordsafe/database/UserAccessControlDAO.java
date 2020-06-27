@@ -76,7 +76,7 @@ public final class UserAccessControlDAO
 
 	public UserAccessControl create(final User theUser, final AccessControledObject item,
 									final PasswordPermission permission, final boolean writeToDB)
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+		throws SQLException, GeneralSecurityException {
 		if( !permission.allowsRead ) {
 			UserAccessControl existingUac = getUac(theUser, item);
 			if( existingUac != null ) {
@@ -158,7 +158,7 @@ public final class UserAccessControlDAO
     }
 
     public void updateEncryptionOnKeys(final User user,  final Encrypter encrypter)
-        throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+        throws SQLException, GeneralSecurityException {
         if (user == null) {
             return;
         }
@@ -221,7 +221,7 @@ public final class UserAccessControlDAO
     }
 
     public void update(final User user, final UserAccessControl uac)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
     	update(uac, user.getKeyEncrypter());
     }
 

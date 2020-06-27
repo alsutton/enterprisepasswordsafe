@@ -137,10 +137,8 @@ public final class ProfileServlet extends HttpServlet {
 	            );
 	        ServletUtils.getInstance().generateMessage(request, "Your password was updated");
 	        request.getSession().removeAttribute(FORCED_CHANGE_PARAMETER);
-        } catch(SQLException sqle) {
+        } catch(SQLException | GeneralSecurityException sqle) {
         	throw new ServletException("The password could not be updated due to an error.", sqle);
-        } catch(GeneralSecurityException gse) {
-        	throw new ServletException("The password could not be updated due to an error.", gse);
         }
 
         response.sendRedirect(request.getContextPath()+"/system/Profile");

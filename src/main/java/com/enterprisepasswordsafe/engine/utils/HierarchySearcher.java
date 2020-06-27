@@ -69,13 +69,11 @@ public class HierarchySearcher {
                                               final HierarchyNode node, final User theUser, final NodeObjectAction action) {
         try {
             for (final AccessControledObject aco : hnDAO.getAllChildrenObjects(node, theUser, null)) {
-                Runnable nodeProcessor = new Runnable() {
-                    public void run() {
-                        try {
-                            action.process(node, aco);
-                        } catch (Exception ex) {
-                            reportException(node, ex);
-                        }
+                Runnable nodeProcessor = () -> {
+                    try {
+                        action.process(node, aco);
+                    } catch (Exception ex) {
+                        reportException(node, ex);
                     }
                 };
                 service.execute(nodeProcessor);

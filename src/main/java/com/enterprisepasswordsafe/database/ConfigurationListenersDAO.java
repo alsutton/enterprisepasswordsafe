@@ -31,12 +31,8 @@ public final class ConfigurationListenersDAO {
     
     public static void addListener( String propertyName, ConfigurationListener listener ) {
     	synchronized( listeners ) {
-    		List<ConfigurationListener> listenerList = listeners.get(propertyName);
-    		if( listenerList == null ) {
-    			listenerList = new ArrayList<>();
-    			listeners.put(propertyName, listenerList);
-    		}
-    		listenerList.add( listener );
+            List<ConfigurationListener> listenerList = listeners.computeIfAbsent(propertyName, k -> new ArrayList<>());
+            listenerList.add( listener );
     	}
     }
     

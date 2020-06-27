@@ -108,13 +108,12 @@ public abstract class HierarchyManipulator {
             deepCopyToWork(node, newParent);
         }
 
-        private HierarchyNode deepCopyToWork(final HierarchyNode node, final HierarchyNode newParent)
+        private void deepCopyToWork(final HierarchyNode node, final HierarchyNode newParent)
                 throws SQLException {
             HierarchyNode newNode = performCopy(node, newParent);
             for(HierarchyNode thisNode : hierarchyNodeDAO.getAllChildren(node)) {
                 deepCopyToWork(thisNode, newParent);
             }
-            return newNode;
         }
     }
 }

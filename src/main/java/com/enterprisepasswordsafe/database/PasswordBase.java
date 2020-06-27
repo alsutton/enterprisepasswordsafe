@@ -23,10 +23,7 @@ import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 
 import java.io.IOException;
 import java.security.*;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Base class for objects relating to passwords.
@@ -184,13 +181,12 @@ public abstract class PasswordBase
      *            The expiry date for the password.
      *
      * @throws NoSuchAlgorithmException Thrown if the encryption algorithm is unavailable.
-     * @throws NoSuchProviderException Thrown if the encryption provider is unavailable.
      */
 
     public PasswordBase(final String newUsername, final String newPassword,
             final String newLocation, final String newNotes,
             final long newExpiry)
-        throws NoSuchAlgorithmException, NoSuchProviderException {
+        throws NoSuchAlgorithmException {
         this(null, newUsername, newPassword, newLocation, newNotes, newExpiry);
     }
 
@@ -229,11 +225,7 @@ public abstract class PasswordBase
         setNotes(newNotes);
         setExpiry(newExpiry);
 
-        if( newLocation != null ) {
-        	location = newLocation;
-        } else {
-        	location = "";
-        }
+        location = Objects.requireNonNullElse(newLocation, "");
 
         isModifiable = false;
     }
@@ -519,11 +511,7 @@ public abstract class PasswordBase
      * @param newLocation The location to set.
      */
     public final void setLocation(final String newLocation) {
-    	if( newLocation != null ) {
-    		location = newLocation;
-    	} else {
-    		location = "";
-    	}
+        location = Objects.requireNonNullElse(newLocation, "");
 
     }
 

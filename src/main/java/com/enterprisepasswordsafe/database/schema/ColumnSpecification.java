@@ -27,16 +27,16 @@ public final class ColumnSpecification
 	 * The types for the columns
 	 */
 
-	public static final Integer	TYPE_INT = Integer.valueOf( 1 ),
-								TYPE_LONG = Integer.valueOf( 2 ),
-								TYPE_CHAR = Integer.valueOf( 3 ),
-								TYPE_SHORT_STRING = Integer.valueOf( 4 ),
-								TYPE_LONG_STRING = Integer.valueOf( 5 ),
-								TYPE_ID = Integer.valueOf(6),
-								TYPE_BLOB = Integer.valueOf(7),
-								TYPE_MULTI_BLOB = Integer.valueOf(8),
-								TYPE_IP_ADDRESS = Integer.valueOf(9),
-								TYPE_KEY = Integer.valueOf(10);
+	public static final Integer	TYPE_INT = 1,
+								TYPE_LONG = 2,
+								TYPE_CHAR = 3,
+								TYPE_SHORT_STRING = 4,
+								TYPE_LONG_STRING = 5,
+								TYPE_ID = 6,
+								TYPE_BLOB = 7,
+								TYPE_MULTI_BLOB = 8,
+								TYPE_IP_ADDRESS = 9,
+								TYPE_KEY = 10;
 
 	/**
 	 * The name of the table.

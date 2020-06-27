@@ -132,7 +132,7 @@ public class PasswordImporter {
     private void storeImportedUserPermissions(final Group adminGroup, final AccessControl accessControl,
                                               final Password importedPassword,
                                               final Map<String,PasswordPermission> userPermissions)
-            throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
+            throws GeneralSecurityException, SQLException {
         final UserDAO uDAO = UserDAO.getInstance();
         final UserAccessControlDAO uacDAO = UserAccessControlDAO.getInstance();
 
@@ -210,7 +210,7 @@ public class PasswordImporter {
         }
 
         String history = values.next().trim().toLowerCase();
-        return Boolean.valueOf(history);
+        return Boolean.parseBoolean(history);
     }
 
 

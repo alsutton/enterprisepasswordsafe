@@ -40,7 +40,7 @@ public final class IDGenerator {
      */
     public static synchronized String getID() {
 
-        StringBuffer idBuffer = new StringBuffer();
+        StringBuilder idBuffer = new StringBuilder();
         idBuffer.append(Long.toHexString(System.currentTimeMillis()));
         idBuffer.append(Long.toHexString(idCounter));
         String id = idBuffer.toString();
