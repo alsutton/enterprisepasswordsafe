@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.database;
 
-import com.enterprisepasswordsafe.engine.GroupAccessControlDecryptor;
+import com.enterprisepasswordsafe.engine.AccessControlDecryptor;
 import com.enterprisepasswordsafe.engine.utils.IDGenerator;
 
 import javax.crypto.Cipher;
@@ -32,7 +32,7 @@ import java.sql.SQLException;
  * Object representation of a group within the system.
  */
 public final class Group
-    implements Comparable<Group>, EntityWithAccessRights, GroupAccessControlDecryptor {
+    implements Comparable<Group>, EntityWithAccessRights, AccessControlDecryptor {
 
 	/**
 	 * The group statuses
