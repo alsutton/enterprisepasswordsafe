@@ -16,8 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.actions.search.SearchTest;
-import com.enterprisepasswordsafe.database.actions.search.SystemContainsSearchTest;
+import com.enterprisepasswordsafe.database.Password;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Searches for all the passwords in a specific location.
@@ -48,10 +48,13 @@ public final class SearchLocationServlet extends SearchServlet {
      * @see com.enterprisepasswordsafe.ui.web.servlets.SearchServlet#getSearchTests(javax.servlet.http.HttpServletRequest)
      */
     @Override
-    protected List<SearchTest> getSearchTests(final HttpServletRequest request) {
-        String location = request.getParameter("location");
-        List<SearchTest> tests = new ArrayList<>();
-        tests.add(new SystemContainsSearchTest(location));
+    protected List<Predicate<Password>> getSearchTests(final HttpServletRequest request) {
+        final String location = request.getParameter("location");
+        if(location == null) {
+            return List.of();
+        }
+        List<Predicate<Password>> tests = new ArrayList<>();
+        tests.add(password -> password.getLocation().equalsIgnoreCase(location));
         return tests;
     }
 

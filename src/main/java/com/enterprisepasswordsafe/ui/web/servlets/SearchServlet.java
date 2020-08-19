@@ -18,12 +18,9 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.HierarchyNode;
 import com.enterprisepasswordsafe.database.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.database.Password;
 import com.enterprisepasswordsafe.database.User;
 import com.enterprisepasswordsafe.database.actions.PasswordSearchAction;
-import com.enterprisepasswordsafe.database.actions.search.NotesContainsSearchTest;
-import com.enterprisepasswordsafe.database.actions.search.SearchTest;
-import com.enterprisepasswordsafe.database.actions.search.SystemContainsSearchTest;
-import com.enterprisepasswordsafe.database.actions.search.UsernameContainsSearchTest;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
@@ -34,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class SearchServlet extends HttpServlet {
 
@@ -80,25 +78,43 @@ public class SearchServlet extends HttpServlet {
     }
 
 
-    protected List<SearchTest> getSearchTests(final HttpServletRequest request) {
-        List<SearchTest> tests = new ArrayList<>();
-
-        String searchString = request.getParameter("username");
-        if (searchString != null && searchString.length() > 0) {
-            tests.add(new UsernameContainsSearchTest(searchString));
-        }
-
-        searchString = request.getParameter("system");
-        if (searchString != null && !searchString.isEmpty()) {
-            tests.add(new SystemContainsSearchTest(searchString));
-        }
-
-        searchString = request.getParameter("notes");
-        if (searchString != null && searchString.length() > 0) {
-            tests.add(new NotesContainsSearchTest(searchString));
-        }
-
+    protected List<Predicate<Password>> getSearchTests(final HttpServletRequest request) {
+        List<Predicate<Password>> tests = new ArrayList<>();
+        addUsernameTestIfNeeded(request, tests);
+        addSystemTestIfNeeded(request, tests);
+        addNotesTestIfNeeded(request, tests);
         return tests;
+    }
+
+    private void addUsernameTestIfNeeded(final HttpServletRequest request, List<Predicate<Password>> tests) {
+        final String searchString = request.getParameter("username");
+        if (searchString == null || searchString.length() == 0) {
+            return;
+        }
+
+        tests.add(password -> isNonNullAndContains(password.getUsername(), searchString));
+    }
+
+    private void addSystemTestIfNeeded(final HttpServletRequest request, List<Predicate<Password>> tests) {
+        final String searchString = request.getParameter("system");
+        if (searchString == null || searchString.length() == 0) {
+            return;
+        }
+
+        tests.add(password -> isNonNullAndContains(password.getLocation(), searchString));
+    }
+
+    private void addNotesTestIfNeeded(final HttpServletRequest request, List<Predicate<Password>> tests) {
+        final String searchString = request.getParameter("notes");
+        if (searchString == null || searchString.length() == 0) {
+            return;
+        }
+
+        tests.add(password -> isNonNullAndContains(password.getNotes(), searchString));
+    }
+
+    private boolean isNonNullAndContains(String actual, String search) {
+        return actual != null && actual.toLowerCase().contains(search);
     }
 
     public String getServletInfo() {
