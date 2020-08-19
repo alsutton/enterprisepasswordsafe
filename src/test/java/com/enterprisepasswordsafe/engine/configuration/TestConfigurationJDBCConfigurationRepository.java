@@ -2,10 +2,12 @@ package com.enterprisepasswordsafe.engine.configuration;
 
 import com.enterprisepasswordsafe.database.vendorspecific.SupportedDatabase;
 
+import java.util.function.Supplier;
+
 public class TestConfigurationJDBCConfigurationRepository
-    implements JDBCConfigurationRepository {
+    implements Supplier<JDBCConnectionInformation> {
     @Override
-    public JDBCConnectionInformation load() {
+    public JDBCConnectionInformation get() {
         return new JDBCConnectionInformation() {
             @Override
             public boolean isValid() {

@@ -16,12 +16,14 @@
 
 package com.enterprisepasswordsafe.engine.configuration;
 
+import java.util.function.Supplier;
+
 public class EnvironmentVariableBackedJDBCConfigurationRepository
-        implements JDBCConfigurationRepository {
+        implements Supplier<JDBCConnectionInformation> {
 
 	private JDBCConnectionInformation connectionInformation;
 
-	public JDBCConnectionInformation load() {
+	public JDBCConnectionInformation get() {
 		synchronized (this) {
 			if(connectionInformation == null) {
 				connectionInformation = new GenericJDBCConnectionInformation(

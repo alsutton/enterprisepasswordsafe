@@ -46,7 +46,7 @@ public class DatabasePoolFactory {
     public synchronized DatabasePool getInstance()
             throws SQLException, ClassNotFoundException {
         if(mSharedInstance == null) {
-            setConfiguration(Repositories.jdbcConfigurationRepository.load());
+            setConfiguration(Repositories.jdbcConfigurationRepository.get());
         }
         return mSharedInstance;
     }
