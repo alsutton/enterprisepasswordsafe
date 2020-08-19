@@ -20,7 +20,6 @@ import com.enterprisepasswordsafe.database.AccessControledObject;
 import com.enterprisepasswordsafe.database.HierarchyNode;
 import com.enterprisepasswordsafe.database.Password;
 import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.actions.search.SearchTest;
 import com.enterprisepasswordsafe.database.derived.HierarchyNodeSummary;
 import com.enterprisepasswordsafe.engine.hierarchy.Summaries;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
@@ -30,12 +29,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PasswordSearchAction implements NodeObjectAction {
 
-    private final List<SearchTest> tests;
+    private final List<Predicate<Password>> tests;
 
     private final Map<String,List<Password>> results;
 
@@ -45,7 +45,7 @@ public class PasswordSearchAction implements NodeObjectAction {
 
     private final Summaries summaries = new Summaries();
 
-    public PasswordSearchAction( final User theUser, final List<SearchTest> testList)
+    public PasswordSearchAction( final User theUser, final List<Predicate<Password>> testList)
             throws SQLException {
         tests = testList;
         results = new HashMap<>();
@@ -64,8 +64,8 @@ public class PasswordSearchAction implements NodeObjectAction {
         	return;
         }
 
-        for(SearchTest test : tests) {
-            if (!test.matches(password)) {
+        for(Predicate<Password> test : tests) {
+            if (!test.test(password)) {
                 return;
             }
         }
