@@ -54,7 +54,7 @@ public final class SearchLocationServlet extends SearchServlet {
             return List.of();
         }
         List<Predicate<Password>> tests = new ArrayList<>();
-        tests.add(password -> password.getLocation().equalsIgnoreCase(location));
+        tests.add(password -> password.getLocation() != null && password.getLocation().equalsIgnoreCase(location));
         return tests;
     }
 
