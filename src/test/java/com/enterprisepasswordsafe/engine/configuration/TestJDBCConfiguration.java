@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
+import java.util.function.Supplier;
 
 public class TestJDBCConfiguration {
 
@@ -18,9 +19,9 @@ public class TestJDBCConfiguration {
             return;
         }
 
-        JDBCConfigurationRepository testConfigRepository = new TestConfigurationJDBCConfigurationRepository();
+        Supplier<JDBCConnectionInformation> testConfigRepository = new TestConfigurationJDBCConfigurationRepository();
         Repositories.jdbcConfigurationRepository = testConfigRepository;
-        testingPool = new DatabasePool(testConfigRepository.load());
+        testingPool = new DatabasePool(testConfigRepository.get());
         testingPool.initialiseDatabase();
     }
 }

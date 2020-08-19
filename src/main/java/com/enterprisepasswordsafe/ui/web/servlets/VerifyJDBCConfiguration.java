@@ -46,7 +46,7 @@ public class VerifyJDBCConfiguration extends HttpServlet {
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            JDBCConnectionInformation jdbcConfig = Repositories.jdbcConfigurationRepository.load();
+            JDBCConnectionInformation jdbcConfig = Repositories.jdbcConfigurationRepository.get();
             if( request.getParameter("force") != null) {
                 verifiedConfiguration = null;
             } else if (isExistingConnectionInformationValid(jdbcConfig)) {

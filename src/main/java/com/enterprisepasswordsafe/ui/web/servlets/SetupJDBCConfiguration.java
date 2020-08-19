@@ -30,7 +30,7 @@ public class SetupJDBCConfiguration extends HttpServlet {
     @Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        JDBCConnectionInformation connectionInformation = Repositories.jdbcConfigurationRepository.load();
+        JDBCConnectionInformation connectionInformation = Repositories.jdbcConfigurationRepository.get();
         request.setAttribute(VerifyJDBCConfiguration.JDBC_CONFIG_PROPERTY, connectionInformation);
         request.getRequestDispatcher("/admin/configure_jdbc.jsp").forward(request, response);
     }

@@ -46,7 +46,7 @@ public final class BOMFactory {
 			return currentInstance;
 		}
 
-		JDBCConnectionInformation connectionInformation  = Repositories.jdbcConfigurationRepository.load();
+		JDBCConnectionInformation connectionInformation  = Repositories.jdbcConfigurationRepository.get();
 		currentInstance = new DatabaseAccessManager(connectionInformation);
 		localInstance.set(currentInstance);
 		return currentInstance;
@@ -64,8 +64,6 @@ public final class BOMFactory {
 
 	/**
 	 * Gets the database abstraction layer currently in use
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
 	 */
 
 	public static DALInterface getDatabaseAbstractionLayer()
