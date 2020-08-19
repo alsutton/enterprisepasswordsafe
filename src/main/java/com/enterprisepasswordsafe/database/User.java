@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.database;
 
-import com.enterprisepasswordsafe.engine.UserAccessControlDecryptor;
+import com.enterprisepasswordsafe.engine.AccessControlDecryptor;
 import com.enterprisepasswordsafe.engine.users.PasswordHasher;
 import com.enterprisepasswordsafe.engine.users.UserAccessKeyEncryptionHandler;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
@@ -35,7 +35,7 @@ import java.sql.SQLException;
  * Object representing a user in the system.
  */
 public final class User
-    implements Comparable<User>, EntityWithAccessRights, UserAccessControlDecryptor {
+    implements Comparable<User>, EntityWithAccessRights, AccessControlDecryptor {
 
     /**
      * The size of the group access key in bits.
