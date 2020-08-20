@@ -24,13 +24,28 @@ public class PasswordImporter {
     private static final int PERMISSION_HEADER_LENGTH = 3;
 
     private final PasswordDAO passwordDAO;
+    private final UserDAO userDAO;
+    private final GroupAccessControlDAO groupAccessControlDAO;
+    private final HierarchyNodePermissionDAO hierarchyNodePermissionDAO;
 
     public PasswordImporter() {
         passwordDAO = PasswordDAO.getInstance();
+        userDAO = UserDAO.getInstance();
+        groupAccessControlDAO = GroupAccessControlDAO.getInstance();
+        hierarchyNodePermissionDAO = new HierarchyNodePermissionDAO();
+    }
+
+    // Visible for testing purposes
+    PasswordImporter(PasswordDAO passwordDAO, UserDAO userDAO, GroupAccessControlDAO groupAccessControlDAO,
+                     HierarchyNodePermissionDAO hierarchyNodePermissionDAO) {
+        this.passwordDAO = passwordDAO;
+        this.userDAO = userDAO;
+        this.groupAccessControlDAO = groupAccessControlDAO;
+        this.hierarchyNodePermissionDAO = hierarchyNodePermissionDAO;
     }
 
     public void importPassword(final User theImporter, final Group adminGroup,
-                               final String parentNode, final CSVRecord record)
+                               final String parentNode, final Iterable<String> record)
             throws SQLException, GeneralSecurityException, IOException {
 
         Iterator<String> values = record.iterator();
@@ -46,8 +61,8 @@ public class PasswordImporter {
                 password, location, notes, auditing, recordHistory, Long.MAX_VALUE,
                 parentNode, null, false, 0, 0, Password.TYPE_SYSTEM, null);
 
-        User adminUser = UserDAO.getInstance().getAdminUser(adminGroup);
-        AccessControl accessControl = GroupAccessControlDAO.getInstance().getGac(adminGroup, importedPassword);
+        User adminUser = userDAO.getAdminUser(adminGroup);
+        AccessControl accessControl = groupAccessControlDAO.getGac(adminGroup, importedPassword);
 
         importCustomFields(adminUser, adminGroup, accessControl, importedPassword, values);
 
@@ -83,7 +98,7 @@ public class PasswordImporter {
         Map<String,PasswordPermission> userPermissions = new HashMap<>();
         Map<String,PasswordPermission> groupPermissions = new HashMap<>();
 
-        new HierarchyNodePermissionDAO().getDefaultPermissionsForNodeIncludingInherited(
+        hierarchyNodePermissionDAO.getDefaultPermissionsForNodeIncludingInherited(
                 parentNode, userPermissions, groupPermissions);
 
         updateWithImportedPermissions(userPermissions, groupPermissions, importedPermissions);
@@ -176,7 +191,6 @@ public class PasswordImporter {
             throw new GeneralSecurityException(error);
         }
         return iterator.next().trim();
-
     }
 
     private String getNotesFromImport(Iterator<String> values) {
@@ -196,7 +210,8 @@ public class PasswordImporter {
             return AuditingLevel.FULL;
         }
 
-        String audit = values.next().trim().toLowerCase();
+        String audit = values.next().trim();
+        audit = audit.length() > 1 ? audit.toLowerCase() : audit.toUpperCase();
         AuditingLevel auditingLevel = AuditingLevel.fromRepresentation(audit);
         if(auditingLevel == null) {
             throw new GeneralSecurityException("Invalid auditing value specified (" + audit + ").");
