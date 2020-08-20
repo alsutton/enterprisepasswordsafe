@@ -99,7 +99,6 @@ public class PasswordImporter {
         Map<String, String> customFields = new TreeMap<>();
         while (values.hasNext()) {
             String nextToken = values.next().trim();
-
             if (nextToken.length() < PERMISSION_HEADER_LENGTH || nextToken.charAt(2) != ':') {
                 throw new GeneralSecurityException("Incorrect format " + nextToken);
             }
@@ -152,11 +151,11 @@ public class PasswordImporter {
             switch (permission.charAt(0)) {
                 case 'U':
                     User user = userDAO.getByName(actorName);
-                    importPermission(userPermissions, user.getId(), permission);
+                    userPermissions.put(user.getId(), PasswordPermission.fromRepresentation(permission));
                     break;
                 case 'G':
                     Group group = groupDAO.getByName(actorName);
-                    importPermission(groupPermissions, group.getGroupId(), permission);
+                    groupPermissions.put(group.getGroupId(), PasswordPermission.fromRepresentation(permission));
                     break;
                 default:
                     Logger.getAnonymousLogger().log(Level.SEVERE, "Unrecognised permission on import : " + permission);
@@ -165,10 +164,6 @@ public class PasswordImporter {
         } catch (Exception e) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Problem importing permission : " + permission);
         }
-    }
-
-    private void importPermission(Map<String, PasswordPermission> permissionMap, String id, String permission) {
-        permissionMap.put(id, PasswordPermission.fromRepresentation(permission.charAt(1)));
     }
 
     private void storeImportedUserPermissions(final Group adminGroup, final AccessControl accessControl,
@@ -181,14 +176,9 @@ public class PasswordImporter {
                 Logger.getAnonymousLogger().warning("Unable to find user " + thisEntry.getKey() + " to import permission.");
                 continue;
             }
-            AccessControlBuilder<UserAccessControl> accessControlBuilder = UserAccessControl.builder()
-                    .withAccessorId(user.getId())
-                    .withItemId(importedPassword.getId())
-                    .withReadKey(accessControl.getReadKey());
-            if (thisEntry.getValue() == PasswordPermission.MODIFY) {
-                accessControlBuilder.withModifyKey(accessControl.getModifyKey());
-            }
-            userAccessControlDAO.write(accessControlBuilder.build(), user);
+            AccessControlBuilder<UserAccessControl> builder = UserAccessControl.builder();
+            buildPermission(user.getId(), importedPassword, accessControl, thisEntry.getValue(), builder);
+            userAccessControlDAO.write(builder.build(), user);
         }
     }
 
@@ -198,15 +188,19 @@ public class PasswordImporter {
             throws GeneralSecurityException, SQLException {
         for (Map.Entry<String, PasswordPermission> thisEntry : groupPermissions.entrySet()) {
             Group group = groupDAO.getByIdDecrypted(thisEntry.getKey(), adminUser);
+            AccessControlBuilder<GroupAccessControl> builder = GroupAccessControl.builder();
+            buildPermission(group.getId(), importedPassword, accessControl, thisEntry.getValue(), builder);
+            groupAccessControlDAO.write(group, builder.build());
+        }
+    }
 
-            AccessControlBuilder<GroupAccessControl> accessControlBuilder = GroupAccessControl.builder()
-                    .withAccessorId(group.getId())
-                    .withItemId(importedPassword.getId())
-                    .withReadKey(accessControl.getReadKey());
-            if (thisEntry.getValue() == PasswordPermission.MODIFY) {
-                accessControlBuilder.withModifyKey(accessControl.getModifyKey());
-            }
-            groupAccessControlDAO.write(group, accessControlBuilder.build());
+    private void buildPermission(String accessorId, Password importedPassword, AccessControl accessControl,
+                                 PasswordPermission permission, AccessControlBuilder<?> accessControlBuilder) {
+        accessControlBuilder.withAccessorId(accessorId)
+                .withItemId(importedPassword.getId())
+                .withReadKey(accessControl.getReadKey());
+        if (permission == PasswordPermission.MODIFY) {
+            accessControlBuilder.withModifyKey(accessControl.getModifyKey());
         }
     }
 
@@ -236,7 +230,6 @@ public class PasswordImporter {
         }
 
         String audit = values.next().trim();
-        audit = audit.length() > 1 ? audit.toLowerCase() : audit.toUpperCase();
         AuditingLevel auditingLevel = AuditingLevel.fromRepresentation(audit);
         if (auditingLevel == null) {
             throw new GeneralSecurityException("Invalid auditing value specified (" + audit + ").");
@@ -249,10 +242,8 @@ public class PasswordImporter {
             return true;
         }
 
-        String history = values.next().trim().toLowerCase();
-        return Boolean.parseBoolean(history);
+        return Boolean.parseBoolean(values.next().trim().toLowerCase());
     }
-
 
     /**
      * Handles the import of a custom field permission.

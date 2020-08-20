@@ -29,7 +29,7 @@ public enum AuditingLevel {
 
     private boolean represents(String representation) {
         for(String knownRepresentation : representations) {
-            if (knownRepresentation.equals(representation)) {
+            if (knownRepresentation.equalsIgnoreCase(representation)) {
                 return true;
             }
         }
