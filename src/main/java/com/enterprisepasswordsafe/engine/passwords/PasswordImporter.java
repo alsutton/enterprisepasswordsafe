@@ -1,8 +1,21 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
-import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.engine.accesscontrol.*;
-import org.apache.commons.csv.CSVRecord;
+import com.enterprisepasswordsafe.database.Group;
+import com.enterprisepasswordsafe.database.GroupAccessControlDAO;
+import com.enterprisepasswordsafe.database.GroupDAO;
+import com.enterprisepasswordsafe.database.HierarchyNodePermissionDAO;
+import com.enterprisepasswordsafe.database.Membership;
+import com.enterprisepasswordsafe.database.MembershipDAO;
+import com.enterprisepasswordsafe.database.Password;
+import com.enterprisepasswordsafe.database.PasswordDAO;
+import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.database.UserAccessControlDAO;
+import com.enterprisepasswordsafe.database.UserDAO;
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.AccessControlBuilder;
+import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
+import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
+import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -25,21 +38,33 @@ public class PasswordImporter {
 
     private final PasswordDAO passwordDAO;
     private final UserDAO userDAO;
+    private final GroupDAO groupDAO;
+    private final MembershipDAO membershipDAO;
+    private final UserAccessControlDAO userAccessControlDAO;
     private final GroupAccessControlDAO groupAccessControlDAO;
     private final HierarchyNodePermissionDAO hierarchyNodePermissionDAO;
 
     public PasswordImporter() {
         passwordDAO = PasswordDAO.getInstance();
         userDAO = UserDAO.getInstance();
+        groupDAO = GroupDAO.getInstance();
+        membershipDAO = MembershipDAO.getInstance();
+        userAccessControlDAO = UserAccessControlDAO.getInstance();
         groupAccessControlDAO = GroupAccessControlDAO.getInstance();
         hierarchyNodePermissionDAO = new HierarchyNodePermissionDAO();
     }
 
     // Visible for testing purposes
-    PasswordImporter(PasswordDAO passwordDAO, UserDAO userDAO, GroupAccessControlDAO groupAccessControlDAO,
+    PasswordImporter(PasswordDAO passwordDAO, UserDAO userDAO, GroupDAO groupDAO,
+                     MembershipDAO membershipDAO,
+                     UserAccessControlDAO userAccessControlDAO,
+                     GroupAccessControlDAO groupAccessControlDAO,
                      HierarchyNodePermissionDAO hierarchyNodePermissionDAO) {
         this.passwordDAO = passwordDAO;
         this.userDAO = userDAO;
+        this.groupDAO = groupDAO;
+        this.membershipDAO = membershipDAO;
+        this.userAccessControlDAO = userAccessControlDAO;
         this.groupAccessControlDAO = groupAccessControlDAO;
         this.hierarchyNodePermissionDAO = hierarchyNodePermissionDAO;
     }
@@ -47,7 +72,6 @@ public class PasswordImporter {
     public void importPassword(final User theImporter, final Group adminGroup,
                                final String parentNode, final Iterable<String> record)
             throws SQLException, GeneralSecurityException, IOException {
-
         Iterator<String> values = record.iterator();
 
         String location = getNextValueFromCSVRecordIterator(values, "Location not specified.");
@@ -70,8 +94,8 @@ public class PasswordImporter {
     }
 
     private void importCustomFields(final User adminUser, final Group adminGroup, final AccessControl accessControl,
-                                    final Password importedPassword, Iterator<String> values )
-            throws GeneralSecurityException, IOException, SQLException  {
+                                    final Password importedPassword, Iterator<String> values)
+            throws GeneralSecurityException, IOException, SQLException {
         Map<String, String> customFields = new TreeMap<>();
         while (values.hasNext()) {
             String nextToken = values.next().trim();
@@ -93,10 +117,10 @@ public class PasswordImporter {
 
     private void importAccessControls(final User adminUser, final Group adminGroup, final AccessControl accessControl,
                                       final String parentNode, final Password importedPassword,
-                                      final Iterator<String> importedPermissions )
-            throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-        Map<String,PasswordPermission> userPermissions = new HashMap<>();
-        Map<String,PasswordPermission> groupPermissions = new HashMap<>();
+                                      final Iterator<String> importedPermissions)
+            throws GeneralSecurityException, SQLException {
+        Map<String, PasswordPermission> userPermissions = new HashMap<>();
+        Map<String, PasswordPermission> groupPermissions = new HashMap<>();
 
         hierarchyNodePermissionDAO.getDefaultPermissionsForNodeIncludingInherited(
                 parentNode, userPermissions, groupPermissions);
@@ -107,36 +131,39 @@ public class PasswordImporter {
         storeImportedGroupPermissions(adminUser, accessControl, importedPassword, groupPermissions);
     }
 
-    private void updateWithImportedPermissions(Map<String,PasswordPermission> userPermissions,
-                                               Map<String,PasswordPermission> groupPermissions,
+    private void updateWithImportedPermissions(Map<String, PasswordPermission> userPermissions,
+                                               Map<String, PasswordPermission> groupPermissions,
                                                Iterator<String> importedPermissions) {
-        UserDAO userDAO = UserDAO.getInstance();
-        GroupDAO groupDAO = GroupDAO.getInstance();
-
-        while(importedPermissions.hasNext()) {
+        while (importedPermissions.hasNext()) {
             String permission = importedPermissions.next().trim();
-            if(permission.isEmpty() || permission.length() < 4) {
+            if (permission.isEmpty() || permission.length() < 4) {
                 continue;
             }
 
-            String actorName = permission.substring(3);
-            try {
-                switch (permission.charAt(0)) {
-                    case 'U':
-                        User user = userDAO.getByName(actorName);
-                        importPermission(userPermissions, user.getId(), permission);
-                        break;
-                    case 'G':
-                        Group group = groupDAO.getByName(actorName);
-                        importPermission(groupPermissions, group.getGroupId(), permission);
-                        break;
-                    default:
-                        Logger.getAnonymousLogger().log(Level.SEVERE, "Unrecognised permission on import : " + permission);
-                        break;
-                }
-            } catch(Exception e) {
-                Logger.getAnonymousLogger().log(Level.SEVERE, "Problem importing permission : " +permission);
+            importPermission(userPermissions, groupPermissions, permission);
+        }
+    }
+
+    private void importPermission(Map<String, PasswordPermission> userPermissions,
+                                  Map<String, PasswordPermission> groupPermissions,
+                                  String permission) {
+        String actorName = permission.substring(3);
+        try {
+            switch (permission.charAt(0)) {
+                case 'U':
+                    User user = userDAO.getByName(actorName);
+                    importPermission(userPermissions, user.getId(), permission);
+                    break;
+                case 'G':
+                    Group group = groupDAO.getByName(actorName);
+                    importPermission(groupPermissions, group.getGroupId(), permission);
+                    break;
+                default:
+                    Logger.getAnonymousLogger().log(Level.SEVERE, "Unrecognised permission on import : " + permission);
+                    break;
             }
+        } catch (Exception e) {
+            Logger.getAnonymousLogger().log(Level.SEVERE, "Problem importing permission : " + permission);
         }
     }
 
@@ -146,46 +173,44 @@ public class PasswordImporter {
 
     private void storeImportedUserPermissions(final Group adminGroup, final AccessControl accessControl,
                                               final Password importedPassword,
-                                              final Map<String,PasswordPermission> userPermissions)
+                                              final Map<String, PasswordPermission> userPermissions)
             throws GeneralSecurityException, SQLException {
-        final UserDAO uDAO = UserDAO.getInstance();
-        final UserAccessControlDAO uacDAO = UserAccessControlDAO.getInstance();
-
-        for(Map.Entry<String,PasswordPermission> thisEntry : userPermissions.entrySet()) {
-            User user = uDAO.getByIdDecrypted(thisEntry.getKey(), adminGroup);
+        for (Map.Entry<String, PasswordPermission> thisEntry : userPermissions.entrySet()) {
+            User user = userDAO.getByIdDecrypted(thisEntry.getKey(), adminGroup);
+            if (user == null || user.getId() == null) {
+                Logger.getAnonymousLogger().warning("Unable to find user " + thisEntry.getKey() + " to import permission.");
+                continue;
+            }
             AccessControlBuilder<UserAccessControl> accessControlBuilder = UserAccessControl.builder()
                     .withAccessorId(user.getId())
                     .withItemId(importedPassword.getId())
                     .withReadKey(accessControl.getReadKey());
-            if(thisEntry.getValue() == PasswordPermission.MODIFY) {
+            if (thisEntry.getValue() == PasswordPermission.MODIFY) {
                 accessControlBuilder.withModifyKey(accessControl.getModifyKey());
             }
-            uacDAO.write(accessControlBuilder.build(), user);
+            userAccessControlDAO.write(accessControlBuilder.build(), user);
         }
     }
 
     private void storeImportedGroupPermissions(final User adminUser, final AccessControl accessControl,
                                                final Password importedPassword,
-                                               final Map<String,PasswordPermission> groupPermissions)
-            throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-        final GroupDAO groupDAO = GroupDAO.getInstance();
-        final GroupAccessControlDAO groupAccessControlDAO = GroupAccessControlDAO.getInstance();
-
-        for(Map.Entry<String,PasswordPermission> thisEntry : groupPermissions.entrySet()) {
+                                               final Map<String, PasswordPermission> groupPermissions)
+            throws GeneralSecurityException, SQLException {
+        for (Map.Entry<String, PasswordPermission> thisEntry : groupPermissions.entrySet()) {
             Group group = groupDAO.getByIdDecrypted(thisEntry.getKey(), adminUser);
 
             AccessControlBuilder<GroupAccessControl> accessControlBuilder = GroupAccessControl.builder()
                     .withAccessorId(group.getId())
                     .withItemId(importedPassword.getId())
                     .withReadKey(accessControl.getReadKey());
-            if(thisEntry.getValue() == PasswordPermission.MODIFY) {
+            if (thisEntry.getValue() == PasswordPermission.MODIFY) {
                 accessControlBuilder.withModifyKey(accessControl.getModifyKey());
             }
             groupAccessControlDAO.write(group, accessControlBuilder.build());
         }
     }
 
-    private String getNextValueFromCSVRecordIterator(final Iterator<String> iterator, final String error )
+    private String getNextValueFromCSVRecordIterator(final Iterator<String> iterator, final String error)
             throws GeneralSecurityException {
         if (!iterator.hasNext()) {
             throw new GeneralSecurityException(error);
@@ -194,7 +219,7 @@ public class PasswordImporter {
     }
 
     private String getNotesFromImport(Iterator<String> values) {
-        if(!values.hasNext()) {
+        if (!values.hasNext()) {
             return "";
         }
 
@@ -213,14 +238,14 @@ public class PasswordImporter {
         String audit = values.next().trim();
         audit = audit.length() > 1 ? audit.toLowerCase() : audit.toUpperCase();
         AuditingLevel auditingLevel = AuditingLevel.fromRepresentation(audit);
-        if(auditingLevel == null) {
+        if (auditingLevel == null) {
             throw new GeneralSecurityException("Invalid auditing value specified (" + audit + ").");
         }
         return auditingLevel;
     }
 
     private boolean getHistoryRecordingFromImport(Iterator<String> values) {
-        if(!values.hasNext()) {
+        if (!values.hasNext()) {
             return true;
         }
 
@@ -233,15 +258,15 @@ public class PasswordImporter {
      * Handles the import of a custom field permission.
      *
      * @param customFields The map of custom fields.
-     * @param customField The defintiion of the custom field
+     * @param customField  The defintiion of the custom field
      */
 
-    private void importCustomField(final Map<String,String> customFields, final String customField) {
+    private void importCustomField(final Map<String, String> customFields, final String customField) {
         String fieldName = customField.trim();
         String fieldValue = "";
         int equalsIdx = fieldName.indexOf('=');
-        if(equalsIdx != -1) {
-            fieldValue = fieldName.substring(equalsIdx+1);
+        if (equalsIdx != -1) {
+            fieldValue = fieldName.substring(equalsIdx + 1);
             fieldName = fieldName.substring(0, equalsIdx);
         }
         customFields.put(fieldName, fieldValue);
@@ -251,12 +276,11 @@ public class PasswordImporter {
      * Handles the import of an access permission.
      *
      * @param thePassword The password being imported.
-     * @param adminUser The administrator user doing the import.
-     * @param adminGroup The admin group for permission handling.
-     * @param permission The permission being imported.
-     *
-     * @throws SQLException Thrown if there is a problem accessing the database.
-     * @throws GeneralSecurityException Thrown if there is a problem encrypting/decrypting the permissions
+     * @param adminUser   The administrator user doing the import.
+     * @param adminGroup  The admin group for permission handling.
+     * @param permission  The permission being imported.
+     * @throws SQLException                 Thrown if there is a problem accessing the database.
+     * @throws GeneralSecurityException     Thrown if there is a problem encrypting/decrypting the permissions
      * @throws UnsupportedEncodingException Thrown if there is a problem decoding text.
      */
 
@@ -286,27 +310,26 @@ public class PasswordImporter {
     private void createUserPermission(final Password thePassword, final Group adminGroup,
                                       final String objectName, final boolean allowModify)
             throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-        User theUser = UserDAO.getInstance().getByName(objectName);
+        User theUser = userDAO.getByName(objectName);
         if (theUser == null) {
             throw new GeneralSecurityException("User " + objectName + " does not exist");
         }
         theUser.decryptAdminAccessKey(adminGroup);
         PasswordPermission permission = allowModify ? PasswordPermission.MODIFY : PasswordPermission.READ;
-        UserAccessControlDAO.getInstance().create(theUser, thePassword, permission);
-
+        userAccessControlDAO.create(theUser, thePassword, permission);
     }
 
     private void createGroupPermission(final Password thePassword, final User adminUser,
-                                  final String objectName, final boolean allowModify)
-            throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-        Group theGroup = GroupDAO.getInstance().getByName(objectName);
+                                       final String objectName, final boolean allowModify)
+            throws GeneralSecurityException, SQLException {
+        Group theGroup = groupDAO.getByName(objectName);
         if (theGroup == null) {
-            throw new GeneralSecurityException("Group " + objectName+ " does not exist");
+            throw new GeneralSecurityException("Group " + objectName + " does not exist");
         }
-        Membership membership = MembershipDAO.getInstance().getMembership(adminUser, theGroup);
+        Membership membership = membershipDAO.getMembership(adminUser, theGroup);
         theGroup.updateAccessKey(membership);
         PasswordPermission permission = allowModify ? PasswordPermission.MODIFY : PasswordPermission.READ;
-        GroupAccessControlDAO.getInstance().create(theGroup, thePassword, permission);
+        groupAccessControlDAO.create(theGroup, thePassword, permission);
     }
 
 }
