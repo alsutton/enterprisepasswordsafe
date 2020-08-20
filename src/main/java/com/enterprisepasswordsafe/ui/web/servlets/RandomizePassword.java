@@ -16,9 +16,22 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.database.BOMFactory;
+import com.enterprisepasswordsafe.database.IntegrationModule;
+import com.enterprisepasswordsafe.database.IntegrationModuleConfigurationDAO;
+import com.enterprisepasswordsafe.database.IntegrationModuleDAO;
+import com.enterprisepasswordsafe.database.IntegrationModuleScript;
+import com.enterprisepasswordsafe.database.IntegrationModuleScriptDAO;
+import com.enterprisepasswordsafe.database.Password;
+import com.enterprisepasswordsafe.database.PasswordDAO;
+import com.enterprisepasswordsafe.database.PasswordRestriction;
+import com.enterprisepasswordsafe.database.PasswordRestrictionDAO;
+import com.enterprisepasswordsafe.database.TamperproofEventLog;
+import com.enterprisepasswordsafe.database.TamperproofEventLogDAO;
+import com.enterprisepasswordsafe.database.User;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.integration.PasswordChanger;
+import com.enterprisepasswordsafe.ui.web.servlets.utils.AccessControlFetcher;
 import com.enterprisepasswordsafe.ui.web.utils.PasswordGenerator;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
@@ -29,71 +42,81 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class RandomizePassword extends HttpServlet {
 
+    private final AccessControlFetcher accessControlFetcher = new AccessControlFetcher();
+
     @Override
-	protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
-        throws ServletException, IOException {
-    	try {
-	    	final User user = SecurityUtils.getRemoteUser(request);
-	    	final String passwordId = request.getParameter("id");
-	    	final AccessControl ac = AccessControlDAO.getInstance().getAccessControl(user, passwordId);
-	    	if( ac == null ) {
-	    		throw new ServletException( "You do not have access to this password.");
-	    	}
-	    	if( ac.getModifyKey() == null ) {
-	    		throw new ServletException( "You do not have modification rights to the password.");
-	    	}
+    protected void doPost(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            User user = SecurityUtils.getRemoteUser(request);
+            String passwordId = request.getParameter("id");
+            AccessControl ac = accessControlFetcher.getModifyAccessControl(user, passwordId);
 
-	    	PasswordDAO pDAO = PasswordDAO.getInstance();
-	    	final Password password = pDAO.getById(passwordId, ac);
+            PasswordDAO pDAO = PasswordDAO.getInstance();
+            Password password = pDAO.getById(passwordId, ac);
+            String newPassword = createNewPassword(password);
+            runIntegrationScripts(password, newPassword);
+            password.setPassword(newPassword);
+            pDAO.update(password, user, ac);
 
+            TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+                    user, password, "Randomized the password.",
+                    password.getAuditLevel().shouldTriggerEmail());
+            ServletUtils.getInstance().generateMessage(request, "The password has been changed.");
+        } catch (Exception ex) {
+            throw new ServletException("There was a problem talking to the system holding the password.", ex);
+        }
 
-	    	// Create the password changing properties.
-	    	final Map<String,String> passwordProperties = new HashMap<>();
-			passwordProperties.put(PasswordChanger.USERNAME_PROPERTY, password.getUsername());
-			passwordProperties.put(PasswordChanger.SYSTEM, password.getLocation());
-			passwordProperties.put(PasswordChanger.OLD_PASSWORD, password.getPassword());
+        request.getRequestDispatcher(ServletPaths.getExplorerPath()).forward(request, response);
+    }
 
-			PasswordRestrictionDAO prDAO = PasswordRestrictionDAO.getInstance();
-	        PasswordRestriction control = prDAO.getById(password.getRestrictionId());
-	        if( control == null ) {
-	        	control = prDAO.getById(PasswordRestriction.MIGRATED_RESTRICTION_ID);
-	        }
-	        String newPassword = PasswordGenerator.getInstance().generate(control, true);
-	        passwordProperties.put(PasswordChanger.NEW_PASSWORD, newPassword);
+    private String createNewPassword(Password password) throws SQLException {
+        PasswordRestrictionDAO prDAO = PasswordRestrictionDAO.getInstance();
+        PasswordRestriction control = prDAO.getById(password.getRestrictionId());
+        if (control == null) {
+            control = prDAO.getById(PasswordRestriction.MIGRATED_RESTRICTION_ID);
+        }
+        return PasswordGenerator.getInstance().generate(control, true);
+    }
 
-			// Run through the scripts activating them
-	        final IntegrationModuleDAO imDAO = IntegrationModuleDAO.getInstance();
-	        final IntegrationModuleConfigurationDAO imcDAO = IntegrationModuleConfigurationDAO.getInstance();
-	        final Connection dbConnection = BOMFactory.getCurrentConntection();
-	        for(IntegrationModuleScript thisScript : IntegrationModuleScriptDAO.getInstance().getScriptsForPassword(password.getId())) {
-	    		final Map<String,String> scriptProperties = imcDAO.getProperties(thisScript, password);
-	    		final IntegrationModule module = imDAO.getById(thisScript.getModuleId());
-	    		final PasswordChanger changer = imDAO.getPasswordChangerInstance(module);
-	    		changer.changePassword( dbConnection, scriptProperties, passwordProperties, thisScript.getScript() );
-	    	}
+    private void runIntegrationScripts(Password password, String newPassword)
+            throws UnsupportedEncodingException, SQLException, ClassNotFoundException,
+            NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Map<String, String> passwordProperties = createChangeProperties(password, newPassword);
 
-	    	password.setPassword(newPassword);
-	        pDAO.update(password, user, ac);
+        final IntegrationModuleDAO imDAO = IntegrationModuleDAO.getInstance();
+        final IntegrationModuleConfigurationDAO imcDAO = IntegrationModuleConfigurationDAO.getInstance();
+        final Connection dbConnection = BOMFactory.getCurrentConntection();
+        for (IntegrationModuleScript thisScript :
+                IntegrationModuleScriptDAO.getInstance().getScriptsForPassword(password.getId())) {
+            final Map<String, String> scriptProperties = imcDAO.getProperties(thisScript, password);
+            final IntegrationModule module = imDAO.getById(thisScript.getModuleId());
+            final PasswordChanger changer = imDAO.getPasswordChangerInstance(module);
+            changer.changePassword(dbConnection, scriptProperties, passwordProperties, thisScript.getScript());
+        }
+    }
 
-	        TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
-	        				user, password, "Randomized the password.",
-	        				password.getAuditLevel().shouldTriggerEmail());
-	        ServletUtils.getInstance().generateMessage(request, "The password has been changed.");
-	    } catch(Exception ex) {
-	    	throw new ServletException("There was a problem talking to the system holding the password.", ex);
-	    }
+    private Map<String, String> createChangeProperties(Password password, String newPassword) {
+        final Map<String, String> passwordProperties = new HashMap<>();
+        passwordProperties.put(PasswordChanger.USERNAME_PROPERTY, password.getUsername());
+        passwordProperties.put(PasswordChanger.SYSTEM, password.getLocation());
+        passwordProperties.put(PasswordChanger.OLD_PASSWORD, password.getPassword());
 
-    	request.getRequestDispatcher(ServletPaths.getExplorerPath()).forward(request, response);
+        passwordProperties.put(PasswordChanger.NEW_PASSWORD, newPassword);
+        return passwordProperties;
     }
 
     @Override
-	public String getServletInfo() {
+    public String getServletInfo() {
         return "Servlet to alter the scripts associated with a password";
     }
 }
