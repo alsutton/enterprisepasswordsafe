@@ -45,19 +45,13 @@ public class PasswordImporter {
     private final HierarchyNodePermissionDAO hierarchyNodePermissionDAO;
 
     public PasswordImporter() {
-        passwordDAO = PasswordDAO.getInstance();
-        userDAO = UserDAO.getInstance();
-        groupDAO = GroupDAO.getInstance();
-        membershipDAO = MembershipDAO.getInstance();
-        userAccessControlDAO = UserAccessControlDAO.getInstance();
-        groupAccessControlDAO = GroupAccessControlDAO.getInstance();
-        hierarchyNodePermissionDAO = new HierarchyNodePermissionDAO();
+        this(PasswordDAO.getInstance(), UserDAO.getInstance(), GroupDAO.getInstance(), MembershipDAO.getInstance(),
+            UserAccessControlDAO.getInstance(), GroupAccessControlDAO.getInstance(), new HierarchyNodePermissionDAO());
     }
 
     // Visible for testing purposes
     PasswordImporter(PasswordDAO passwordDAO, UserDAO userDAO, GroupDAO groupDAO,
-                     MembershipDAO membershipDAO,
-                     UserAccessControlDAO userAccessControlDAO,
+                     MembershipDAO membershipDAO, UserAccessControlDAO userAccessControlDAO,
                      GroupAccessControlDAO groupAccessControlDAO,
                      HierarchyNodePermissionDAO hierarchyNodePermissionDAO) {
         this.passwordDAO = passwordDAO;
@@ -218,9 +212,7 @@ public class PasswordImporter {
         }
 
         String notes = values.next().trim();
-        notes = notes.replaceAll("<br>", "\n");
-        notes = notes.replaceAll("<br/>", "\n");
-        return notes;
+        return notes.replaceAll("<br>", "\n").replaceAll("<br/>", "\n");
     }
 
     private AuditingLevel getAuditLevelFromImport(Iterator<String> values)
@@ -279,12 +271,7 @@ public class PasswordImporter {
                                   final Group adminGroup, final String permission)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         char permissionType = permission.charAt(1);
-        boolean allowModify;
-        if (permissionType == 'M') {
-            allowModify = true;
-        } else if (permissionType == 'V') {
-            allowModify = false;
-        } else {
+        if(permissionType != 'M' && permissionType !='V') {
             return;
         }
 
@@ -292,9 +279,9 @@ public class PasswordImporter {
         String objectName = permission.substring(PERMISSION_HEADER_LENGTH);
         char objectType = permission.charAt(0);
         if (objectType == 'U' || objectType == 'u') {
-            createUserPermission(thePassword, adminGroup, objectName, allowModify);
+            createUserPermission(thePassword, adminGroup, objectName, permissionType == 'M');
         } else if (objectType == 'G' || objectType == 'g') {
-            createGroupPermission(thePassword, adminUser, objectName, allowModify);
+            createGroupPermission(thePassword, adminUser, objectName, permissionType == 'M');
         }
     }
 
@@ -322,5 +309,4 @@ public class PasswordImporter {
         PasswordPermission permission = allowModify ? PasswordPermission.MODIFY : PasswordPermission.READ;
         groupAccessControlDAO.create(theGroup, thePassword, permission);
     }
-
 }
