@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -127,6 +128,14 @@ public class PasswordImporterTests {
     }
 
     @Test
+    public void testUserPermissionForNonExistentUserFails() throws SQLException {
+        when(mockUserDAO.getByName(eq(TEST_LOGIN_ACCOUNT))).thenReturn(null);
+
+        assertThrows(GeneralSecurityException.class, () -> instanceUnderTest.importPassword(mockUser, mockAdminGroup,
+                TEST_PARENT_NODE, getTestData("UV:" + TEST_LOGIN_ACCOUNT)));
+    }
+
+    @Test
     public void testGroupModifyPermissionsAreImported() throws GeneralSecurityException, SQLException, IOException {
         Group group = mock(Group.class);
         when(mockGroupDAO.getByName(eq(TEST_USER_GROUP))).thenReturn(group);
@@ -146,5 +155,28 @@ public class PasswordImporterTests {
                 getTestData("GV:" + TEST_USER_GROUP));
 
         verify(mockGroupAccessControlDAO).create(group, fakePassword, PasswordPermission.READ);
+    }
+
+    @Test
+    public void testGroupPermissionForNonExistentUserFails() throws SQLException {
+        when(mockGroupDAO.getByName(eq(TEST_USER_GROUP))).thenReturn(null);
+
+        assertThrows(GeneralSecurityException.class, () -> instanceUnderTest.importPassword(mockUser, mockAdminGroup,
+                TEST_PARENT_NODE, getTestData("GV:" + TEST_USER_GROUP)));
+    }
+
+
+    @Test
+    public void testGroupAndUserReadOnlyPermissionsAreImported() throws GeneralSecurityException, SQLException, IOException {
+        Group group = mock(Group.class);
+        when(mockGroupDAO.getByName(eq(TEST_USER_GROUP))).thenReturn(group);
+        User user = mock(User.class);
+        when(mockUserDAO.getByName(eq(TEST_LOGIN_ACCOUNT))).thenReturn(user);
+
+        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE,
+                getTestData("GV:" + TEST_USER_GROUP, "UV:" + TEST_LOGIN_ACCOUNT));
+
+        verify(mockGroupAccessControlDAO).create(group, fakePassword, PasswordPermission.READ);
+        verify(mockUserAccessControlDAO).create(user, fakePassword, PasswordPermission.READ);
     }
 }
