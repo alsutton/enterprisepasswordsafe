@@ -94,7 +94,7 @@ public class PasswordImporterTests {
     public void setUp() throws GeneralSecurityException, SQLException, IOException {
         fakePassword = new Password();
         instanceUnderTest = new PasswordImporter(mockPasswordDAO, mockUserDAO, mockGroupDAO, mockMembershipDAO,
-                mockUserAccessControlDAO, mockGroupAccessControlDAO, hierarchyNodePermissionDAO);
+                mockUserAccessControlDAO, mockGroupAccessControlDAO, hierarchyNodePermissionDAO, mockAdminGroup);
 
         when(mockPasswordDAO.create(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyLong(), any(),
                 any(), anyBoolean(), anyInt(), anyInt(), anyInt(), any())).thenReturn(fakePassword);
@@ -102,7 +102,7 @@ public class PasswordImporterTests {
 
     @Test
     public void testDataIsImportedCorrectly() throws GeneralSecurityException, SQLException, IOException {
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE, getTestData());
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE, getTestData());
 
         verify(mockPasswordDAO).create(eq(mockUser), eq(mockAdminGroup), eq(TEST_USERNAME), eq(TEST_PASSWORD),
                 eq(TEST_LOCATION), eq(TEST_NOTES), eq(AuditingLevel.FULL), eq(true), anyLong(),
@@ -111,7 +111,7 @@ public class PasswordImporterTests {
 
     @Test
     public void testCustomFieldsAreImported() throws GeneralSecurityException, SQLException, IOException {
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE, getTestData("CF:cf1=cv1"));
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE, getTestData("CF:cf1=cv1"));
 
         assertEquals("cv1", fakePassword.getCustomField("cf1"));
     }
@@ -121,8 +121,7 @@ public class PasswordImporterTests {
         User user = mock(User.class);
         when(mockUserDAO.getByName(eq(TEST_LOGIN_ACCOUNT))).thenReturn(user);
 
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE,
-                getTestData("UM:" + TEST_LOGIN_ACCOUNT));
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE, getTestData("UM:" + TEST_LOGIN_ACCOUNT));
 
         verify(mockUserAccessControlDAO).create(user, fakePassword, PasswordPermission.MODIFY);
     }
@@ -132,8 +131,7 @@ public class PasswordImporterTests {
         User user = mock(User.class);
         when(mockUserDAO.getByName(eq(TEST_LOGIN_ACCOUNT))).thenReturn(user);
 
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE,
-                getTestData("UV:" + TEST_LOGIN_ACCOUNT));
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE, getTestData("UV:" + TEST_LOGIN_ACCOUNT));
 
         verify(mockUserAccessControlDAO).create(user, fakePassword, PasswordPermission.READ);
     }
@@ -142,8 +140,8 @@ public class PasswordImporterTests {
     public void testUserPermissionForNonExistentUserFails() throws SQLException {
         when(mockUserDAO.getByName(eq(TEST_LOGIN_ACCOUNT))).thenReturn(null);
 
-        assertThrows(GeneralSecurityException.class, () -> instanceUnderTest.importPassword(mockUser, mockAdminGroup,
-                TEST_PARENT_NODE, getTestData("UV:" + TEST_LOGIN_ACCOUNT)));
+        assertThrows(GeneralSecurityException.class, () -> instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE,
+                getTestData("UV:" + TEST_LOGIN_ACCOUNT)));
     }
 
     @Test
@@ -160,9 +158,9 @@ public class PasswordImporterTests {
                 new FakeHierarchyNodePermissionDAO(Map.of(TEST_LOGIN_ACCOUNT_ID, PasswordPermission.READ), Map.of());
 
         instanceUnderTest = new PasswordImporter(mockPasswordDAO, mockUserDAO, mockGroupDAO, mockMembershipDAO,
-                mockUserAccessControlDAO, mockGroupAccessControlDAO, fakeHierarchyNodePermissionDAO);
+                mockUserAccessControlDAO, mockGroupAccessControlDAO, fakeHierarchyNodePermissionDAO, mockAdminGroup);
 
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE, getTestData());
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE, getTestData());
 
         ArgumentCaptor<UserAccessControl> acCaptor = ArgumentCaptor.forClass(UserAccessControl.class);
         verify(mockUserAccessControlDAO).write(acCaptor.capture(), eq(mockUser));
@@ -188,9 +186,9 @@ public class PasswordImporterTests {
                 new FakeHierarchyNodePermissionDAO(Map.of(TEST_LOGIN_ACCOUNT_ID, PasswordPermission.READ), Map.of());
 
         instanceUnderTest = new PasswordImporter(mockPasswordDAO, mockUserDAO, mockGroupDAO, mockMembershipDAO,
-                mockUserAccessControlDAO, mockGroupAccessControlDAO, fakeHierarchyNodePermissionDAO);
+                mockUserAccessControlDAO, mockGroupAccessControlDAO, fakeHierarchyNodePermissionDAO, mockAdminGroup);
 
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE,
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE,
                 getTestData("UM:" + TEST_LOGIN_ACCOUNT));
 
         verify(mockUserAccessControlDAO).create(eq(mockUser), eq(fakePassword), eq(PasswordPermission.MODIFY));
@@ -202,8 +200,7 @@ public class PasswordImporterTests {
         Group group = mock(Group.class);
         when(mockGroupDAO.getByName(eq(TEST_USER_GROUP))).thenReturn(group);
 
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE,
-                getTestData("GM:" + TEST_USER_GROUP));
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE, getTestData("GM:" + TEST_USER_GROUP));
 
         verify(mockGroupAccessControlDAO).create(group, fakePassword, PasswordPermission.MODIFY);
     }
@@ -213,8 +210,7 @@ public class PasswordImporterTests {
         Group group = mock(Group.class);
         when(mockGroupDAO.getByName(eq(TEST_USER_GROUP))).thenReturn(group);
 
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE,
-                getTestData("GV:" + TEST_USER_GROUP));
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE, getTestData("GV:" + TEST_USER_GROUP));
 
         verify(mockGroupAccessControlDAO).create(group, fakePassword, PasswordPermission.READ);
     }
@@ -223,8 +219,8 @@ public class PasswordImporterTests {
     public void testGroupPermissionForNonExistentUserFails() throws SQLException {
         when(mockGroupDAO.getByName(eq(TEST_USER_GROUP))).thenReturn(null);
 
-        assertThrows(GeneralSecurityException.class, () -> instanceUnderTest.importPassword(mockUser, mockAdminGroup,
-                TEST_PARENT_NODE, getTestData("GV:" + TEST_USER_GROUP)));
+        assertThrows(GeneralSecurityException.class, () -> instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE,
+                getTestData("GV:" + TEST_USER_GROUP)));
     }
 
     @Test
@@ -234,7 +230,7 @@ public class PasswordImporterTests {
         User user = mock(User.class);
         when(mockUserDAO.getByName(eq(TEST_LOGIN_ACCOUNT))).thenReturn(user);
 
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE,
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE,
                 getTestData("GV:" + TEST_USER_GROUP, "UV:" + TEST_LOGIN_ACCOUNT));
 
         verify(mockGroupAccessControlDAO).create(group, fakePassword, PasswordPermission.READ);
@@ -249,7 +245,7 @@ public class PasswordImporterTests {
         User user = mock(User.class);
         when(mockUserDAO.getByName(eq(TEST_LOGIN_ACCOUNT))).thenReturn(user);
 
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE,
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE,
                 getTestData("GV:" + TEST_USER_GROUP, "UV:" + TEST_LOGIN_ACCOUNT));
 
         verify(mockGroupAccessControlDAO).create(group, fakePassword, PasswordPermission.READ);
@@ -270,9 +266,9 @@ public class PasswordImporterTests {
                 new FakeHierarchyNodePermissionDAO(Map.of(), Map.of(TEST_USER_GROUP_ID, PasswordPermission.READ));
 
         instanceUnderTest = new PasswordImporter(mockPasswordDAO, mockUserDAO, mockGroupDAO, mockMembershipDAO,
-                mockUserAccessControlDAO, mockGroupAccessControlDAO, fakeHierarchyNodePermissionDAO);
+                mockUserAccessControlDAO, mockGroupAccessControlDAO, fakeHierarchyNodePermissionDAO, mockAdminGroup);
 
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE, getTestData());
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE, getTestData());
 
         verify(mockGroupAccessControlDAO).write(eq(group), acCaptor.capture());
         GroupAccessControl writtenAccessControl = acCaptor.getValue();
@@ -294,10 +290,9 @@ public class PasswordImporterTests {
                 new FakeHierarchyNodePermissionDAO(Map.of(), Map.of(TEST_USER_GROUP_ID, PasswordPermission.READ));
 
         instanceUnderTest = new PasswordImporter(mockPasswordDAO, mockUserDAO, mockGroupDAO, mockMembershipDAO,
-                mockUserAccessControlDAO, mockGroupAccessControlDAO, fakeHierarchyNodePermissionDAO);
+                mockUserAccessControlDAO, mockGroupAccessControlDAO, fakeHierarchyNodePermissionDAO, mockAdminGroup);
 
-        instanceUnderTest.importPassword(mockUser, mockAdminGroup, TEST_PARENT_NODE,
-                getTestData("GM:" + TEST_USER_GROUP));
+        instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE, getTestData("GM:" + TEST_USER_GROUP));
 
         verify(mockGroupAccessControlDAO).create(group, fakePassword, PasswordPermission.MODIFY);
         verify(mockGroupAccessControlDAO, times(0)).write(any(), any());

@@ -48,7 +48,7 @@ public final class CreatePassword extends RawAPIServlet {
 
 			CSVParser parser = CSVParser.parse(data, CSVFormat.RFC4180);
 			for(CSVRecord record : parser) {
-				new PasswordImporter().importPassword(user, adminGroup, HierarchyNode.ROOT_NODE_ID, record);
+				new PasswordImporter(adminGroup).importPassword(user, HierarchyNode.ROOT_NODE_ID, record);
 			}
     	} catch( Exception ex ) {
     		Logger.getAnonymousLogger().log(Level.WARNING, "Error during GetPassword", ex);

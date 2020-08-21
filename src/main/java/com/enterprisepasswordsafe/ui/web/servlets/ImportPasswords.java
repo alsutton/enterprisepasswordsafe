@@ -42,7 +42,7 @@ public final class ImportPasswords extends ImporterServlet {
 							CSVRecord record) throws ServletException {
     	Group adminGroup = (Group)request.getAttribute("adminGroup");
     	try {
-			new PasswordImporter().importPassword(theUser, adminGroup, parentNode, record);
+			new PasswordImporter(adminGroup).importPassword(theUser, parentNode, record);
 		} catch (SQLException | GeneralSecurityException | IOException e) {
         	throw new ServletException("Password import failed", e);
 		}
