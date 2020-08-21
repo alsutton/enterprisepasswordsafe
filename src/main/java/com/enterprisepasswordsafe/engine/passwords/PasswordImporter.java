@@ -166,13 +166,21 @@ public class PasswordImporter {
             if (acDAO.get(entity, importedObject) != null) {
                 continue;
             }
-            AC ac = buildPermission(entity, importedObject, existingAccessControl,
-                    thisEntry.getValue(), accessControlBuilder);
-            if (ac == null) {
-                Logger.getAnonymousLogger().warning("Unable to find entity "+thisEntry.getKey());
-            } else {
-                acDAO.write(entity, ac);
-            }
+            buildAndStorePermission(entity, existingAccessControl, importedObject, thisEntry.getValue(),
+                    accessControlBuilder, acDAO);
+        }
+    }
+
+    private <T extends EntityWithAccessRights, AC extends AccessControl> void buildAndStorePermission(T entity,
+            AccessControl existingAccessControl, AccessControledObject importedObject, PasswordPermission permission,
+            AccessControlBuilder<AC> accessControlBuilder, AccessControlDAOInterface<T, AC> acDAO)
+            throws GeneralSecurityException, SQLException {
+        AC ac = buildPermission(entity, importedObject, existingAccessControl,
+                permission, accessControlBuilder);
+        if (ac == null) {
+            Logger.getAnonymousLogger().warning("Unable to find entity when importing"+importedObject.toString());
+        } else {
+            acDAO.write(entity, ac);
         }
     }
 
