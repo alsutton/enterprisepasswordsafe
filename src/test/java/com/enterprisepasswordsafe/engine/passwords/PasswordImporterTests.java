@@ -163,7 +163,7 @@ public class PasswordImporterTests {
         instanceUnderTest.importPassword(mockUser, TEST_PARENT_NODE, getTestData());
 
         ArgumentCaptor<UserAccessControl> acCaptor = ArgumentCaptor.forClass(UserAccessControl.class);
-        verify(mockUserAccessControlDAO).write(acCaptor.capture(), eq(mockUser));
+        verify(mockUserAccessControlDAO).write(eq(mockUser), acCaptor.capture());
         UserAccessControl writtenAccessControl = acCaptor.getValue();
         assertEquals(mockReadKey, writtenAccessControl.getReadKey());
         assertNull(writtenAccessControl.getModifyKey());
@@ -171,7 +171,6 @@ public class PasswordImporterTests {
 
     @Test
     public void testDefaultUserPermissionIsOverridden() throws GeneralSecurityException, SQLException, IOException {
-        when(mockUser.getId()).thenReturn(TEST_LOGIN_ACCOUNT_ID);
         when(mockUserDAO.getByIdDecrypted(eq(TEST_LOGIN_ACCOUNT_ID), any())).thenReturn(mockUser);
         when(mockUserDAO.getByName(eq(TEST_LOGIN_ACCOUNT))).thenReturn(mockUser);
 
@@ -192,7 +191,7 @@ public class PasswordImporterTests {
                 getTestData("UM:" + TEST_LOGIN_ACCOUNT));
 
         verify(mockUserAccessControlDAO).create(eq(mockUser), eq(fakePassword), eq(PasswordPermission.MODIFY));
-        verify(mockUserAccessControlDAO, times(0)).write(any(), any(User.class));
+        verify(mockUserAccessControlDAO, times(0)).write(any(User.class), any());
     }
 
     @Test
@@ -255,6 +254,7 @@ public class PasswordImporterTests {
     @Test
     public void testDefaultGroupPermissionIsSet() throws GeneralSecurityException, SQLException, IOException {
         Group group = mock(Group.class);
+        when(group.getId()).thenReturn(TEST_USER_GROUP_ID);
         when(mockGroupDAO.getByIdDecrypted(eq(TEST_USER_GROUP_ID), any())).thenReturn(group);
         GroupAccessControl accessControl = mock(GroupAccessControl.class);
         when(accessControl.getReadKey()).thenReturn(mockReadKey);

@@ -97,7 +97,8 @@ public final class UserAccessControlDAO
         return newUac;
 	}
 
-	public void write(final UserAccessControl uac, final User user )
+	@Override
+	public void write(final User user, final UserAccessControl uac)
 		throws SQLException, GeneralSecurityException
 	{
 		write(uac, user.getKeyEncrypter());

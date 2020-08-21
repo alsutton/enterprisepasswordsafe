@@ -1,5 +1,6 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
+import com.enterprisepasswordsafe.database.EntityWithAccessRights;
 import com.enterprisepasswordsafe.database.Group;
 import com.enterprisepasswordsafe.database.GroupAccessControlDAO;
 import com.enterprisepasswordsafe.database.GroupDAO;
@@ -95,20 +96,25 @@ public class PasswordImporter {
             throws GeneralSecurityException, IOException, SQLException {
         Map<String, String> customFields = new TreeMap<>();
         while (values.hasNext()) {
-            String nextToken = values.next().trim();
-            if (nextToken.length() < PERMISSION_HEADER_LENGTH || nextToken.charAt(2) != ':') {
-                throw new GeneralSecurityException("Incorrect format " + nextToken);
-            }
-
-            if (nextToken.startsWith("CF:")) {
-                importCustomField(customFields, nextToken.substring(PERMISSION_HEADER_LENGTH));
-            } else {
-                importPermission(importedPassword, nextToken);
-            }
+            importOptionalField(importedPassword, values.next().trim(), customFields);
         }
 
         importedPassword.setCustomFields(customFields);
         passwordDAO.update(importedPassword, accessControl);
+    }
+
+    private void importOptionalField(Password importedPassword, String optionalField,
+                                   Map<String,String> customFields)
+            throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
+        if (optionalField.length() < PERMISSION_HEADER_LENGTH || optionalField.charAt(2) != ':') {
+            throw new GeneralSecurityException("Incorrect format " + optionalField);
+        }
+
+        if (optionalField.startsWith("CF:")) {
+            importCustomField(customFields, optionalField.substring(PERMISSION_HEADER_LENGTH));
+        } else {
+            importPermission(importedPassword, optionalField);
+        }
     }
 
     /**
@@ -133,14 +139,15 @@ public class PasswordImporter {
             throws GeneralSecurityException, SQLException {
         for (Map.Entry<String, PasswordPermission> thisEntry : userPermissions.entrySet()) {
             User user = userDAO.getByIdDecrypted(thisEntry.getKey(), adminGroup);
-            if (user == null || user.getId() == null) {
-                Logger.getAnonymousLogger().warning("Unable to find user " + thisEntry.getKey() + " to import permission.");
+            if (userAccessControlDAO.getUac(user, importedPassword.getId()) != null) {
                 continue;
             }
-            if (userAccessControlDAO.getUac(user, importedPassword.getId()) == null) {
-                AccessControlBuilder<UserAccessControl> builder = UserAccessControl.builder();
-                buildPermission(user.getId(), importedPassword, accessControl, thisEntry.getValue(), builder);
-                userAccessControlDAO.write(builder.build(), user);
+            AccessControlBuilder<UserAccessControl> builder = UserAccessControl.builder();
+            UserAccessControl uac = buildPermission(user, importedPassword, accessControl, thisEntry.getValue(), builder);
+            if (uac != null) {
+                userAccessControlDAO.write(user, builder.build());
+            } else {
+                Logger.getAnonymousLogger().warning("Unable to find user "+thisEntry.getKey()+" to import permission.");
             }
         }
     }
@@ -150,22 +157,31 @@ public class PasswordImporter {
             throws GeneralSecurityException, SQLException {
         for (Map.Entry<String, PasswordPermission> thisEntry : groupPermissions.entrySet()) {
             Group group = groupDAO.getByIdDecrypted(thisEntry.getKey(), adminUser);
-            if (groupAccessControlDAO.getGac(group, importedPassword) == null) {
-                AccessControlBuilder<GroupAccessControl> builder = GroupAccessControl.builder();
-                buildPermission(group.getId(), importedPassword, accessControl, thisEntry.getValue(), builder);
-                groupAccessControlDAO.write(group, builder.build());
+            if (groupAccessControlDAO.getGac(group, importedPassword) != null) {
+                continue;
+            }
+            AccessControlBuilder<GroupAccessControl> builder = GroupAccessControl.builder();
+            GroupAccessControl gac = buildPermission(group, importedPassword, accessControl, thisEntry.getValue(), builder);
+            if (gac != null) {
+                groupAccessControlDAO.write(group, gac);
+            } else {
+                Logger.getAnonymousLogger().warning("Unable to find group "+thisEntry.getKey()+" to import permission.");
             }
         }
     }
 
-    private void buildPermission(String accessorId, Password importedPassword, AccessControl accessControl,
-                                 PasswordPermission permission, AccessControlBuilder<?> accessControlBuilder) {
-        accessControlBuilder.withAccessorId(accessorId)
+    private <T extends AccessControl> T buildPermission(EntityWithAccessRights entity, Password importedPassword,
+        AccessControl accessControl, PasswordPermission permission, AccessControlBuilder<T> accessControlBuilder) {
+        if (entity == null || entity.getId() == null) {
+            return null;
+        }
+        accessControlBuilder.withAccessorId(entity.getId())
                 .withItemId(importedPassword.getId())
                 .withReadKey(accessControl.getReadKey());
         if (permission == PasswordPermission.MODIFY) {
             accessControlBuilder.withModifyKey(accessControl.getModifyKey());
         }
+        return accessControlBuilder.build();
     }
 
     private String getNextValueFromCSVRecordIterator(final Iterator<String> iterator, final String error)

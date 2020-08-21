@@ -285,6 +285,7 @@ public class GroupAccessControlDAO
     	return gac;
     }
 
+    @Override
     public void write(final Group group, final GroupAccessControl gac)
     	throws SQLException, GeneralSecurityException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_GAC_SQL)) {

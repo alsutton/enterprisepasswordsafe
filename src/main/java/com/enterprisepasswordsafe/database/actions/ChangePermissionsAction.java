@@ -110,7 +110,7 @@ public class ChangePermissionsAction implements NodeObjectAction {
         	    uac.withModifyKey(ac.getModifyKey());
         	}
 
-        	uacDAO.write(uac.build(), user);
+        	uacDAO.write(user, uac.build());
         }
 
         GroupAccessControlDAO gacDAO = GroupAccessControlDAO.getInstance();

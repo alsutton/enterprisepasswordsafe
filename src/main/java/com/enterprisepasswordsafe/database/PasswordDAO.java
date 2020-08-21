@@ -148,7 +148,7 @@ public final class PasswordDAO
 
         write(newPassword, newUac);
 
-        UserAccessControlDAO.getInstance().write(newUac, theCreator);
+        UserAccessControlDAO.getInstance().write(theCreator, newUac);
 
         HierarchyNode node = new HierarchyNode(newPassword.getId(), parentNode, HierarchyNode.OBJECT_NODE);
         HierarchyNodeDAO.getInstance().store(node);
