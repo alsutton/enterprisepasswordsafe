@@ -1,6 +1,8 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
+import com.enterprisepasswordsafe.database.AccessControledObject;
 import com.enterprisepasswordsafe.database.EntityWithAccessRights;
+import com.enterprisepasswordsafe.database.EntityWithAccessRightsDAO;
 import com.enterprisepasswordsafe.database.Group;
 import com.enterprisepasswordsafe.database.GroupAccessControlDAO;
 import com.enterprisepasswordsafe.database.GroupDAO;
@@ -12,6 +14,8 @@ import com.enterprisepasswordsafe.database.PasswordDAO;
 import com.enterprisepasswordsafe.database.User;
 import com.enterprisepasswordsafe.database.UserAccessControlDAO;
 import com.enterprisepasswordsafe.database.UserDAO;
+import com.enterprisepasswordsafe.database.schema.AccessControlDAOInterface;
+import com.enterprisepasswordsafe.engine.AccessControlDecryptor;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControlBuilder;
 import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
@@ -85,7 +89,7 @@ public class PasswordImporter {
                 password, location, notes, auditing, recordHistory, Long.MAX_VALUE,
                 parentNode, null, false, 0, 0, Password.TYPE_SYSTEM, null);
 
-        AccessControl accessControl = groupAccessControlDAO.getGac(adminGroup, importedPassword);
+        AccessControl accessControl = groupAccessControlDAO.get(adminGroup, importedPassword);
 
         importOptionalFields(accessControl, importedPassword, values);
         setRemainingDefaultAccessControls(accessControl, parentNode, importedPassword);
@@ -137,46 +141,51 @@ public class PasswordImporter {
     private void storeDefaultUserPermissions(final AccessControl accessControl, final Password importedPassword,
                                              final Map<String, PasswordPermission> userPermissions)
             throws GeneralSecurityException, SQLException {
-        for (Map.Entry<String, PasswordPermission> thisEntry : userPermissions.entrySet()) {
-            User user = userDAO.getByIdDecrypted(thisEntry.getKey(), adminGroup);
-            if (userAccessControlDAO.getUac(user, importedPassword.getId()) != null) {
-                continue;
-            }
-            AccessControlBuilder<UserAccessControl> builder = UserAccessControl.builder();
-            UserAccessControl uac = buildPermission(user, importedPassword, accessControl, thisEntry.getValue(), builder);
-            if (uac != null) {
-                userAccessControlDAO.write(user, builder.build());
-            } else {
-                Logger.getAnonymousLogger().warning("Unable to find user "+thisEntry.getKey()+" to import permission.");
-            }
-        }
+        storeDefaultPermissions(accessControl, importedPassword, userPermissions,
+                UserAccessControl.builder(), userDAO, userAccessControlDAO, adminGroup);
     }
 
     private void storeDefaultGroupPermissions(final AccessControl accessControl, final Password importedPassword,
                                               final Map<String, PasswordPermission> groupPermissions)
             throws GeneralSecurityException, SQLException {
-        for (Map.Entry<String, PasswordPermission> thisEntry : groupPermissions.entrySet()) {
-            Group group = groupDAO.getByIdDecrypted(thisEntry.getKey(), adminUser);
-            if (groupAccessControlDAO.getGac(group, importedPassword) != null) {
+        storeDefaultPermissions(accessControl, importedPassword, groupPermissions,
+                GroupAccessControl.builder(), groupDAO, groupAccessControlDAO, adminUser);
+    }
+
+    private <T extends EntityWithAccessRights, D extends AccessControlDecryptor, AC extends AccessControl>
+        void storeDefaultPermissions(AccessControl existingAccessControl,
+                                    AccessControledObject importedObject,
+                                    Map<String, PasswordPermission> permissions,
+                                     AccessControlBuilder<AC> accessControlBuilder,
+                                     EntityWithAccessRightsDAO<T, D> dao,
+                                     AccessControlDAOInterface<T, AC> acDAO,
+                                     D decrypter)
+            throws GeneralSecurityException, SQLException {
+        for(Map.Entry<String, PasswordPermission> thisEntry : permissions.entrySet()) {
+            T entity = dao.getByIdDecrypted(thisEntry.getKey(), decrypter);
+            if (acDAO.get(entity, importedObject) != null) {
                 continue;
             }
-            AccessControlBuilder<GroupAccessControl> builder = GroupAccessControl.builder();
-            GroupAccessControl gac = buildPermission(group, importedPassword, accessControl, thisEntry.getValue(), builder);
-            if (gac != null) {
-                groupAccessControlDAO.write(group, gac);
+            AC ac = buildPermission(entity, importedObject, existingAccessControl,
+                    thisEntry.getValue(), accessControlBuilder);
+            if (ac == null) {
+                Logger.getAnonymousLogger().warning("Unable to find entity "+thisEntry.getKey());
             } else {
-                Logger.getAnonymousLogger().warning("Unable to find group "+thisEntry.getKey()+" to import permission.");
+                acDAO.write(entity, ac);
             }
         }
     }
 
-    private <T extends AccessControl> T buildPermission(EntityWithAccessRights entity, Password importedPassword,
-        AccessControl accessControl, PasswordPermission permission, AccessControlBuilder<T> accessControlBuilder) {
+    private <T extends AccessControl> T buildPermission(EntityWithAccessRights entity,
+                                                        AccessControledObject importedObject,
+                                                        AccessControl accessControl,
+                                                        PasswordPermission permission,
+                                                        AccessControlBuilder<T> accessControlBuilder) {
         if (entity == null || entity.getId() == null) {
             return null;
         }
         accessControlBuilder.withAccessorId(entity.getId())
-                .withItemId(importedPassword.getId())
+                .withItemId(importedObject.getId())
                 .withReadKey(accessControl.getReadKey());
         if (permission == PasswordPermission.MODIFY) {
             accessControlBuilder.withModifyKey(accessControl.getModifyKey());

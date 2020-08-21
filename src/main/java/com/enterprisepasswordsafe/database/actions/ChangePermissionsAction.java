@@ -91,7 +91,7 @@ public class ChangePermissionsAction implements NodeObjectAction {
 	public final void process(final HierarchyNode node, final AccessControledObject aco)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
         Password password = (Password) aco;
-        AccessControl ac = GroupAccessControlDAO.getInstance().getGac(adminGroup, password);
+        AccessControl ac = GroupAccessControlDAO.getInstance().get(adminGroup, password);
         if(ac == null) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "No admin GAC for "+password);
             return;

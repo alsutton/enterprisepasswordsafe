@@ -50,7 +50,7 @@ public final class AlterAccess extends HttpServlet {
 	        GroupDAO gDAO = GroupDAO.getInstance();
 	        Group everyoneGroup = gDAO.getByIdDecrypted(Group.ALL_USERS_GROUP_ID, thisUser);
 	        AccessControl eGAC =
-	        	GroupAccessControlDAO.getInstance().getGac(thisUser, everyoneGroup, thisPassword);
+	        	GroupAccessControlDAO.getInstance().get(thisUser, everyoneGroup, thisPassword);
 	        if			( eGAC == null ) {
 	        	request.setAttribute("egac", "N");
 	        } else if	( eGAC.getReadKey() != null && eGAC.getModifyKey() == null) {

@@ -50,9 +50,9 @@ public final class AccessControlDAOGroupPrecedent
     @Override
 	public AccessControl getAccessControl(final User theUser, final AccessControledObject item)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
-        AccessControl ac = GroupAccessControlDAO.getInstance().getGac(theUser, item);
+        AccessControl ac = GroupAccessControlDAO.getInstance().get(theUser, item);
         if  (ac == null) {
-            ac = UserAccessControlDAO.getInstance().getUac(theUser, item);
+            ac = UserAccessControlDAO.getInstance().get(theUser, item);
         }
 
         return ac;
@@ -77,9 +77,9 @@ public final class AccessControlDAOGroupPrecedent
     @Override
 	public AccessControl getAccessControl(final User theUser, final String itemId)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
-        AccessControl ac = GroupAccessControlDAO.getInstance().getGac(theUser, itemId);
+        AccessControl ac = GroupAccessControlDAO.getInstance().get(theUser, itemId);
         if  (ac == null) {
-            ac = UserAccessControlDAO.getInstance().getUac(theUser, itemId);
+            ac = UserAccessControlDAO.getInstance().get(theUser, itemId);
         }
 
         return ac;
@@ -106,7 +106,7 @@ public final class AccessControlDAOGroupPrecedent
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
         AccessControl ac = GroupAccessControlDAO.getInstance().getReadGac(theUser, itemId);
         if  (ac == null) {
-            ac = UserAccessControlDAO.getInstance().getUac(theUser, itemId);
+            ac = UserAccessControlDAO.getInstance().get(theUser, itemId);
         }
 
         return ac;
@@ -133,7 +133,7 @@ public final class AccessControlDAOGroupPrecedent
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
         AccessControl ac = GroupAccessControlDAO.getInstance().getGacEvenIfDisabled(theUser, itemId);
         if (ac == null) {
-            ac = UserAccessControlDAO.getInstance().getUac(theUser, itemId);
+            ac = UserAccessControlDAO.getInstance().get(theUser, itemId);
         }
 
         return ac;

@@ -40,7 +40,8 @@ import java.util.List;
 /**
  * Data access object for the user objects.
  */
-public final class UserDAO extends StoredObjectManipulator<User> {
+public final class UserDAO extends StoredObjectManipulator<User>
+        implements EntityWithAccessRightsDAO<User, Group> {
 
     public static final String USER_FIELDS = "appusers.user_id, "
             + "appusers.user_name, appusers.user_pass_b, appusers.email, appusers.full_name, "
@@ -439,6 +440,7 @@ public final class UserDAO extends StoredObjectManipulator<User> {
      * @return The decrypted user.
      */
 
+    @Override
 	public User getByIdDecrypted(String userId, Group adminGroup)
 		throws SQLException, GeneralSecurityException {
 		User encryptedUser = getById(userId);

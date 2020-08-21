@@ -78,7 +78,7 @@ public final class UserAccessControlDAO
 									final PasswordPermission permission, final boolean writeToDB)
 		throws SQLException, GeneralSecurityException {
 		if( !permission.allowsRead ) {
-			UserAccessControl existingUac = getUac(theUser, item);
+			UserAccessControl existingUac = get(theUser, item);
 			if( existingUac != null ) {
 				delete(existingUac);
 			}
@@ -116,16 +116,17 @@ public final class UserAccessControlDAO
         }
 	}
 
-    public UserAccessControl getUac(final User user, final AccessControledObject item)
+	@Override
+    public UserAccessControl get(final User user, final AccessControledObject item)
         throws SQLException, GeneralSecurityException {
         if (item == null) {
             return null;
         }
 
-        return getUac(user, item.getId());
+        return get(user, item.getId());
     }
 
-    public UserAccessControl getUac(final User user, final String itemId)
+    public UserAccessControl get(final User user, final String itemId)
         throws SQLException, GeneralSecurityException {
         if (user == null || itemId == null) {
             return null;

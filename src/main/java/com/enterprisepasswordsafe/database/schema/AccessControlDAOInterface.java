@@ -2,6 +2,7 @@ package com.enterprisepasswordsafe.database.schema;
 
 import com.enterprisepasswordsafe.database.AccessControledObject;
 import com.enterprisepasswordsafe.database.EntityWithAccessRights;
+import com.enterprisepasswordsafe.database.Password;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 
@@ -16,4 +17,5 @@ public interface AccessControlDAOInterface<T extends EntityWithAccessRights, U e
             throws SQLException, GeneralSecurityException;
     void update(T entity, U accessControl)
             throws SQLException, GeneralSecurityException;
+    U get(T entity, AccessControledObject item) throws SQLException, GeneralSecurityException;
 }

@@ -29,7 +29,8 @@ import java.util.List;
 /**
  * Data access object for the group objects.
  */
-public class GroupDAO extends GroupStoreManipulator {
+public class GroupDAO extends GroupStoreManipulator
+        implements EntityWithAccessRightsDAO<Group, User> {
 
     /**
      * The clause for excluding reserved system groups
@@ -182,6 +183,7 @@ public class GroupDAO extends GroupStoreManipulator {
         return adminGroup;
     }
 
+    @Override
     public Group getByIdDecrypted(final String groupId, final User user)
             throws SQLException, GeneralSecurityException {
     	Group theGroup = userClassifier.isAdministrator(user) ?

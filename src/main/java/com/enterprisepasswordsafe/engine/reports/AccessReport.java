@@ -92,7 +92,7 @@ public class AccessReport {
 
         String passwordId = resultSet.getString(2);
 
-        AccessControl ac = GroupAccessControlDAO.getInstance().getGac(user, group, passwordId);
+        AccessControl ac = GroupAccessControlDAO.getInstance().get(user, group, passwordId);
         if( ac == null )
             return;
 

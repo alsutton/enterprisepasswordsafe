@@ -72,9 +72,9 @@ public final class AccessControlDAOUserPrecedent
     @Override
 	public AccessControl getAccessControl(final User theUser, final String itemId)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
-        AccessControl ac = UserAccessControlDAO.getInstance().getUac(theUser, itemId);
+        AccessControl ac = UserAccessControlDAO.getInstance().get(theUser, itemId);
         if  (ac == null) {
-            ac = GroupAccessControlDAO.getInstance().getGac(theUser, itemId);
+            ac = GroupAccessControlDAO.getInstance().get(theUser, itemId);
         }
 
         return ac;
@@ -99,7 +99,7 @@ public final class AccessControlDAOUserPrecedent
     @Override
 	public AccessControl getReadAccessControl(final User theUser, final String itemId)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
-        AccessControl ac = UserAccessControlDAO.getInstance().getUac(theUser, itemId);
+        AccessControl ac = UserAccessControlDAO.getInstance().get(theUser, itemId);
         if  (ac == null) {
             ac = GroupAccessControlDAO.getInstance().getReadGac(theUser, itemId);
         }
@@ -126,7 +126,7 @@ public final class AccessControlDAOUserPrecedent
     @Override
 	public AccessControl getAccessControlEvenIfDisabled(final User theUser, final String itemId)
         throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
-        AccessControl ac = UserAccessControlDAO.getInstance().getUac(theUser, itemId);
+        AccessControl ac = UserAccessControlDAO.getInstance().get(theUser, itemId);
         if (ac == null) {
             ac = GroupAccessControlDAO.getInstance().getGacEvenIfDisabled(theUser, itemId);
         }

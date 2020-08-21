@@ -151,7 +151,7 @@ public class PasswordImporterTests {
 
         GroupAccessControl accessControl = mock(GroupAccessControl.class);
         when(accessControl.getReadKey()).thenReturn(mockReadKey);
-        when(mockGroupAccessControlDAO.getGac(eq(mockAdminGroup), eq(fakePassword)))
+        when(mockGroupAccessControlDAO.get(eq(mockAdminGroup), eq(fakePassword)))
                 .thenReturn(accessControl);
 
         FakeHierarchyNodePermissionDAO fakeHierarchyNodePermissionDAO =
@@ -175,11 +175,11 @@ public class PasswordImporterTests {
         when(mockUserDAO.getByName(eq(TEST_LOGIN_ACCOUNT))).thenReturn(mockUser);
 
         GroupAccessControl accessControl = mock(GroupAccessControl.class);
-        when(mockGroupAccessControlDAO.getGac(eq(mockAdminGroup), eq(fakePassword)))
+        when(mockGroupAccessControlDAO.get(eq(mockAdminGroup), eq(fakePassword)))
                 .thenReturn(accessControl);
 
         UserAccessControl mockUserAccessControl = mock(UserAccessControl.class);
-        when(mockUserAccessControlDAO.getUac(eq(mockUser), eq(fakePassword.getId()))).thenReturn(mockUserAccessControl);
+        when(mockUserAccessControlDAO.get(eq(mockUser), eq(fakePassword))).thenReturn(mockUserAccessControl);
 
         FakeHierarchyNodePermissionDAO fakeHierarchyNodePermissionDAO =
                 new FakeHierarchyNodePermissionDAO(Map.of(TEST_LOGIN_ACCOUNT_ID, PasswordPermission.READ), Map.of());
@@ -258,7 +258,7 @@ public class PasswordImporterTests {
         when(mockGroupDAO.getByIdDecrypted(eq(TEST_USER_GROUP_ID), any())).thenReturn(group);
         GroupAccessControl accessControl = mock(GroupAccessControl.class);
         when(accessControl.getReadKey()).thenReturn(mockReadKey);
-        when(mockGroupAccessControlDAO.getGac(eq(mockAdminGroup), eq(fakePassword)))
+        when(mockGroupAccessControlDAO.get(eq(mockAdminGroup), eq(fakePassword)))
                 .thenReturn(accessControl);
         ArgumentCaptor<GroupAccessControl> acCaptor = ArgumentCaptor.forClass(GroupAccessControl.class);
 
@@ -283,7 +283,7 @@ public class PasswordImporterTests {
         when(mockGroupDAO.getByIdDecrypted(eq(TEST_USER_GROUP_ID), any())).thenReturn(group);
 
         GroupAccessControl accessControl = mock(GroupAccessControl.class);
-        when(mockGroupAccessControlDAO.getGac(any(Group.class), eq(fakePassword)))
+        when(mockGroupAccessControlDAO.get(any(Group.class), eq(fakePassword)))
                 .thenReturn(accessControl);
 
         FakeHierarchyNodePermissionDAO fakeHierarchyNodePermissionDAO =
