@@ -21,6 +21,7 @@ import com.enterprisepasswordsafe.engine.accesscontrol.AccessControlBuilder;
 import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
+import com.enterprisepasswordsafe.engine.permissions.PermissionSetter;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -138,75 +139,10 @@ public class PasswordImporter {
         hierarchyNodePermissionDAO.getDefaultPermissionsForNodeIncludingInherited(
                 parentNode, userPermissions, groupPermissions);
 
-        storeDefaultUserPermissions(accessControl, importedPassword, userPermissions);
-        storeDefaultGroupPermissions(accessControl, importedPassword, groupPermissions);
-    }
-
-    private void storeDefaultUserPermissions(final AccessControl accessControl, final Password importedPassword,
-                                             final Map<String, PasswordPermission> userPermissions) {
-        storeDefaultPermissions(userPermissions,
-                name -> getEntity(name, userDAO, adminGroup, importedPassword),
-                (entity, permission) ->
-                        createAccessControlIfNeeded(userAccessControlDAO, entity, importedPassword,
-                                () -> buildAccessControl(UserAccessControl.builder(), importedPassword, accessControl, permission)));
-    }
-
-    private void storeDefaultGroupPermissions(final AccessControl accessControl, final Password importedPassword,
-                                              final Map<String, PasswordPermission> groupPermissions) {
-        storeDefaultPermissions(groupPermissions,
-                name ->  getEntity(name, groupDAO, adminUser, importedPassword),
-                (entity, permission) ->
-                        createAccessControlIfNeeded(groupAccessControlDAO, entity, importedPassword,
-                        () -> buildAccessControl(GroupAccessControl.builder(), importedPassword, accessControl, permission)));
-    }
-
-    private <T extends EntityWithAccessRights, AC extends AccessControl> void
-        createAccessControlIfNeeded(AccessControlDAOInterface<T, AC> accessControlDao, T entity,
-                                    AccessControledObject importedObject,
-                                    Supplier<AC> accessControlSupplier) {
-        try {
-            if(accessControlDao.get(entity, importedObject) == null) {
-                accessControlDao.write(entity, accessControlSupplier.get());
-            }
-        } catch (SQLException | GeneralSecurityException e) {
-            Logger.getAnonymousLogger().log(Level.SEVERE, "Unable to store group access control", e);
-        }
-    }
-
-    private <AC extends AccessControl> AC buildAccessControl(AccessControlBuilder<AC> builder,
-            AccessControledObject accessControledObject, AccessControl existingAccessControl,
-            PasswordPermission permission) {
-        builder = builder.withItemId(accessControledObject.getId()).withReadKey(existingAccessControl.getReadKey());
-        if(permission.equals(PasswordPermission.MODIFY)) {
-            builder = builder.withModifyKey(existingAccessControl.getModifyKey());
-        }
-        return builder.build();
-    }
-
-    private <T extends EntityWithAccessRights>
-    void storeDefaultPermissions(Map<String, PasswordPermission> permissions,
-                                 Function<String, T> entitySupplier,
-                                 BiConsumer<T, PasswordPermission> accessControlCreator) {
-        for (Map.Entry<String, PasswordPermission> thisEntry : permissions.entrySet()) {
-            T entity = entitySupplier.apply(thisEntry.getKey());
-            accessControlCreator.accept(entity, thisEntry.getValue());
-        }
-    }
-
-    private <T extends EntityWithAccessRights, D extends AccessControlDecryptor> T
-        getEntity(String id, EntityWithAccessRightsDAO<T,D> dao, D decrypter, AccessControledObject importedObject) {
-        try {
-            T entity = dao.getByIdDecrypted(id, decrypter);
-            if (entity == null || entity.getId() == null) {
-                Logger.getAnonymousLogger().warning("Unable to find " +
-                        id + " when importing" + importedObject.toString());
-                return null;
-            }
-            return entity;
-        } catch (SQLException | GeneralSecurityException e) {
-            Logger.getAnonymousLogger().warning("Error fetching " + id + " from  " + dao.getClass());
-            return null;
-        }
+        PermissionSetter permissionSetter = new PermissionSetter(userDAO, groupDAO, userAccessControlDAO,
+                groupAccessControlDAO, adminGroup);
+        permissionSetter.storeUserPermissions(accessControl, importedPassword, userPermissions, false);
+        permissionSetter.storeGroupPermissions(accessControl, importedPassword, groupPermissions, false);
     }
 
     private String getNextValueFromCSVRecordIterator(final Iterator<String> iterator, final String error)
