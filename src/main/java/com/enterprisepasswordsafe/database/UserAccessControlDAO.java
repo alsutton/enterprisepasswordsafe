@@ -248,8 +248,6 @@ public final class UserAccessControlDAO
 
 	}
 
-
-
 	//------------------------
 
     private static final class InstanceHolder {
