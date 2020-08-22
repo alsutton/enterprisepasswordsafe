@@ -89,7 +89,7 @@ public final class UpdateAccess extends HttpServlet {
 
 	        // Verify the access control is in place
 	        Group adminGroup = GroupDAO.getInstance().getAdminGroup(currentUser);
-	        AccessControl ac = GroupAccessControlDAO.getInstance().getGac(adminGroup, passwordId);
+	        AccessControl ac = GroupAccessControlDAO.getInstance().get(adminGroup, passwordId);
 	        if( ac == null || ac.getReadKey() == null || ac.getModifyKey() == null ) {
 	        	servletUtils.generateErrorMessage(request, "You can not modify access to the specified password");
                 response.sendRedirect(request.getContextPath() + ERROR_PAGE);
@@ -249,7 +249,7 @@ public final class UpdateAccess extends HttpServlet {
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
 		// Get the existing UAC (if it exists);
 		UserAccessControlDAO uacDAO = UserAccessControlDAO.getInstance();
-		UserAccessControl currentUac = uacDAO.getUac(theUser, context.password);
+		UserAccessControl currentUac = uacDAO.get(theUser, context.password);
 		if (access.equals("N")) {
 			if (currentUac != null) {
 				uacDAO.delete(currentUac);
@@ -265,7 +265,7 @@ public final class UpdateAccess extends HttpServlet {
                               final String access )
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
     	GroupAccessControlDAO gacDAO = GroupAccessControlDAO.getInstance();
-    	GroupAccessControl currentGac = gacDAO.getGac( context.adminUser, theGroup, context.password );
+    	GroupAccessControl currentGac = gacDAO.get( context.adminUser, theGroup, context.password );
 	    if (access.equals("N")) {
 	    	if( currentGac != null ) {
 	    		gacDAO.delete(currentGac);

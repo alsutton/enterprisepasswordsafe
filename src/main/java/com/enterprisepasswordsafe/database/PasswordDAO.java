@@ -148,7 +148,7 @@ public final class PasswordDAO
 
         write(newPassword, newUac);
 
-        UserAccessControlDAO.getInstance().write(newUac, theCreator);
+        UserAccessControlDAO.getInstance().write(theCreator, newUac);
 
         HierarchyNode node = new HierarchyNode(newPassword.getId(), parentNode, HierarchyNode.OBJECT_NODE);
         HierarchyNodeDAO.getInstance().store(node);
@@ -275,7 +275,7 @@ public final class PasswordDAO
 			final String searchLocation, final Set<String> ids)
             throws SQLException, IOException, GeneralSecurityException {
 	    for(Password password: getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_USER_SQL, user.getId(), searchLocation)) {
-            addIdIfMatches(ids, password, UserAccessControlDAO.getInstance().getUac(user, password.getId()), searchUsername);
+            addIdIfMatches(ids, password, UserAccessControlDAO.getInstance().get(user, password.getId()), searchUsername);
         }
 	}
 
@@ -283,7 +283,7 @@ public final class PasswordDAO
 			final String searchLocation, final Set<String> ids)
             throws SQLException, IOException, GeneralSecurityException {
         for(Password password: getMultiple(SEARCH_ALL_PASSWORDS_FOR_LOCATIONS_BY_GROUP_SQL, user.getId(), searchLocation)) {
-            addIdIfMatches(ids, password, GroupAccessControlDAO.getInstance().getGac(user, password.getId()), searchUsername);
+            addIdIfMatches(ids, password, GroupAccessControlDAO.getInstance().get(user, password.getId()), searchUsername);
         }
 	}
 

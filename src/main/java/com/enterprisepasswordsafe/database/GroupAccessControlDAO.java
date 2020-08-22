@@ -139,38 +139,39 @@ public class GroupAccessControlDAO
 
     public GroupAccessControl getReadGac(final User theUser, final String itemId)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-	    return getGac(GET_GROUP_FOR_GAC_SQL, theUser, itemId);
+	    return get(GET_GROUP_FOR_GAC_SQL, theUser, itemId);
     }
 
-    public GroupAccessControl getGac(final User theUser, final AccessControledObject item)
+    public GroupAccessControl get(final User theUser, final AccessControledObject item)
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        return getGac(theUser, item.getId());
+        return get(theUser, item.getId());
     }
 
-    public GroupAccessControl getGac(final User theUser, final String itemId)
+    public GroupAccessControl get(final User theUser, final String itemId)
         throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         return getGacWork(theUser, itemId, GET_GROUP_FOR_FULL_GAC_SQL, GET_GROUP_FOR_GAC_SQL);
     }
 
-    public GroupAccessControl getGac(final User user, final Group group, final AccessControledObject item)
+    public GroupAccessControl get(final User user, final Group group, final AccessControledObject item)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         if(item == null) {
             return null;
         }
 
-        return getGac(user, group, item.getId());
+        return get(user, group, item.getId());
     }
 
-    public GroupAccessControl getGac(final Group group, final Password password)
+    @Override
+    public GroupAccessControl get(final Group group, final AccessControledObject object)
             throws SQLException, GeneralSecurityException {
-        if(password == null) {
+        if(object == null) {
             return null;
         }
 
-        return getGac(group, password.getId());
+        return get(group, object.getId());
     }
 
-    public GroupAccessControl getGac(final User user, final Group group, final String itemId)
+    public GroupAccessControl get(final User user, final Group group, final String itemId)
             throws SQLException, GeneralSecurityException {
         if(user == null || group == null || itemId == null) {
             return null;
@@ -203,11 +204,11 @@ public class GroupAccessControlDAO
             return null;
         }
 
-        GroupAccessControl fullAccessControl = getGac(fullSql, theUser, itemId);
-        return fullAccessControl == null ? getGac(readOnlySql, theUser, itemId) : fullAccessControl;
+        GroupAccessControl fullAccessControl = get(fullSql, theUser, itemId);
+        return fullAccessControl == null ? get(readOnlySql, theUser, itemId) : fullAccessControl;
     }
 
-    private GroupAccessControl getGac(final String sql, final User theUser, final String itemId)
+    private GroupAccessControl get(final String sql, final User theUser, final String itemId)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
             ps.setString(1, theUser.getId());
@@ -226,7 +227,7 @@ public class GroupAccessControlDAO
     }
 
 
-    public GroupAccessControl getGac(final Group group, final String passwordId)
+    public GroupAccessControl get(final Group group, final String passwordId)
             throws SQLException, GeneralSecurityException {
     	if(group == null || passwordId == null) {
     		return null;
@@ -285,6 +286,7 @@ public class GroupAccessControlDAO
     	return gac;
     }
 
+    @Override
     public void write(final Group group, final GroupAccessControl gac)
     	throws SQLException, GeneralSecurityException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(WRITE_GAC_SQL)) {
