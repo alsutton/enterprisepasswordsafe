@@ -1,4 +1,4 @@
-<%@ page language="java" %>
+<%@ page %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%--
 Copyright (c) 2017 Carbon Security Ltd. <opensource@carbonsecurity.co.uk>
@@ -39,14 +39,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       method="POST" accept-charset="ISO-8859-1" name="defaultsset"
       class="form-horizontal" role="form">
     <div class="row">
-        <div class="col-md-5 col-md-offset-2"><h6>Permissions</h6></div>
+        <div class="col-md-6"><h4>Default Permissions</h4></div>
         <c:if test="${requestScope.node.nodeId ne '0'}">
-            <div class="col-md-5"><h6>Parent Permissions</h6></div>
+            <div class="col-md-6 text-right"><b>(Interited Parent Permission)</b></div>
         </c:if>
     </div>
 
     <div class="row">
-        <div class="col-md-4 text-right"><b>Default :</b></div>
+        <div class="col-md-4 text-right">All Users :</div>
         <div class="col-md-4">
             <jsp:include page="/WEB-INF/includes/modify_read_default_selector.jsp">
                 <jsp:param name="input_name" value="gperm_2" />
@@ -57,9 +57,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         <c:if test="${requestScope.node.nodeId ne '0'}">
             <div class="col-md-4">
                 <c:choose>
-                    <c:when test="${requestScope.paregac == 0}">From Parent</c:when>
-                    <c:when test="${requestScope.paregac == 1}">Read</c:when>
-                    <c:when test="${requestScope.paregac == 2}">Modify</c:when>
+                    <c:when test="${requestScope.paregac eq 'READ'}">Read</c:when>
+                    <c:when test="${requestScope.paregac eq 'MODIFY'}">Modify</c:when>
+                    <c:otherwise>From Parent</c:otherwise>
                 </c:choose>
             </div>
         </c:if>
@@ -68,46 +68,48 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<input type="hidden" name="nodeId" value="${requestScope.node.nodeId}" />
 
     <hr />
-    <div class="row"><div class="col-md-12"><h4>Default Group Permissions</h4></div></div>
+    <div class="row"><div class="col-md-12"><h4>Group Permissions</h4></div></div>
 
     <c:forEach var="group" items="${requestScope.groups}">
-        <div class="row">
-            <div class="col-md-4 text-right"><c:out value="${group.groupName}" /> :</div>
-            <div class="col-md-4">
-                <jsp:include page="/WEB-INF/includes/modify_read_default_selector.jsp">
-                    <jsp:param name="input_name" value="gperm_${group.groupId}" />
-                    <jsp:param name="input_value" value="${requestScope.groupPermissions[group.groupId]}" />
-                </jsp:include>
-            </div>
-            <c:if test="${requestScope.node.nodeId ne '0'}">
+        <c:if test="${group.groupId != 2}">
+            <div class="row">
+                <div class="col-md-4 text-right"><c:out value="${group.groupName}" /> :</div>
                 <div class="col-md-4">
-                    <c:choose>
-                        <c:when test="${requestScope.groupPermissionsForParent[group.groupId] == 1}">Read</c:when>
-                        <c:when test="${requestScope.groupPermissionsForParent[group.groupId] == 2}">Modify</c:when>
-                        <c:otherwise>From Parent</c:otherwise>
-                    </c:choose>
+                    <jsp:include page="/WEB-INF/includes/modify_read_default_selector.jsp">
+                        <jsp:param name="input_name" value="gperm_${group.groupId}" />
+                        <jsp:param name="input_value" value="${requestScope.groupPermissions[group.groupId]}" />
+                    </jsp:include>
                 </div>
-            </c:if>
-        </div>
+                <c:if test="${requestScope.node.nodeId ne '0'}">
+                    <div class="col-md-4">
+                        <c:choose>
+                            <c:when test="${requestScope.groupPermissionsForParent[group.groupId] eq 'READ'}">Read</c:when>
+                            <c:when test="${requestScope.groupPermissionsForParent[group.groupId] eq 'MODIFY'}">Modify</c:when>
+                            <c:otherwise>From Parent</c:otherwise>
+                        </c:choose>
+                    </div>
+                </c:if>
+            </div>
+        </c:if>
     </c:forEach>
 
     <hr />
-    <div class="row"><div class="col-md-12"><h4>Default User Permissions</h4></div></div>
+    <div class="row"><div class="col-md-12"><h4>User Permissions</h4></div></div>
 
     <c:forEach var="user" items="${requestScope.users}">
         <div class="row">
             <div class="col-md-4 text-right"><c:out value="${user.userName}" /> :</div>
             <div class="col-md-4">
                 <jsp:include page="/WEB-INF/includes/modify_read_default_selector.jsp">
-                    <jsp:param name="input_name" value="uperm_${user.userId}" />
-                    <jsp:param name="input_value" value="${requestScope.userPermissions[user.userId]}" />
+                    <jsp:param name="input_name" value="uperm_${user.id}" />
+                    <jsp:param name="input_value" value="${requestScope.userPermissions[user.id]}" />
                 </jsp:include>
             </div>
             <c:if test="${requestScope.node.nodeId ne '0'}">
                 <div class="col-md-4">
                     <c:choose>
-                        <c:when test="${requestScope.userPermissionsForParent[user.userId] == 1}">Read</c:when>
-                        <c:when test="${requestScope.userPermissionsForParent[user.userId] == 2}">Modify</c:when>
+                        <c:when test="${requestScope.userPermissionsForParent[user.id] eq 'READ'}">Read</c:when>
+                        <c:when test="${requestScope.userPermissionsForParent[user.id] eq 'MODIFY'}">Modify</c:when>
                         <c:otherwise>From Parent</c:otherwise>
                     </c:choose>
                 </div>
