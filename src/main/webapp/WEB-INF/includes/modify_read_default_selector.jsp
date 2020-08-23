@@ -19,29 +19,17 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 <c:set var="input_name" value="${param.input_name}" />
 <c:set var="input_value"   value="${param.input_value}" />
 <c:choose>
-    <c:when test="${not empty param.parent_text}">
-        <c:set var="default_text" value="${param.default_text}" />
-    </c:when>
-    <c:when test="${requestScope.node.nodeId eq '0'}">
-        <c:set var="default_text" value="Default" />
-    </c:when>
-    <c:otherwise>
-        <c:set var="default_text" value="From Parent" />
-    </c:otherwise>
+    <c:when test="${not empty param.parent_text}"><c:set var="default_text" value="${param.default_text}" /></c:when>
+    <c:when test="${requestScope.node.nodeId eq '0'}"><c:set var="default_text" value="Default" /></c:when>
+    <c:otherwise><c:set var="default_text" value="From Parent" /></c:otherwise>
 </c:choose>
 <c:set var="input_2_checked" value="" />
 <c:set var="input_1_checked" value="" />
 <c:set var="input_0_checked" value="" />
 <c:choose>
-    <c:when test="${input_value == 2}">
-        <c:set var="input_2_checked" value="checked=\"checked\"" />
-    </c:when>
-    <c:when test="${input_value == 1}">
-        <c:set var="input_1_checked" value="checked=\"checked\"" />
-    </c:when>
-    <c:when test="${input_value == 0}">
-        <c:set var="input_0_checked" value="checked=\"checked\"" />
-    </c:when>
+    <c:when test="${input_value eq 'MODIFY'}"><c:set var="input_2_checked" value="checked=\"checked\"" /></c:when>
+    <c:when test="${input_value eq 'READ'}"><c:set var="input_1_checked" value="checked=\"checked\"" /></c:when>
+    <c:otherwise><c:set var="input_0_checked" value="checked=\"checked\"" /></c:otherwise>
 </c:choose>
 
 <input type="radio" name="${input_name}" id="${input_name}_2" value="2" ${input_2_checked} />&nbsp;<label for="${input_name}_2">Modify</label>&nbsp;

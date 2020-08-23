@@ -58,8 +58,7 @@ public class GroupDAO extends GroupStoreManipulator
 
     private static final String GET_ALL_GROUPS_SQL = "SELECT " + GROUP_FIELDS
             + "  FROM groups grp "
-            + " WHERE  "
-            + "	  AND grp.status < " + Group.STATUS_DELETED
+            + " WHERE grp.status < " + Group.STATUS_DELETED
             + " ORDER BY grp.group_name ASC";
 
     /**
