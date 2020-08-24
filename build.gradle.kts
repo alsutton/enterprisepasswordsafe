@@ -27,6 +27,8 @@ dependencies {
     runtimeOnly("javax.servlet:jstl:1.2")
     runtimeOnly("org.apache.derby:derby:10.15.2.0")
     runtimeOnly("org.apache.derby:derbytools:10.15.2.0")
+    runtimeOnly("org.apache.derby:derbytools:10.15.2.0")
+    runtimeOnly("org.mariadb.jdbc:mariadb-java-client:2.5.4")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
     testImplementation("org.mockito:mockito-core:2.28.2")
