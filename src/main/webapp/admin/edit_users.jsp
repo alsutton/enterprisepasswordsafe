@@ -1,4 +1,4 @@
-<%@ page language="java" %>
+<%@ page %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%--
 Copyright (c) 2017 Carbon Security Ltd. <opensource@carbonsecurity.co.uk>
@@ -38,10 +38,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
             <div class="row">
                 <div class="col-md-12">
                     <c:url var="edit_link" value="/admin/User">
-                        <c:param name="userId" value="${thisUser.userId}"/>
+                        <c:param name="userId" value="${thisUser.id}"/>
                     </c:url>
                     <c:url var="delete_link" value="/admin/DeleteUser">
-                        <c:param name="id" value="${thisUser.userId}"/>
+                        <c:param name="id" value="${thisUser.id}"/>
                     </c:url>
                     <a href="${delete_link}" name="delete_<c:out value='${thisUser.userName}'/>">
                         <span class="glyphicon glyphicon-trash"></span>
