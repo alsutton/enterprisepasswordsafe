@@ -1,9 +1,23 @@
+import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath("com.bmuschko:gradle-tomcat-plugin:2.5")
+        classpath("org.junit.platform:junit-platform-gradle-plugin:1.2.0")
+    }
+}
 
 plugins {
     java
     war
     id("com.bmuschko.tomcat") version "2.5"
+    id("net.ltgt.errorprone") version "1.2.1"
     jacoco
 }
 
@@ -33,18 +47,12 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:3.5.2")
     testCompileOnly("net.sourceforge.htmlunit:htmlunit:2.39.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+
+    errorprone("com.google.errorprone:error_prone_core:2.4.0")
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
-
-    dependencies {
-        classpath("com.bmuschko:gradle-tomcat-plugin:2.5")
-        classpath("org.junit.platform:junit-platform-gradle-plugin:1.2.0")
-    }
+tasks.withType<JavaCompile>().configureEach {
+    options.errorprone.allErrorsAsWarnings.set(false)
 }
 
 tasks.withType<Test> {

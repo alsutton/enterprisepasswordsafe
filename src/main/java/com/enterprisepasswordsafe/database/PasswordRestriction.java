@@ -226,6 +226,11 @@ public class PasswordRestriction
         return other.getId().equals(getId()) && other.getName().equals(getName());
     }
 
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
+    }
+
     public String toString() {
         List<String> sections = getEnabledSettingsStrings();
         if (sections.isEmpty()) {
