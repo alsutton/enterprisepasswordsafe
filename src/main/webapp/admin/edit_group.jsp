@@ -1,4 +1,4 @@
-<%@ page language="java" %>
+<%@ page %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%--
 Copyright (c) 2017 Carbon Security Ltd. <opensource@carbonsecurity.co.uk>
@@ -74,10 +74,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                 <c:forEach var="thisUser" items="${requestScope.group_members}">
                     <c:url var="remove_url" value="/admin/RemoveUserFromGroup">
                         <c:param name="group_id" value="${requestScope.group.groupId}"/>
-                        <c:param name="userId" value="${thisUser.userId}"/>
+                        <c:param name="userId" value="${thisUser.id}"/>
                         <c:param name="next_page" value="EditGroup"/>
                     </c:url>
-                    <li><a href="${remove_url}" name="remove_${thisUser.userId}"><c:out value="${thisUser}"/></a></li>
+                    <li><a href="${remove_url}" name="remove_${thisUser.id}"><c:out value="${thisUser}"/></a></li>
                 </c:forEach>
             </ul>
         </div>
@@ -98,10 +98,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                     <c:forEach var="thisUser" items="${requestScope.group_nonMembers}">
                         <c:url var="add_url" value="/admin/AddUserToGroup">
                             <c:param name="group_id" value="${requestScope.group.groupId}"/>
-                            <c:param name="userId" value="${thisUser.userId}"/>
+                            <c:param name="userId" value="${thisUser.id}"/>
                             <c:param name="next_page" value="EditGroup"/>
                         </c:url>
-                        <li><a href="${add_url}" name="add_${thisUser.userId}"><c:out value="${thisUser}"/></a></li>
+                        <li><a href="${add_url}" name="add_${thisUser.id}"><c:out value="${thisUser}"/></a></li>
                     </c:forEach>
                 </ul>
             </div>

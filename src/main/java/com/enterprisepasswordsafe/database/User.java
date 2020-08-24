@@ -165,9 +165,9 @@ public final class User
 
         setLoginPassword(newPassword);
 
-        KeyGenerator kgen = KeyGenerator.getInstance(USER_KEY_ALGORITHM);
-        kgen.init(USER_KEY_SIZE);
-        accessKey = kgen.generateKey();
+        KeyGenerator keyGenerator = KeyGenerator.getInstance(USER_KEY_ALGORITHM);
+        keyGenerator.init(USER_KEY_SIZE);
+        accessKey = keyGenerator.generateKey();
     }
 
     /**
@@ -463,9 +463,9 @@ public final class User
     }
 
     /**
-     * Gets the decryptor for this user which uses the admin key.
+     * Gets the decrypter for this user which uses the admin key.
      *
-     * @return The decryptor.
+     * @return The decrypter.
      */
 
     @Override
@@ -474,9 +474,9 @@ public final class User
     }
 
     /**
-     * Gets the decryptor for this user which uses the admin key.
+     * Gets the decrypter for this user which uses the admin key.
      *
-     * @return The decryptor.
+     * @return The decrypter.
      */
 
     @Override

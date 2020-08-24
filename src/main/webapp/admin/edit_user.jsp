@@ -1,4 +1,4 @@
-<%@ page language="java" %>
+<%@ page %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%--
 Copyright (c) 2017 Carbon Security Ltd. <opensource@carbonsecurity.co.uk>
@@ -21,7 +21,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 <form action="<c:url value='/admin/User'/>" name="userdetails" method="POST"
       accept-charset="utf-8" role="form">
     <fieldset>
-        <input type="hidden" name="userId" value="<c:out value='${requestScope.user.userId}'/>"/>
+        <input type="hidden" name="userId" value="<c:out value='${requestScope.user.id}'/>"/>
         <input type="hidden" name="token" value="<c:out value='${sessionScope.csrfToken}' />"/>
 
         <div class="form-group">

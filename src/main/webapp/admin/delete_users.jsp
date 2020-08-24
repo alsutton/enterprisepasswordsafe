@@ -1,4 +1,4 @@
-<%@ page language="java" %>
+<%@ page %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%--
 Copyright (c) 2017 Carbon Security Ltd. <opensource@carbonsecurity.co.uk>
@@ -35,7 +35,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         <c:forEach var="thisUser" items="${requestScope.users}">
             <div class="checkbox">
                 <label>
-                    <input type="checkbox" name="userId" value="<c:out value='${thisUser.userId}' />">
+                    <input type="checkbox" name="userId" value="<c:out value='${thisUser.id}' />">
                     <c:out value="${thisUser.userName}"/>
                 </label>
             </div>
