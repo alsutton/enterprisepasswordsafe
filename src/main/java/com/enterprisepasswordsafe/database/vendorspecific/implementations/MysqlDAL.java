@@ -34,7 +34,7 @@ public class MysqlDAL
 	{
 		super();
 
-		translationMap.put( ColumnSpecification.TYPE_LONG, "LONG" );
+		translationMap.put( ColumnSpecification.TYPE_LONG, "BIGINT" );
 		translationMap.put( ColumnSpecification.TYPE_INT, "INT" );
 		translationMap.put( ColumnSpecification.TYPE_CHAR, "CHAR" );
 		translationMap.put( ColumnSpecification.TYPE_ID, "VARCHAR(20)" );
