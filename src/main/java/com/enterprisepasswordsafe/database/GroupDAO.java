@@ -70,6 +70,14 @@ public class GroupDAO extends GroupStoreManipulator
             + " ORDER BY grp.group_name ASC";
 
     /**
+     * The SQL statement to get all the available groups.
+     */
+
+    private static final String GET_ALL_NON_SYSTEM_GROUPS_SQL = "SELECT " + GROUP_FIELDS + " FROM groups grp "
+            + " WHERE " + EXCLUDE_RESERVED_GROUP_CLAUSE+" AND grp.status < " + Group.STATUS_DELETED
+            + " ORDER BY grp.group_name ASC";
+
+    /**
      * The SQL statement to get all the available enabled groups.
      */
 
@@ -209,6 +217,10 @@ public class GroupDAO extends GroupStoreManipulator
     public List<Group> getAll()
     	throws SQLException {
     	return getMultiple(GET_ALL_GROUPS_SQL);
+    }
+
+    public List<Group> getNonSystem() throws SQLException {
+	    return getMultiple(GET_ALL_NON_SYSTEM_GROUPS_SQL);
     }
 
     public List<Group> getAllEnabled()

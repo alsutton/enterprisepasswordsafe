@@ -5,6 +5,7 @@ import com.enterprisepasswordsafe.database.MembershipDAO;
 import com.enterprisepasswordsafe.database.User;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * Class to identify which type of user this is. This class must be thread-safe.
@@ -15,7 +16,11 @@ public class UserClassifier {
     private final MembershipDAO membershipDAO;
 
     public UserClassifier() {
-        membershipDAO = MembershipDAO.getInstance();
+        this(MembershipDAO.getInstance());
+    }
+
+    UserClassifier(MembershipDAO membershipDAO) {
+        this.membershipDAO = membershipDAO;
     }
 
     public boolean isMasterAdmin(User user) {
@@ -41,5 +46,25 @@ public class UserClassifier {
             throws SQLException {
         return (!user.getId().equals(ADMIN_USER_ID))
                 && membershipDAO.isMemberOf(user.getId(), Group.NON_VIEWING_GROUP_ID);
+    }
+
+    public UserLevel getUserLevelFor(User user) throws SQLException {
+        if(isAdministrator(user)) {
+            return UserLevel.ADMINISTRATOR;
+        }
+        if(isSubadministrator(user)) {
+            return UserLevel.PRIVILEGED;
+        }
+        return UserLevel.REGULAR;
+    }
+
+    public UserLevel getUserLevelFrom(Map<String, Object> userMemberships) {
+        if(userMemberships.containsKey(Group.ADMIN_GROUP_ID)) {
+            return UserLevel.ADMINISTRATOR;
+        }
+        if(userMemberships.containsKey(Group.SUBADMIN_GROUP_ID)) {
+            return UserLevel.PRIVILEGED;
+        }
+        return UserLevel.REGULAR;
     }
 }
