@@ -63,7 +63,7 @@ public final class HierarchyNodeDAO
      */
 
     private static final String GET_NODE_BY_NAME_SQL =
-            "SELECT " + NODE_FIELDS + " FROM hierarchy  WHERE name = ?";
+            "SELECT " + NODE_FIELDS + " FROM hierarchy  WHERE name = ? ORDER BY name";
 
 
     /**
@@ -71,7 +71,7 @@ public final class HierarchyNodeDAO
      */
 
     private static final String GET_ALL_CHILDREN_NODES_SQL =
-            "SELECT node_id, name, parent_id, type FROM hierarchy nodes WHERE parent_id = ? ";
+            "SELECT node_id, name, parent_id, type FROM hierarchy nodes WHERE parent_id = ? ORDER BY name ";
 
     /**
      * The SQL statement to get the nodes representing a specific access controlled object.
@@ -88,7 +88,7 @@ public final class HierarchyNodeDAO
     private static final String GET_VALID_CHILD_OBJECT_IDS_VIA_UAC_SQL =
             "SELECT   h.name FROM hierarchy h, user_access_control uac "
             + " WHERE h.parent_id = ? AND h.type = " + HierarchyNode.OBJECT_NODE + " AND uac.item_id = h.name "
-            + "  AND uac.rkey is not null AND uac.user_id = ? ";
+            + "  AND uac.rkey is not null AND uac.user_id = ? ORDER BY h.name ";
 
     /**
      * The SQL statement to get the valid object node children for a given
@@ -100,7 +100,7 @@ public final class HierarchyNodeDAO
             + "  FROM hierarchy h, group_access_control gac, membership m, groups g "
             + " WHERE h.parent_id = ? AND h.type = "+ HierarchyNode.OBJECT_NODE+ " AND gac.item_id = h.name "
             + "   AND gac.rkey is not null AND m.group_id = gac.group_id AND m.user_id = ? "
-            + "   AND g.group_id = gac.group_id AND g.status = " + Group.STATUS_ENABLED;
+            + "   AND g.group_id = gac.group_id AND g.status = " + Group.STATUS_ENABLED + " ORDER BY h.name";
 
     /**
      * The SQL statement to get the all child object node ids.
@@ -130,7 +130,7 @@ public final class HierarchyNodeDAO
      */
 
     private static final String GET_CHILD_CONTAINER_NODES_SQL =
-            "SELECT " + NODE_FIELDS + "  FROM hierarchy WHERE parent_id = ? AND type=" + HierarchyNode.CONTAINER_NODE;
+            "SELECT " + NODE_FIELDS + "  FROM hierarchy WHERE parent_id = ? AND type=" + HierarchyNode.CONTAINER_NODE + " ORDER BY name";
 
     /**
      * The SQL statement to get the child container nodes of a specific node.
@@ -145,7 +145,7 @@ public final class HierarchyNodeDAO
 
     private static final String GET_USER_CONTAINER_NODE_SQL =
             "SELECT   node_id, name, parent_id, type FROM hierarchy WHERE name = ? "
-            + "   AND type = " + HierarchyNode.USER_CONTAINER_NODE;
+            + "   AND type = " + HierarchyNode.USER_CONTAINER_NODE + " ORDER BY name";
 
     /**
      * The SQL statement to get the child container nodes of a specific node.
@@ -173,7 +173,7 @@ public final class HierarchyNodeDAO
      */
 
     private static final String TEST_NODES_REFERRING_TO_OBJECT_NODE_SQL =
-            "SELECT " + NODE_FIELDS + " FROM hierarchy WHERE name = ? AND type = " + HierarchyNode.OBJECT_NODE;
+            "SELECT " + NODE_FIELDS + " FROM hierarchy WHERE name = ? AND type = " + HierarchyNode.OBJECT_NODE + " ORDER BY name";
 
     /**
      * The SQL to delete a node.
