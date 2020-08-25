@@ -1,5 +1,6 @@
 import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 buildscript {
     repositories {
@@ -60,6 +61,7 @@ tasks.withType<Test> {
 
     testLogging {
         events = mutableSetOf(TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED)
+        exceptionFormat = TestExceptionFormat.FULL
     }
 }
 

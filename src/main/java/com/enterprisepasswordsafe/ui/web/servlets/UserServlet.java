@@ -18,6 +18,7 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
 import com.enterprisepasswordsafe.engine.utils.StringUtils;
 import com.enterprisepasswordsafe.ui.web.EPSUIException;
@@ -33,6 +34,8 @@ import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.Objects;
 
 public final class UserServlet extends HttpServlet {
 
@@ -45,6 +48,16 @@ public final class UserServlet extends HttpServlet {
     private static final String ZONE_RULE_PREFIX = "zone_";
 
     private static final int ZONE_RULE_PREFIX_LENGTH = ZONE_RULE_PREFIX.length();
+
+    private final UserClassifier userClassifier;
+
+    public UserServlet() {
+        this(new UserClassifier());
+    }
+
+    public UserServlet(UserClassifier userClassifier) {
+        this.userClassifier = userClassifier;
+    }
 
     @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -181,7 +194,7 @@ public final class UserServlet extends HttpServlet {
     private void addDataNeededForEditPage(final HttpServletRequest request)
         throws SQLException {
         request.setAttribute("auth_sources", AuthenticationSourceDAO.getInstance().getAll());
-        request.setAttribute("groups", GroupDAO.getInstance().getAll());
+        request.setAttribute("groups", GroupDAO.getInstance().getNonSystem());
         request.setAttribute("restrictions", IPZoneDAO.getInstance().getAll());
     }
 
@@ -199,8 +212,11 @@ public final class UserServlet extends HttpServlet {
             return null;
         }
 
-        request.setAttribute("group_membership_map", MembershipDAO.getInstance().getMemberships(id));
+        Map<String, Object> memberships = MembershipDAO.getInstance().getMemberships(id);
+        request.setAttribute("group_membership_map", memberships);
         request.setAttribute("restrictions_map", UserIPZoneRestrictionDAO.getInstance().getRulesForUser(id));
+        request.setAttribute("user_level", userClassifier.getUserLevelFrom(memberships));
+        request.setAttribute("non_viewing", userClassifier.isNonViewingUser(user));
 
         String authSourceId = (user.getAuthSource() == null) ? AuthenticationSource.DEFAULT_SOURCE_ID : user.getAuthSource();
         request.setAttribute("current_auth_source", AuthenticationSourceDAO.getInstance().getById(authSourceId));
@@ -225,7 +241,7 @@ public final class UserServlet extends HttpServlet {
             return;
         }
 
-        if ( StringUtils.isAnyEmpty(password1, password2) || !password1.equals(password2)) {
+        if ( StringUtils.isAnyEmpty(password1, password2) || !Objects.equals(password1, password2)) {
             throw new EPSUIException("The passwords you entered were not the same.");
         }
 

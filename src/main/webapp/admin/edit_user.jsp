@@ -68,10 +68,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         <div class="form-group">
             <label for="user_type">User Type</label>
             <c:choose>
-                <c:when test="${requestScope.user.administrator}">
+                <c:when test="${requestScope.user_level eq 'ADMINISTRATOR'}">
                     <c:set var="ut_epsadmin_selected" value="selected=\"selected\"" />
                 </c:when>
-                <c:when test="${requestScope.user.subadministrator}">
+                <c:when test="${requestScope.user_level eq 'PRIVILEGED'}">
                     <c:set var="ut_epssubadmin_selected" value="selected=\"selected\"" />
                 </c:when>
                 <c:otherwise>
@@ -120,7 +120,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
         <jsp:include page="/WEB-INF/includes/yes_no_select.jsp">
             <jsp:param name="input_label" value="User can't view passwords" />
             <jsp:param name="input_name" value="noview" />
-            <jsp:param name="input_value" value="${requestScope.user.nonViewingUser}" />
+            <jsp:param name="input_value" value="${requestScope.non_viewing}" />
         </jsp:include>
 
         <c:if test="${not empty requestScope.groups}">
