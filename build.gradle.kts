@@ -19,6 +19,7 @@ plugins {
     war
     id("com.bmuschko.tomcat") version "2.5"
     id("net.ltgt.errorprone") version "1.2.1"
+    id("com.github.ben-manes.versions") version "0.36.0"
     jacoco
 }
 
