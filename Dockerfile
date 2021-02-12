@@ -11,8 +11,8 @@ COPY build/libs/enterprisepasswordsafe.war /usr/local/tomcat/webapps/ROOT.war
 # change the values appropriately
 #
 ENV EPS_DATABASE_TYPE="Apache Derby"
-ENV EPS_JDBC_DRIVER_CLASS="org.mariadb.jdbc.Driver"
-ENV EPS_JDBC_URL="jdbc:mysql://localhost/passwordsafe"
+ENV EPS_JDBC_DRIVER_CLASS="org.apache.derby.jdbc.EmbeddedDriver"
+ENV EPS_JDBC_URL="jdbc:derby:/eps-db/pwsafe-hsqldb;create=true"
 ENV EPS_DATABASE_USERNAME=""
 ENV EPS_DATABASE_PASSWORD=""
 
