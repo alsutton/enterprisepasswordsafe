@@ -2,7 +2,7 @@
 
 ## License
 
-The Copyright (c) 2005-2020 Al Sutton and contributors
+The Copyright (c) 2005-2021 Al Sutton and contributors
 
 Permission to use, copy, modify, and distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
