@@ -44,7 +44,7 @@ public class UserClassifier {
 
     public boolean isNonViewingUser(User user)
             throws SQLException {
-        return (!user.getId().equals(ADMIN_USER_ID))
+        return !user.getId().equals(ADMIN_USER_ID)
                 && membershipDAO.isMemberOf(user.getId(), Group.NON_VIEWING_GROUP_ID);
     }
 

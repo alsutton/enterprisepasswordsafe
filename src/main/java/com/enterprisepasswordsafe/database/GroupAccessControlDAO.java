@@ -138,22 +138,22 @@ public class GroupAccessControlDAO
 
 
     public GroupAccessControl getReadGac(final User theUser, final String itemId)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
 	    return get(GET_GROUP_FOR_GAC_SQL, theUser, itemId);
     }
 
     public GroupAccessControl get(final User theUser, final AccessControledObject item)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        throws SQLException, GeneralSecurityException {
         return get(theUser, item.getId());
     }
 
     public GroupAccessControl get(final User theUser, final String itemId)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        throws SQLException, GeneralSecurityException {
         return getGacWork(theUser, itemId, GET_GROUP_FOR_FULL_GAC_SQL, GET_GROUP_FOR_GAC_SQL);
     }
 
     public GroupAccessControl get(final User user, final Group group, final AccessControledObject item)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
         if(item == null) {
             return null;
         }
@@ -187,18 +187,18 @@ public class GroupAccessControlDAO
 
 
     public GroupAccessControl getGacEvenIfDisabled(final User theUser, final AccessControledObject item)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        throws SQLException, GeneralSecurityException {
         return getGacEvenIfDisabled(theUser, item.getId());
     }
 
     public GroupAccessControl getGacEvenIfDisabled(final User theUser,
     		final String itemId)
-        throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        throws SQLException, GeneralSecurityException {
         return getGacWork(theUser, itemId, GET_GROUP_FOR_FULL_GAC_INCLUDING_DISABLED_SQL, GET_GROUP_FOR_GAC_INCLUDING_DISABLED_SQL);
     }
 
     private GroupAccessControl getGacWork(final User theUser, final String itemId, final String fullSql, final String readOnlySql)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
         // Check for invalid parameters
         if (theUser == null || itemId == null) {
             return null;
@@ -209,7 +209,7 @@ public class GroupAccessControlDAO
     }
 
     private GroupAccessControl get(final String sql, final User theUser, final String itemId)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
         try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(sql)) {
             ps.setString(1, theUser.getId());
             ps.setString(2, itemId);

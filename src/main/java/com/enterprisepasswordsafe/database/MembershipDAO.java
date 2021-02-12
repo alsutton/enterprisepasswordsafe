@@ -68,18 +68,6 @@ public final class MembershipDAO
 		super();
 	}
 
-	/**
-	 * Generates the cache key from a membership
-	 */
-
-	private String generateCacheKey(final Membership membership) {
-		return generateCacheKey(membership.getUserId(), membership.getGroupId());
-	}
-
-	private String generateCacheKey(final String userId, final String groupId) {
-		return "mem_"+userId+"_"+groupId;
-	}
-
     /**
      * Writes a group membership to the database.
      *
@@ -113,11 +101,10 @@ public final class MembershipDAO
      *
      * @throws SQLException If there was a problem writing to the database.
      * @throws GeneralSecurityException Thrown if there was a decryption problem.
-     * @throws UnsupportedEncodingException
      */
 
     public void create(final User user, final Group group)
-    	throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
+    	throws SQLException, GeneralSecurityException {
         Membership membership = getMembership(user, group);
         if( membership == null) {
             membership = new Membership(user, group);
@@ -133,11 +120,10 @@ public final class MembershipDAO
      *
      * @throws SQLException If there was a problem writing to the database.
      * @throws GeneralSecurityException Thrown if there was a decryption problem.
-     * @throws UnsupportedEncodingException
      */
 
     public void create(final User user, final String groupId)
-            throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
+            throws SQLException, GeneralSecurityException {
 		create(user, GroupDAO.getInstance().getById(groupId));
 	}
 
@@ -150,11 +136,10 @@ public final class MembershipDAO
      *
      * @throws SQLException If there was a problem writing to the database.
      * @throws GeneralSecurityException Thrown if there was a decryption problem.
-     * @throws UnsupportedEncodingException
      */
 
     public void create(final User remoteUser, final User user, final String groupId)
-            throws UnsupportedEncodingException, SQLException, GeneralSecurityException {
+            throws SQLException, GeneralSecurityException {
         Group theGroup = UnfilteredGroupDAO.getInstance().getById(groupId);
 
         Membership membership = getMembership(remoteUser, theGroup);

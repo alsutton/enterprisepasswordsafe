@@ -203,7 +203,7 @@ public final class UserDAO extends StoredObjectManipulator<User>
      */
 
     public User getAdminUserForUser(final User theUser)
-    	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+    	throws SQLException, GeneralSecurityException {
     	Group adminGroup = GroupDAO.getInstance().getAdminGroup(theUser);
     	return getAdminUser(adminGroup);
     }

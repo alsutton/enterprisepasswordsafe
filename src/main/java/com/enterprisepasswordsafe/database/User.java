@@ -59,7 +59,7 @@ public final class User
      * The value to use when users are deleted.
      */
 
-    protected static final String DELETED_VALUE = "D";
+    static final String DELETED_VALUE = "D";
 
     /**
      * The algorithm used for the group key.

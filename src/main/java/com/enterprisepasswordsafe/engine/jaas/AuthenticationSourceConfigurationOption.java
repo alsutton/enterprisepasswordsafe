@@ -107,7 +107,8 @@ public class AuthenticationSourceConfigurationOption
 	/**
 	 * Compare to another configuration option.
 	 */
-	
+
+	@Override
 	public int compareTo(AuthenticationSourceConfigurationOption otherOption) {
 		return displayOrder - otherOption.displayOrder;  
 	}

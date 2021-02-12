@@ -1,5 +1,6 @@
 package com.enterprisepasswordsafe.engine.users;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -55,7 +56,7 @@ public class PasswordHasher {
             throws NoSuchAlgorithmException {
         MessageDigest digester = MessageDigest.getInstance(PASSWORD_HASH_ALGORITHM);
 
-        byte[] passwordBytes = userPassword.getBytes();
+        byte[] passwordBytes = userPassword.getBytes(StandardCharsets.UTF_8);
         if(salt != null) {
             byte[] saltedBytes = new byte[salt.length + passwordBytes.length];
             System.arraycopy(passwordBytes, 0, saltedBytes, 0, passwordBytes.length);

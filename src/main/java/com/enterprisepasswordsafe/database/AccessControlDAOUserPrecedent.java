@@ -44,12 +44,11 @@ public final class AccessControlDAOUserPrecedent
      *  the access control data.
      * @throws SQLException Thrown if there is a problem getting the access control
      *  data from the database.
-     * @throws UnsupportedEncodingException
      */
 
     @Override
 	public AccessControl getAccessControl(final User theUser, final AccessControledObject item)
-        throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
+        throws GeneralSecurityException, SQLException {
         return getAccessControl(theUser, item.getId());
     }
 
@@ -66,12 +65,11 @@ public final class AccessControlDAOUserPrecedent
      *  the access control data.
      * @throws SQLException Thrown if there is a problem getting the access control
      *  data from the database.
-     * @throws UnsupportedEncodingException
      */
 
     @Override
 	public AccessControl getAccessControl(final User theUser, final String itemId)
-        throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
+        throws GeneralSecurityException, SQLException {
         AccessControl ac = UserAccessControlDAO.getInstance().get(theUser, itemId);
         if  (ac == null) {
             ac = GroupAccessControlDAO.getInstance().get(theUser, itemId);
@@ -93,12 +91,11 @@ public final class AccessControlDAOUserPrecedent
      *  the access control data.
      * @throws SQLException Thrown if there is a problem getting the access control
      *  data from the database.
-     * @throws UnsupportedEncodingException
      */
 
     @Override
 	public AccessControl getReadAccessControl(final User theUser, final String itemId)
-        throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
+        throws GeneralSecurityException, SQLException {
         AccessControl ac = UserAccessControlDAO.getInstance().get(theUser, itemId);
         if  (ac == null) {
             ac = GroupAccessControlDAO.getInstance().getReadGac(theUser, itemId);
@@ -120,12 +117,11 @@ public final class AccessControlDAOUserPrecedent
      *  the access control data.
      * @throws SQLException Thrown if there is a problem getting the access control
      *  data from the database.
-     * @throws UnsupportedEncodingException
      */
 
     @Override
 	public AccessControl getAccessControlEvenIfDisabled(final User theUser, final String itemId)
-        throws GeneralSecurityException, SQLException, UnsupportedEncodingException {
+        throws GeneralSecurityException, SQLException {
         AccessControl ac = UserAccessControlDAO.getInstance().get(theUser, itemId);
         if (ac == null) {
             ac = GroupAccessControlDAO.getInstance().getGacEvenIfDisabled(theUser, itemId);

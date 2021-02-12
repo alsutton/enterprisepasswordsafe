@@ -206,6 +206,7 @@ public abstract class AccessRole {
 		 * @return a comparison of the user IDs, or Integer.MIN_VALUE if the 
 		 * 	comparing object is not of the same type.
 		 */
+		@Override
 		public int compareTo(ApproverSummary otherObject) {
             if(otherObject == null) {
                 return Integer.MAX_VALUE;
@@ -220,7 +221,7 @@ public abstract class AccessRole {
 		 * 
 		 * @return true if they are equal, false if not.
 		 */
-		
+		@Override
 		public boolean equals(Object otherObject) {
 			if( !(otherObject instanceof ApproverSummary) ) {
 				return false;
@@ -236,7 +237,7 @@ public abstract class AccessRole {
 		 * 
 		 * @return A hash code for this summary.
 		 */
-		
+		@Override
 		public int hashCode() {
 			return id.hashCode();
 		}

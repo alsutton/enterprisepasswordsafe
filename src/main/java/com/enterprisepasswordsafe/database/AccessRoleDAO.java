@@ -33,7 +33,7 @@ public final class AccessRoleDAO {
 	 * The SQL to get an access role for a particular actor
 	 */
 
-	protected static final String ACCESS_ROLE_FIELDS = "item_id, actor_id, role";
+	static final String ACCESS_ROLE_FIELDS = "item_id, actor_id, role";
 
 	/**
 	 * The SQL to get the users which can approve access to a item via their groups.

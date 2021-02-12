@@ -73,7 +73,7 @@ public class TamperproofEventLogDAO {
 	public void create( final User theUser, final AccessControledObject item,
 						final String message, final boolean createTamperstamp,
 						final String logLevel, final boolean sendEmail)
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+		throws SQLException, GeneralSecurityException {
 		if(item != null && !item.isLoggable()) {
 			return;
 		}
@@ -84,18 +84,18 @@ public class TamperproofEventLogDAO {
 
 	public void create( final String logLevel, final User theUser, final AccessControledObject item,
 						final String message, final boolean sendEmail )
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+		throws SQLException, GeneralSecurityException {
 		create(theUser, item, message, true, logLevel, sendEmail);
 	}
 
 	public void create( final String logLevel, final User theUser, final String message,
 			final boolean createTamperstamp )
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+		throws SQLException, GeneralSecurityException {
 		create(theUser, null, message, createTamperstamp, logLevel, true);
 	}
 
 	public void create( String logLevel, final User theUser, final String message )
-		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
+		throws SQLException, GeneralSecurityException {
 		create(theUser, null, message, true, logLevel, true);
 	}
 
@@ -144,7 +144,7 @@ public class TamperproofEventLogDAO {
 
 
     public boolean validateTamperstamp(TamperproofEventLog eventLogEntry, final User validatingUser)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+            throws SQLException, GeneralSecurityException {
 
     	User eventUser = null;
         if (!eventLogEntry.getUserId().equals(TamperproofEventLog.DUMMY_USER_ID)) {

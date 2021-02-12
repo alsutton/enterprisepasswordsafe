@@ -67,7 +67,8 @@ public class AuthenticationSourceConfigurationOptionValue
 	/**
 	 * Compare to another configuration option.
 	 */
-	
+
+	@Override
 	public int compareTo(AuthenticationSourceConfigurationOptionValue otherOption) {
 		return displayName.compareToIgnoreCase(otherOption.displayName);
 	}
