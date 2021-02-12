@@ -29,8 +29,12 @@ repositories {
 
 val junitVersion="5.7.0"
 val mockitoVersion="3.7.7"
-
+val immutablesVersion = "2.8.2"
 dependencies {
+    annotationProcessor("org.immutables:value:${immutablesVersion}")
+
+    compileOnly("org.immutables:value:${immutablesVersion}")
+
     implementation("com.sun.mail:javax.mail:1.6.2")
     implementation("com.sun.mail:smtp:2.0.0")
     implementation("commons-codec:commons-codec:1.15")

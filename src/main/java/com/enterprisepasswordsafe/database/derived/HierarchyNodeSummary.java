@@ -16,78 +16,26 @@
 
 package com.enterprisepasswordsafe.database.derived;
 
+import org.immutables.value.Value;
+
 /**
  * A class holding the summary of a node.
  */
-
-public class HierarchyNodeSummary
-	implements Comparable<HierarchyNodeSummary> {
-
-	/**
-	 * The ID for the node.
-	 */
-	
-	private final String id;
-	
-	/**
-	 * The parentage text for the node
-	 */
-	
-	private final String parentage;
-	
-	/**
-	 * Constructor stores information
-	 */
-	
-	public HierarchyNodeSummary( String theId, String theParentage ) {
-		id = theId;
-		parentage = theParentage;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public String getParentage() {
-		return parentage;
-	}
-	
-	/**
-	 * Equality operator.
-	 * 
-	 * @param otherObject The other object to compare to.
-	 */
-	
-	public boolean equals(Object otherObject) {
-		if(!(otherObject instanceof HierarchyNodeSummary)) {
-			return false;
-		}
-		
-		HierarchyNodeSummary otherSummary = 
-			(HierarchyNodeSummary) otherObject;
-		return id.equals(otherSummary.id);
-	}
-	
-	/**
-	 * Generate the HashCode for this object. The ID is the unique identifier
-	 * so we can use the HashCode from the ID.
-	 */
-	
-	public int hashCode() {
-		return id.hashCode();
-	}
+@Value.Immutable
+public interface HierarchyNodeSummary extends Comparable<HierarchyNodeSummary> {
+	String id();
+	String parentage();
 
 	/**
-	 * Compare this summary to another object. The comparison is made on the 
+	 * Compare this summary to another object. The comparison is made on the
 	 * parentage of the node.
-	 * 
+	 *
 	 * @param otherSummary The HierarchyNodeSummary to compare this object to.
-	 * 
+	 *
 	 * @return The result of the parentage comparison.
 	 */
-
-    @Override
-	public int compareTo(HierarchyNodeSummary otherSummary) {
-		return parentage.compareTo(otherSummary.parentage);
+	@Override
+	default int compareTo(HierarchyNodeSummary otherSummary) {
+		return parentage().compareTo(otherSummary.parentage());
 	}
 }

@@ -3,6 +3,7 @@ package com.enterprisepasswordsafe.engine.hierarchy;
 import com.enterprisepasswordsafe.database.HierarchyNode;
 import com.enterprisepasswordsafe.database.HierarchyNodeDAO;
 import com.enterprisepasswordsafe.database.derived.HierarchyNodeSummary;
+import com.enterprisepasswordsafe.database.derived.ImmutableHierarchyNodeSummary;
 
 import java.sql.SQLException;
 
@@ -20,7 +21,10 @@ public class Summaries {
             throws SQLException {
         String nodeId = node.getNodeId();
 
-        return new HierarchyNodeSummary(nodeId, hierarchyTools.getParentageAsText(node));
+        return ImmutableHierarchyNodeSummary.builder()
+                .id(nodeId)
+                .parentage(hierarchyTools.getParentageAsText(node))
+                .build();
     }
 
     /**
