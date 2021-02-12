@@ -295,5 +295,13 @@ public class PasswordRestriction
             id = newId;
             name = newName;
         }
+
+        public String getId() {
+            return this.id;
+        }
+
+        public String getName() {
+            return this.name;
+        }
     }
 }
