@@ -18,7 +18,8 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.User;
 import com.enterprisepasswordsafe.database.UserDAO;
-import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
+import com.enterprisepasswordsafe.database.derived.ImmutableUserSummary;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -77,7 +78,12 @@ public final class CreateNewUser extends HttpServlet {
 	        }
 
 	        User thisUser = SecurityUtils.getRemoteUser(request);
-	        User newUser = uDAO.createUser(thisUser, new UserSummary(username, fullname), password1, email);
+	        User newUser =
+					uDAO.createUser(
+							thisUser,
+							ImmutableUserSummary.builder().name(username).fullName(fullname).build(),
+							password1,
+							email);
 
 	        ServletUtils.getInstance().generateMessage(request, "The user was successfully created.");
 			response.sendRedirect(request.getContextPath()+"/admin/User?userId="+newUser.getId());

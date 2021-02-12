@@ -16,6 +16,7 @@
 
 package com.enterprisepasswordsafe.database;
 
+import com.enterprisepasswordsafe.database.derived.ImmutableIntegrationModuleScriptSummary;
 import com.enterprisepasswordsafe.database.derived.IntegrationModuleScriptSummary;
 import com.enterprisepasswordsafe.engine.utils.Constants;
 
@@ -116,7 +117,13 @@ public final class IntegrationModuleScriptDAO {
 	            	String moduleId = rs.getString(idx++);
 	            	String moduleName = rs.getString(idx);
 	            	scriptMap.put(scriptId,
-                        new IntegrationModuleScriptSummary( scriptId, name, moduleId, moduleName, true ));
+                            ImmutableIntegrationModuleScriptSummary.builder()
+                            .moduleId(moduleId)
+                            .scriptId(scriptId)
+                            .name(name)
+                            .moduleName(moduleName)
+                            .isActive(true)
+                            .build());
 	            }
             }
         }
@@ -135,7 +142,13 @@ public final class IntegrationModuleScriptDAO {
                     final String moduleId   = rs.getString(3);
                     final String moduleName = rs.getString(4);
                     scriptMap.put(scriptId,
-                            new IntegrationModuleScriptSummary( scriptId, name, moduleId, moduleName, false ));
+                            ImmutableIntegrationModuleScriptSummary.builder()
+                            .scriptId(scriptId)
+                            .name(name)
+                            .moduleId(moduleId)
+                            .moduleName(moduleName)
+                            .isActive(false)
+                            .build());
                 }
             }
         }

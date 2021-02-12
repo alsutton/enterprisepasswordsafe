@@ -18,6 +18,7 @@ package com.enterprisepasswordsafe.database.derived;
 
 import com.enterprisepasswordsafe.database.HierarchyNode;
 import com.enterprisepasswordsafe.database.Password;
+import org.immutables.value.Value;
 
 import java.util.Collection;
 import java.util.Set;
@@ -25,59 +26,9 @@ import java.util.Set;
 /**
  * Class holding the details of the children of a HierarchyNode
  */
-public class HierarchyNodeChildren {
-
-    /**
-     * The list of child container nodes.
-     */
-
-    private final Collection<HierarchyNode> nodes;
-
-    /**
-     * The set of child object nodes.
-     */
-    
-    private Set<Password> objects;
-
-    /**
-     * Constructor, stores information.
-     *
-     * @param newNodes
-     *            The child container nodes.
-     * @param newObjects
-     *            The child Object nodes.
-     */
-
-    public HierarchyNodeChildren(final Collection<HierarchyNode> newNodes, final Set<Password> newObjects) {
-        nodes = newNodes;
-        objects = newObjects;
-    }
-
-    /**
-     * Get the List of child container nodes.
-     *
-     * @return The List of nodes.
-     */
-
-    public Collection<HierarchyNode> getNodes() {
-        return nodes;
-    }
-
-    /**
-     * Get the Set of child Objects.
-     *
-     * @return The Set of child Objects.
-     */
-
-    public Set<Password> getObjects() {
-        return objects;
-    }
-
-    /**
-     * @param newObjects The Objects to use.
-     */
-    public void setObjects(final Set<Password> newObjects) {
-        objects = newObjects;
-    }
+@Value.Immutable
+public interface HierarchyNodeChildren {
+    Collection<HierarchyNode> getNodes();
+    Set<Password> getObjects();
 }
 

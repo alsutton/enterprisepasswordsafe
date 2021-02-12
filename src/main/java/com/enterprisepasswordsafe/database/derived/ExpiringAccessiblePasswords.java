@@ -17,52 +17,23 @@
 package com.enterprisepasswordsafe.database.derived;
 
 import com.enterprisepasswordsafe.database.Password;
+import org.immutables.value.Value;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Class holding the lists of expired and expiring passwords.
  */
-public class ExpiringAccessiblePasswords {
-    /**
-     * The list of expiring passwords (i.e. those in the warning period).
-     */
-
-    private final Set<Password> expiring;
-
-    /**
-     * The List of expired passwords.
-     */
-
-    private final Set<Password> expired;
-
-    /**
-     * Constructor. Initialises lists.
-     */
-
-    protected ExpiringAccessiblePasswords() {
-        expiring = new HashSet<>();
-        expired = new HashSet<>();
+@Value.Immutable
+public interface ExpiringAccessiblePasswords {
+    @Value.Default
+    default Set<Password> getExpiring() {
+        return Collections.emptySet();
     }
-
-    /**
-     * Get the Set of expiring passwords.
-     *
-     * @return The expiring passwords.
-     */
-
-    public final Set<Password> getExpiring() {
-        return expiring;
-    }
-
-    /**
-     * Get the Set of expired passwords.
-     *
-     * @return The expired passwords.
-     */
-
-    public final Set<Password> getExpired() {
-        return expired;
+    @Value.Default
+    default Set<Password> getExpired() {
+        return Collections.emptySet();
     }
 }

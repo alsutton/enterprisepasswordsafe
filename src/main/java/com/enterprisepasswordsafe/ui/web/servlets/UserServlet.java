@@ -17,7 +17,8 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
+import com.enterprisepasswordsafe.database.derived.ImmutableUserSummary;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
 import com.enterprisepasswordsafe.engine.utils.StringUtils;
@@ -164,8 +165,10 @@ public final class UserServlet extends HttpServlet {
         }
         if(user == null) {
             return uDAO.createUser( remoteUser,
-                    new UserSummary(servletUtils.getParameterValue(request, "username"),
-                            servletUtils.getParameterValue(request, BaseServlet.FULL_NAME_PARAMETER)),
+                    ImmutableUserSummary.builder()
+                        .name(servletUtils.getParameterValue(request, "username"))
+                        .fullName(servletUtils.getParameterValue(request, BaseServlet.FULL_NAME_PARAMETER))
+                        .build(),
                     servletUtils.getParameterValue(request, "password1"),
                     servletUtils.getParameterValue(request, BaseServlet.EMAIL_PARAMETER));
         }

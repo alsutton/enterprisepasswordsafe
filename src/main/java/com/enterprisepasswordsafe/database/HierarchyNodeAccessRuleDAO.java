@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.database;
 
-import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
 
 import java.security.GeneralSecurityException;
 import java.sql.PreparedStatement;
@@ -181,7 +181,7 @@ public abstract class HierarchyNodeAccessRuleDAO {
 
 			UserDAO uDAO = UserDAO.getInstance();
 	        UserSummaryDAO usDAO = UserSummaryDAO.getInstance();
-	    	for(UserSummary thisUser : usDAO.getSummaryListExcludingAdmin()) {
+	    	for(AbstractUserSummary thisUser : usDAO.getSummaryListExcludingAdmin()) {
 				ps.setString(2, thisUser.getId());
 	            try(ResultSet rs = ps.executeQuery()) {
 	                byte ruleByte = HierarchyNodeAccessRuleDAO.ACCESIBILITY_DEFAULT;

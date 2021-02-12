@@ -18,6 +18,7 @@ package com.enterprisepasswordsafe.database;
 
 import com.enterprisepasswordsafe.database.actions.password.ExpiringAccessiblePasswordsAction;
 import com.enterprisepasswordsafe.database.derived.ExpiringAccessiblePasswords;
+import com.enterprisepasswordsafe.database.derived.ImmutableExpiringAccessiblePasswords;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
@@ -228,7 +229,10 @@ public final class PasswordDAO
             throws Exception {
         ExpiringAccessiblePasswordsAction expiryTester = new ExpiringAccessiblePasswordsAction(user);
         new PasswordProcessor().processAllPasswords(user, expiryTester);
-        return expiryTester;
+        return ImmutableExpiringAccessiblePasswords.builder()
+                .expired(expiryTester.getExpired())
+                .expiring(expiryTester.getExpiring())
+                .build();
     }
 
     public final Set<String> getEmailsOfUsersWithAccess(final Password password)

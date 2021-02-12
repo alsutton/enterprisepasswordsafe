@@ -1,7 +1,7 @@
 package com.enterprisepasswordsafe.engine.logging;
 
 import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -23,7 +23,7 @@ public class LogEventParser {
         String variableId = variable.substring(colonIdx + 1);
 
         if (variableType.equals("user")) {
-            UserSummary theUser = UserSummaryDAO.getInstance().getById(variableId);
+            AbstractUserSummary theUser = UserSummaryDAO.getInstance().getById(variableId);
             if (theUser != null) {
                 return theUser.getName();
             }

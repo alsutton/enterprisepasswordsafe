@@ -1,6 +1,7 @@
 package com.enterprisepasswordsafe.database;
 
-import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
+import com.enterprisepasswordsafe.database.derived.ImmutableUserSummary;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.Cache;
 
@@ -9,7 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserSummaryDAO extends StoredObjectManipulator<UserSummary> {
+public class UserSummaryDAO extends StoredObjectManipulator<AbstractUserSummary> {
 
     private static final String GET_SUMMARY_BY_ID =
             "SELECT   user_id, user_name, full_name "
@@ -42,26 +43,27 @@ public class UserSummaryDAO extends StoredObjectManipulator<UserSummary> {
                     + "  AND (disabled is null or disabled = 'N')"
                     + "ORDER BY user_name ASC";
 
-    private final Cache<String, UserSummary> userSummaryCache = new Cache<>();
+    private final Cache<String, AbstractUserSummary> userSummaryCache = new Cache<>();
 
     public UserSummaryDAO() {
         super(GET_SUMMARY_BY_ID, GET_SUMMARY_BY_NAME, UserDAO.GET_COUNT_SQL);
     }
 
     @Override
-    UserSummary newInstance(ResultSet rs) throws SQLException {
-        return new UserSummary(
-                rs.getString(1),
-                rs.getString(1 +1),
-                rs.getString(1 + 2));
+    AbstractUserSummary newInstance(ResultSet rs) throws SQLException {
+        return ImmutableUserSummary.builder()
+                .id(rs.getString(1))
+                .name(rs.getString(2))
+                .fullName(rs.getString(3))
+                .build();
     }
 
-    public List<UserSummary> getSummaryList()
+    public List<AbstractUserSummary> getSummaryList()
             throws SQLException {
         return getMultiple(GET_SUMMARY_LIST_INCLUDING_ADMIN);
     }
 
-    public List<UserSummary> getSummaryListExcludingAdmin()
+    public List<AbstractUserSummary> getSummaryListExcludingAdmin()
             throws SQLException {
         return getMultiple(GET_SUMMARY_LIST_EXCLUDING_ADMIN);
     }
@@ -74,10 +76,10 @@ public class UserSummaryDAO extends StoredObjectManipulator<UserSummary> {
      * @return The summary.
      */
 
-    public List<UserSummary> getSummaryBySearch(String searchQuery)
+    public List<AbstractUserSummary> getSummaryBySearch(String searchQuery)
             throws SQLException {
         synchronized( this ) {
-            List<UserSummary> results= new ArrayList<>();
+            List<AbstractUserSummary> results= new ArrayList<>();
 
             if(searchQuery == null) {
                 searchQuery = "%";

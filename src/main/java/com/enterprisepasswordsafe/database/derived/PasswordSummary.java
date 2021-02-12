@@ -16,62 +16,17 @@
 
 package com.enterprisepasswordsafe.database.derived;
 
+import org.immutables.value.Value;
+
 /**
  * Summary for a password, saves memory over using a full Password object. 
  */
+@Value.Immutable
+public interface PasswordSummary extends Comparable<PasswordSummary> {
+	String getId();
+	String getRepresentation();
 
-public class PasswordSummary
-        implements Comparable<PasswordSummary> {
-	/**
-	 * The ID of the password.
-	 */
-	
-	private final String passwordId;
-	
-	/**
-	 * The string representation of a password.
-	 */
-	
-	private final String representation;
-	
-	/**
-	 * Constructor. Stores details.
-	 * 
-	 * @param thePasswordId The ID of the password.
-	 * @param theRepresentation The representation for the password.
-	 */
-	
-	public PasswordSummary( String thePasswordId, String theRepresentation) {
-		passwordId = thePasswordId;
-		representation = theRepresentation;
-	}
-	
-	/**
-	 * Get the password ID.
-	 * 
-	 * @return The password ID.
-	 */
-	
-	public String getId() {
-		return passwordId;
-	}
-	
-	/**
-	 * Gets the string representation.
-	 * 
-	 * @return The string representation.
-	 */
-	
-	public String getRepresentation() {
-		return representation;
-	}
-
-	/**
-	 * Compare this to another summary.
-	 * 
-	 * @param otherSummary The other summary to compare to.
-	 */
-	public int compareTo(PasswordSummary otherSummary) {
-		return passwordId.compareTo(otherSummary.passwordId);
+	default int compareTo(PasswordSummary otherSummary) {
+		return getId().compareTo(otherSummary.getId());
 	}
 }

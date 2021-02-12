@@ -16,104 +16,27 @@
 
 package com.enterprisepasswordsafe.database.derived;
 
-public class IntegrationModuleScriptSummary
-implements Comparable<IntegrationModuleScriptSummary> {
-	/**
-	 * The ID of the script.
-	 */
-	
-	private final String scriptId;
-	
-	/**
-	 * The name of the script;
-	 */
-	
-	private final String name;
-	
-	/**
-	 * The id of the integration module the script is configured for
-	 */
-	
-	private final String moduleId;
-	
-	/**
-	 * The name of the integration module the script is configured for
-	 */
-	
-	private final String moduleName;
-	
-	/**
-	 * Whether or not the script is active.
-	 */
-	
-	private final boolean isActive;
-	
-	/**
-	 * Constructor. Stores the information passed to it.
-	 */
-	
-	public IntegrationModuleScriptSummary(final String theScriptId, final String theName, 
-			final String theModuleId, final String theModuleName, 
-			final boolean newIsActive) {
-		scriptId = theScriptId;
-		name = theName;
-		moduleId = theModuleId;
-		moduleName = theModuleName;
-		isActive = newIsActive;
-	}
+import org.immutables.value.Value;
 
-	public boolean isActive() {
-		return isActive;
-	}
+@Value.Immutable
+public interface IntegrationModuleScriptSummary extends Comparable<IntegrationModuleScriptSummary> {
+	String getModuleId();
+	String getScriptId();
+	@Value.Auxiliary
+	String getModuleName();
+	@Value.Auxiliary
+	boolean isActive();
+	@Value.Auxiliary
+	String getName();
 
-	public String getModuleName() {
-		return moduleName;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getScriptId() {
-		return scriptId;
-	}    	
-	
-	/**
-	 * Get the hash code. Consists of the hash codes of the
-	 * script name and script id.
-	 */
-	
-	public int hashCode() {
-		return scriptId.hashCode() | moduleId.hashCode();
-	}
-	
-	/**
-	 * Test for equality. We need only test the module and script
-	 * ids for equality.
-	 */
-	
-	public boolean equals(Object otherObject) {
-		if( otherObject instanceof IntegrationModuleScriptSummary) {
-			IntegrationModuleScriptSummary otherSummary = (IntegrationModuleScriptSummary) otherObject;
-			
-			return otherSummary.moduleId.equals(moduleId)
-			&&	   otherSummary.scriptId.equals(scriptId);
+	@Override
+	default int compareTo(IntegrationModuleScriptSummary otherSummary) {
+		if(!otherSummary.getName().equals(getName())) {
+			return getName().compareTo(otherSummary.getName());
 		}
 		
-		return false;
-	}
-
-	/**
-	 * Comparison test.
-	 */
-	
-	public int compareTo(IntegrationModuleScriptSummary otherSummary) {
-		if(!otherSummary.name.equals(name)) {
-			return name.compareTo(otherSummary.name);
-		}
-		
-		if(!otherSummary.scriptId.equals(scriptId)) {
-			return scriptId.compareTo(otherSummary.scriptId);
+		if(!otherSummary.getScriptId().equals(getScriptId())) {
+			return getScriptId().compareTo(otherSummary.getScriptId());
 		}
 		
 		return 0;

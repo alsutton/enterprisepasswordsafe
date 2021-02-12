@@ -1,6 +1,6 @@
 package com.enterprisepasswordsafe.database;
 
-import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.nodes.GroupNodeDefaultPermission;
 import com.enterprisepasswordsafe.engine.nodes.UserNodeDefaultPermission;
@@ -108,7 +108,7 @@ public class HierarchyNodePermissionDAO
      * @throws SQLException Thrown if there is a problem accessing the database.
      */
 
-    public UserNodeDefaultPermission getDefaultPermissionForUser(final UserSummary user, String nodeId)
+    public UserNodeDefaultPermission getDefaultPermissionForUser(final AbstractUserSummary user, String nodeId)
             throws SQLException {
         synchronized( this ) {
             try(PreparedStatement ps = BOMFactory.getCurrentConntection().prepareStatement(GET_PERMISSION_SUMMARY_FOR_USER)) {

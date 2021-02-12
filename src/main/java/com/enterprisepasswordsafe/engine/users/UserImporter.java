@@ -1,7 +1,8 @@
 package com.enterprisepasswordsafe.engine.users;
 
 import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
+import com.enterprisepasswordsafe.database.derived.ImmutableUserSummary;
 import com.enterprisepasswordsafe.engine.utils.PasswordGenerator;
 import org.apache.commons.csv.CSVRecord;
 
@@ -50,7 +51,10 @@ public class UserImporter {
         boolean usePasswordGeneratorForLoginPassword = !values.hasNext();
         String password = usePasswordGeneratorForLoginPassword ? passwordGenerator.getRandomPassword() : values.next().trim();
 
-        User createdUser = userDAO.createUser(theImporter, new UserSummary(username, fullname), password, email);
+        User createdUser = userDAO.createUser(theImporter,
+                ImmutableUserSummary.builder().name(username).fullName(fullname).build(),
+                password,
+                email);
 
         performPostCreationActions(theImporter, adminGroup, createdUser, userType, usePasswordGeneratorForLoginPassword);
 

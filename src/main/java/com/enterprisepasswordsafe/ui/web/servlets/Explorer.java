@@ -18,6 +18,7 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.database.derived.HierarchyNodeChildren;
+import com.enterprisepasswordsafe.database.derived.ImmutableHierarchyNodeChildren;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -144,7 +145,7 @@ public final class Explorer extends HttpServlet {
                 hierarchyTools.getChildrenValidForUser(node, user,
                         ((Boolean)request.getAttribute(INCLUDE_EMPTY_ATTRIBUTE)), null, objectComparator);
         if(userClassifier.isNonViewingUser(user)) {
-            children.setObjects(null);
+            children = ImmutableHierarchyNodeChildren.copyOf(children).withObjects((Password) null);
         }
         return children;
     }

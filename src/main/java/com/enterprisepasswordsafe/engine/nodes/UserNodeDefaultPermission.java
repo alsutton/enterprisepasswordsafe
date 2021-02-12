@@ -1,23 +1,24 @@
 package com.enterprisepasswordsafe.engine.nodes;
 
-import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
+import com.enterprisepasswordsafe.database.derived.ImmutableUserSummary;
 
 /**
  * Class holding the details of the default permissions a user has for a node
  */
 
 public class UserNodeDefaultPermission {
-    private final UserSummary user;
+    private final AbstractUserSummary user;
     private final String permission;
 
 
-    public UserNodeDefaultPermission(final UserSummary user, final String permission) {
+    public UserNodeDefaultPermission(final AbstractUserSummary user, final String permission) {
         this.user = user;
         this.permission = permission;
     }
 
 
-    public UserSummary getUser() {
+    public AbstractUserSummary getUser() {
         return user;
     }
     public String getPermission() {

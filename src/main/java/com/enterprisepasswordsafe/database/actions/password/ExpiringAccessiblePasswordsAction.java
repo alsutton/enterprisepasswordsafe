@@ -25,14 +25,15 @@ import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
  * Class used to filter expiring passwords.
  */
 
-public class ExpiringAccessiblePasswordsAction
-	extends ExpiringAccessiblePasswords implements PasswordAction
+public class ExpiringAccessiblePasswordsAction implements PasswordAction
 {
     /**
      * The default number of days before expiry when a warning is produced.
@@ -63,6 +64,18 @@ public class ExpiringAccessiblePasswordsAction
      */
 
     private String personalNodeId;
+
+    /**
+     * The expiring accessible passwords
+     */
+
+    private Set<Password> expired = new HashSet<>();
+
+    /**
+     * The expired accessible passwords
+     */
+
+    private Set<Password> expiring = new HashSet<>();
 
     public ExpiringAccessiblePasswordsAction(final User user)
             throws SQLException {
@@ -137,10 +150,17 @@ public class ExpiringAccessiblePasswordsAction
         testPassword.decrypt(ac);
         long expiryDate = testPassword.getExpiry();
         if (expiryDate < now) {
-            getExpired().add(testPassword);
+            expired.add(testPassword);
         } else if (expiryDate < expiryWarning) {
-            getExpiring().add(testPassword);
+            expiring.add(testPassword);
         }
     }
 
+    public Set<Password> getExpired() {
+        return expired;
+    }
+
+    public Set<Password> getExpiring() {
+        return expiring;
+    }
 }

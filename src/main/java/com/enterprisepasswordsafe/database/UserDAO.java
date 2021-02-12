@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.database;
 
-import com.enterprisepasswordsafe.database.derived.UserSummary;
+import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
 import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
 import com.enterprisepasswordsafe.engine.jaas.WebLoginCallbackHandler;
 import com.enterprisepasswordsafe.engine.users.UserAccessKeyEncryptionHandler;
@@ -297,7 +297,7 @@ public final class UserDAO extends StoredObjectManipulator<User>
         }
     }
 
-    public User createUser(final User creatingUser, final UserSummary newUser, final String password,
+    public User createUser(final User creatingUser, final AbstractUserSummary newUser, final String password,
                            final String email)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         if(password == null || password.isEmpty()) {

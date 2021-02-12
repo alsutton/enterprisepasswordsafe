@@ -16,80 +16,23 @@
 
 package com.enterprisepasswordsafe.database.derived;
 
+import org.immutables.value.Value;
+
 /**
  * Summary information about a user, more memory efficient than a full User object.
  */
-public class UserSummary
-	implements Comparable<UserSummary> {
+@Value.Immutable
+public abstract class AbstractUserSummary implements Comparable<AbstractUserSummary> {
+	public abstract String getId();
+	public abstract String getName();
+	public abstract String getFullName();
 
-    /**
-     * The users id.
-     */
-
-    private String id;
-
-    /**
-     * The users name.
-     */
-
-    private final String name;
-
-    /**
-     * The users full name.
-     */
-
-    private final String fullName;
-
-    /**
-     * Constructor. Stores relevant information.
-     *
-     * @param newId The ID to store.
-     * @param newName The name to store.
-     * @param newFullName The full name to store.
-     */
-    public UserSummary(final String newId, final String newName, final String newFullName) {
-        this(newName, newFullName);
-        id = newId;
-    }
-
-    public UserSummary(final String newName, final String newFullName) {
-        name = newName;
-        fullName = newFullName;
-    }
-
-    /**
-     * Get the full name.
-     *
-     * @return Returns the fullName.
-     */
-    public String getFullName() {
-        return fullName;
-    }
-
-    /**
-     * Get the Id.
-     *
-     * @return Returns the id.
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Get the name.
-     *
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
-    }
-    
     /**
      * Get the string representation of the user.
      * 
      * @return The representation "username (full name)".
      */
-    
+    @Override
     public String toString() {
     	StringBuilder buffer = new StringBuilder();
     	buffer.append(getName());
@@ -102,12 +45,10 @@ public class UserSummary
     	return buffer.toString();
     }
 
-    /**
-     * Compare to another user summary.
-     */
-	public int compareTo(UserSummary summary) {
-		if( summary.id.equals(id) )
+    @Override
+	public int compareTo(AbstractUserSummary summary) {
+		if( summary.getId().equals(getId()) )
 			return 0;
-		return name.compareToIgnoreCase(summary.name);
+		return getName().compareToIgnoreCase(summary.getName());
 	}
 }

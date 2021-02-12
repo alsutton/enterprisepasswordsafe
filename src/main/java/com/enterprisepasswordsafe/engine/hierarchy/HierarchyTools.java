@@ -3,6 +3,7 @@ package com.enterprisepasswordsafe.engine.hierarchy;
 import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.database.actions.NodeObjectAction;
 import com.enterprisepasswordsafe.database.derived.HierarchyNodeChildren;
+import com.enterprisepasswordsafe.database.derived.ImmutableHierarchyNodeChildren;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -51,7 +52,7 @@ public class HierarchyTools {
         Set<Password> objects =
                 hierarchyNodeDAO.getAllChildrenObjects(node, theUser, objectComparator);
 
-        return new HierarchyNodeChildren(containers, objects);
+        return ImmutableHierarchyNodeChildren.builder().nodes(containers).objects(objects).build();
     }
 
     public void processObjectNodes(final HierarchyNode node, final User theUser,
