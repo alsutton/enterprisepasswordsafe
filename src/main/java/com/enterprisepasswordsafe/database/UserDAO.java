@@ -169,6 +169,7 @@ public final class UserDAO extends StoredObjectManipulator<User>
 	    super(GET_BY_ID_SQL, GET_BY_NAME_SQL, GET_COUNT_SQL);
 	}
 
+	@Override
 	User newInstance(ResultSet rs)
             throws SQLException {
 	    return new User(rs, 1);

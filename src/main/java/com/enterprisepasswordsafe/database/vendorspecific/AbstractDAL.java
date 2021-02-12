@@ -25,7 +25,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +42,7 @@ public abstract class AbstractDAL
 	 * type.
 	 */
 
-	protected final Map<Integer,String> translationMap = new Hashtable<>();
+	protected final Map<Integer,String> translationMap = new HashMap<>();
 
 	/**
 	 * Whether or not the database expects the word column in the add clause.
@@ -61,6 +61,7 @@ public abstract class AbstractDAL
 	 */
 	protected Connection connection;
 
+	@Override
 	public String addCreationURLParameters(final String url) {
 		return url;
 	}
@@ -99,7 +100,7 @@ public abstract class AbstractDAL
 	 * @param spec The specification holding the table definition.
 	 */
 
-	protected void startTableDefinition( final StringBuffer buffer, final TableSpecification spec )
+	protected void startTableDefinition( final StringBuilder buffer, final TableSpecification spec )
 	{
 		buffer.append( "create table " );
 		buffer.append( spec.getName() );
@@ -112,7 +113,7 @@ public abstract class AbstractDAL
 	 * @param buffer The buffer to use.
 	 */
 
-	protected void endTableDefinition( final StringBuffer buffer )
+	protected void endTableDefinition( final StringBuilder buffer )
 	{
 		buffer.append( ')' );
 	}
@@ -124,7 +125,7 @@ public abstract class AbstractDAL
 	 * @param spec The specifications for the columns in the table.
 	 */
 
-	protected void addColumnDefinition( final StringBuffer buffer, final ColumnSpecification spec )
+	protected void addColumnDefinition( final StringBuilder buffer, final ColumnSpecification spec )
 	{
 		buffer.append( spec.getName() );
 		buffer.append( ' ' );
@@ -166,8 +167,7 @@ public abstract class AbstractDAL
 			// SQL Exception is good, it means the table doesn't exist.
 		}
 
-
-		StringBuffer creationCommand = new StringBuffer( 1024 );
+		StringBuilder creationCommand = new StringBuilder( 1024 );
 
 		startTableDefinition( creationCommand, spec );
 
@@ -202,7 +202,7 @@ public abstract class AbstractDAL
 			final ColumnSpecification spec )
 		throws SQLException
 	{
-		StringBuffer commandBuffer = new StringBuffer( 512 );
+		StringBuilder commandBuffer = new StringBuilder( 512 );
 
 		commandBuffer.append( "ALTER TABLE " );
 		commandBuffer.append( tableName );

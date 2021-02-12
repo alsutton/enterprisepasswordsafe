@@ -43,8 +43,6 @@ public class UserSummaryDAO extends StoredObjectManipulator<AbstractUserSummary>
                     + "  AND (disabled is null or disabled = 'N')"
                     + "ORDER BY user_name ASC";
 
-    private final Cache<String, AbstractUserSummary> userSummaryCache = new Cache<>();
-
     public UserSummaryDAO() {
         super(GET_SUMMARY_BY_ID, GET_SUMMARY_BY_NAME, UserDAO.GET_COUNT_SQL);
     }
@@ -79,8 +77,6 @@ public class UserSummaryDAO extends StoredObjectManipulator<AbstractUserSummary>
     public List<AbstractUserSummary> getSummaryBySearch(String searchQuery)
             throws SQLException {
         synchronized( this ) {
-            List<AbstractUserSummary> results= new ArrayList<>();
-
             if(searchQuery == null) {
                 searchQuery = "%";
             } else if(searchQuery.indexOf('%') == -1) {

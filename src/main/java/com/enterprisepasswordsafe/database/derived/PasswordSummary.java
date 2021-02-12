@@ -26,6 +26,7 @@ public interface PasswordSummary extends Comparable<PasswordSummary> {
 	String getId();
 	String getRepresentation();
 
+	@Override
 	default int compareTo(PasswordSummary otherSummary) {
 		return getId().compareTo(otherSummary.getId());
 	}

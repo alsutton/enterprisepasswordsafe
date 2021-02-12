@@ -136,7 +136,6 @@ public final class IntegrationModuleScript {
      * Get the script.
      * 
      * @return The script.
-     * @throws UnsupportedEncodingException 
      */
     
     public String getScript() {

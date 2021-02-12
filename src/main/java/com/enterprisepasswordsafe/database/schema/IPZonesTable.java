@@ -101,7 +101,7 @@ public final class IPZonesTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static IPZonesTable getInstance() {
+	static IPZonesTable getInstance() {
 		return new IPZonesTable();
 	}
 }

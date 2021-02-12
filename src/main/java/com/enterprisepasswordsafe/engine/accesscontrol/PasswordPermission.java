@@ -18,6 +18,7 @@ public enum PasswordPermission {
         this.stringRepresentations = stringRepresentations;
     }
 
+    @Override
     public String toString() {
         return stringRepresentations[0];
     }

@@ -79,7 +79,7 @@ public class HierarchyTools {
         if( node.getParentId() != null ) {
             result = isPersonalById(node.getParentId());
         } else {
-            result = (!node.getNodeId().equals(HierarchyNode.ROOT_NODE_ID));
+            result = !node.getNodeId().equals(HierarchyNode.ROOT_NODE_ID);
         }
 
         return result;

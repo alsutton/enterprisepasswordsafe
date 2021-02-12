@@ -95,7 +95,7 @@ public final class HierarchyAccessControlTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static HierarchyAccessControlTable getInstance() {
+	static HierarchyAccessControlTable getInstance() {
 		return new HierarchyAccessControlTable();
 	}
 }

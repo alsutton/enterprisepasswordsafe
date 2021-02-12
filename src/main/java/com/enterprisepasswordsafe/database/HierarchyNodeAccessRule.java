@@ -83,6 +83,7 @@ public class HierarchyNodeAccessRule
 	 * 
 	 * @param otherRule The other rule.
 	 */
+	@Override
 	public int compareTo(HierarchyNodeAccessRule otherRule) {
 		return actorName.compareToIgnoreCase(otherRule.actorName);
 	}

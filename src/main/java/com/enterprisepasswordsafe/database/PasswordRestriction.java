@@ -231,6 +231,7 @@ public class PasswordRestriction
         return getId().hashCode();
     }
 
+    @Override
     public String toString() {
         List<String> sections = getEnabledSettingsStrings();
         if (sections.isEmpty()) {

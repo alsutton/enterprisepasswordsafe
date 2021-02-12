@@ -58,7 +58,7 @@ public class HsqldbDAL
 	 */
 
 	@Override
-	protected void startTableDefinition( final StringBuffer buffer, final TableSpecification spec )
+	protected void startTableDefinition( final StringBuilder buffer, final TableSpecification spec )
 	{
 		buffer.append( "create cached table " );
 		buffer.append( spec.getName() );

@@ -96,7 +96,7 @@ public final class LocationsTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static LocationsTable getInstance() {
+	static LocationsTable getInstance() {
 		return new LocationsTable();
 	}
 }

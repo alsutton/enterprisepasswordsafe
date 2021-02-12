@@ -135,6 +135,7 @@ public class AccessSummary
 	 * 
 	 * @return The comparison of the actor name.
 	 */
+	@Override
 	public int compareTo( final AccessSummary otherSummary ) {		
 		return name.compareToIgnoreCase(otherSummary.name);
 	}
@@ -142,6 +143,7 @@ public class AccessSummary
 	/**
 	 * Equality test method.
 	 */
+	@Override
 	public boolean equals( final Object otherObject ) {
 		if(!(otherObject instanceof AccessSummary)) {
 			return false;
@@ -152,6 +154,7 @@ public class AccessSummary
 	/**
 	 * Hashcode method
 	 */
+	@Override
 	public int hashCode() {
 		return id.hashCode();
 	}

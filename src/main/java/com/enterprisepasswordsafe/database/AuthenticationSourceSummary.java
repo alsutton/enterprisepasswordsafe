@@ -77,7 +77,7 @@ public final class AuthenticationSourceSummary {
      *
      * @return A String representation of the object.
      */
-
+    @Override
     public String toString() {
         return source + " (" + id + ")";
     }

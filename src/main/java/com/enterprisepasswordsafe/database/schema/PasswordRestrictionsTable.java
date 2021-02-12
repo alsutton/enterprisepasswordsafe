@@ -180,7 +180,7 @@ public final class PasswordRestrictionsTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static PasswordRestrictionsTable getInstance() {
+	static PasswordRestrictionsTable getInstance() {
 		return new PasswordRestrictionsTable();
 	}
 }

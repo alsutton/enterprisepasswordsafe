@@ -233,7 +233,7 @@ public class IPZone {
         }
 
     	StringBuilder result = new StringBuilder(48);
-        for(int i = 0, j = 0 ; i < 48 ; i+=6, j++) {
+        for(int i = 0; i < 48 ; i+=6) {
             String	sectionOne = original.substring(i, i+3),
                     sectionTwo = original.substring(i+3, i+6);
 

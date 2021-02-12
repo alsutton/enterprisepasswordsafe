@@ -144,7 +144,6 @@ public final class HierarchyTable
 
 						String passwordId = rs.getString(1);
 
-						int idx = 1;
 						ps.setString(1, passwordId);
 						ps.setString(2, currentParentId);
 						ps.setInt(3, HierarchyNode.OBJECT_NODE);
@@ -164,7 +163,7 @@ public final class HierarchyTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static HierarchyTable getInstance() {
+	static HierarchyTable getInstance() {
 		return new HierarchyTable();
 	}
 }

@@ -185,8 +185,6 @@ public final class HierarchyNodeDAO
      * Cache for node summaries.
      */
 
-    private final Cache<String,HierarchyNodeSummary> summaryCache = new Cache<>();
-
 	private final UserClassifier userClassifier = new UserClassifier();
 
 	/**
@@ -246,7 +244,7 @@ public final class HierarchyNodeDAO
      *
      * @throws SQLException Thrown if there is problem talking to the database.
      */
-
+    @Override
     public HierarchyNode getById(final String nodeId)
             throws SQLException {
         return (nodeId == null || nodeId.equals(HierarchyNode.ROOT_NODE_ID)) ? ROOT_NODE : super.getById(nodeId);
@@ -298,7 +296,6 @@ public final class HierarchyNodeDAO
      *
      * @throws SQLException Thrown if there is a problem accessing the database.
      * @throws GeneralSecurityException Thrown if tehre is a problem with the log entry.
-     * @throws UnsupportedEncodingException
      */
 
     public void deleteNode(final HierarchyNode node, final User deletingUser)

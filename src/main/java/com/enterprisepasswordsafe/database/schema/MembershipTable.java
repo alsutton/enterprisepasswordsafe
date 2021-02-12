@@ -170,7 +170,7 @@ public final class MembershipTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static MembershipTable getInstance() {
+	static MembershipTable getInstance() {
 		return new MembershipTable();
 	}
 

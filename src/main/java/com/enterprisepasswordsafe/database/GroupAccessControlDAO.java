@@ -268,6 +268,7 @@ public class GroupAccessControlDAO
         }
     }
 
+    @Override
     public GroupAccessControl create(Group group, AccessControledObject item, PasswordPermission permission)
     	throws SQLException, GeneralSecurityException {
     	return create(group, item, permission, true);
@@ -315,9 +316,9 @@ public class GroupAccessControlDAO
 		    		try(ResultSet rs = gacPS.executeQuery()) {
 		    			if( rs.next() ) {
 		    				rs.getString(1);	// Read the read key
-		    				canRead = (!rs.wasNull());
+		    				canRead = !rs.wasNull();
 		    				rs.getString(2);	// Read the modify key
-		    				canModify = (!rs.wasNull());
+		    				canModify = !rs.wasNull();
 		    			}
 		    		}
 
@@ -347,6 +348,7 @@ public class GroupAccessControlDAO
 
     }
 
+    @Override
     public void update(final Group group, final GroupAccessControl gac)
             throws SQLException, GeneralSecurityException {
 // TODO: Look at improving update

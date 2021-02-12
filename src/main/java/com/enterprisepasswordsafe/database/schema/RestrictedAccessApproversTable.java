@@ -97,7 +97,7 @@ public final class RestrictedAccessApproversTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static RestrictedAccessApproversTable getInstance() {
+	static RestrictedAccessApproversTable getInstance() {
 		return new RestrictedAccessApproversTable();
 	}
 }

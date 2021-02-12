@@ -94,7 +94,7 @@ public final class HierarchyPasswordDefaultsTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static HierarchyPasswordDefaultsTable getInstance() {
+	static HierarchyPasswordDefaultsTable getInstance() {
 		return new HierarchyPasswordDefaultsTable();
 	}
 }

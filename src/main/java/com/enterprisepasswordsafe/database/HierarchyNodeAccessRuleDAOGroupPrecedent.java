@@ -30,7 +30,7 @@ public class HierarchyNodeAccessRuleDAOGroupPrecedent
     	}
 
 		Boolean allowedViaGroup = isAllowedViaGroup(user, nodeId);
-		if (allowedViaGroup == Boolean.FALSE) {
+		if (allowedViaGroup.equals(Boolean.FALSE)) {
 			return ACCESIBILITY_DENIED;
 		}
 

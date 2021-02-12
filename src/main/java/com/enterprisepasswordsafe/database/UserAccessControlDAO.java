@@ -69,6 +69,7 @@ public final class UserAccessControlDAO
 		super();
 	}
 
+	@Override
 	public UserAccessControl create(final User theUser, final AccessControledObject item, PasswordPermission permission)
 		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
 		return create(theUser, item, permission, true);
@@ -204,9 +205,9 @@ public final class UserAccessControlDAO
 		    		try(ResultSet rs = uacPS.executeQuery()) {
 		    			if( rs.next() ) {
 		    				rs.getBytes(1);	// Read the read key
-		    				canRead = (!rs.wasNull());
+		    				canRead = !rs.wasNull();
 		    				rs.getBytes(2);	// Read the modify key
-		    				canModify = (!rs.wasNull());
+		    				canModify = !rs.wasNull();
 		    			}
 		    		}
 

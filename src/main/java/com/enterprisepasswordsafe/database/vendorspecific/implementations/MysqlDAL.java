@@ -56,7 +56,7 @@ public class MysqlDAL
 	 * 
 	 * @throws SQLException Thrown if there is a problem talking to the database. 
 	 */
-
+	@Override
 	public void renameColumn( final String tableName, 
 			final String oldName, final String newName, final Integer type ) 
 		throws SQLException {

@@ -92,7 +92,7 @@ public final class IntegrationModulesConfigurationTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static IntegrationModulesConfigurationTable getInstance() {
+	static IntegrationModulesConfigurationTable getInstance() {
 		return new IntegrationModulesConfigurationTable();
 	}
 }

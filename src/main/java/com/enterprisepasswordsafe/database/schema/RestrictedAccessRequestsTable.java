@@ -104,7 +104,7 @@ public final class RestrictedAccessRequestsTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static RestrictedAccessRequestsTable getInstance() {
+	static RestrictedAccessRequestsTable getInstance() {
 		return new RestrictedAccessRequestsTable();
 	}
 }

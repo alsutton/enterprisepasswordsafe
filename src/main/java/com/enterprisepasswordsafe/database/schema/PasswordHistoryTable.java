@@ -103,7 +103,7 @@ public final class PasswordHistoryTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static PasswordHistoryTable getInstance() {
+	static PasswordHistoryTable getInstance() {
 		return new PasswordHistoryTable();
 	}
 }

@@ -57,13 +57,6 @@ public class SchemaVersion {
 		this.configurationDAO = configurationDAO;
 	}
 
-
-	/**
-	 * The configuration property which stores the current schema version
-	 */
-
-	private static final String CURRENT_SCHEMA_VERSION_PROPERTY = "db.schema.version";
-
 	void create()
 		throws SQLException, UnsupportedEncodingException, GeneralSecurityException {
 		AuthenticationSourcesTable.getInstance().create();

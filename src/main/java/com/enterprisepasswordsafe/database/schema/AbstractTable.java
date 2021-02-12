@@ -60,7 +60,7 @@ public abstract class AbstractTable {
 		} catch(SQLException sqlex) {
 			throw sqlex;
 		} catch(Exception ex) {
-			throw new SQLException("Error enabling "+column+" on "+getTableName(), ex);
+			throw new SQLException("Error enabling "+column.getName()+" on "+getTableName(), ex);
 		}
 	}
 

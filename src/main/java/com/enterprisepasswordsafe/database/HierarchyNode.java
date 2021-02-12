@@ -144,6 +144,7 @@ public final class HierarchyNode
      *
      * @return The result of comparing the names of the nodes.
      */
+    @Override
     public int compareTo(final HierarchyNode otherNode) {
         if(name == null && otherNode.name == null) {
         	return 0;

@@ -189,7 +189,7 @@ public final class PasswordsTable
 	 * Gets an instance of this table schema
 	 */
 
-	protected static PasswordsTable getInstance() {
+	static PasswordsTable getInstance() {
 		return new PasswordsTable();
 	}
 }

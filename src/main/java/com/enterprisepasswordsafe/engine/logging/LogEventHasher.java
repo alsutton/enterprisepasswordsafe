@@ -3,6 +3,7 @@ package com.enterprisepasswordsafe.engine.logging;
 import com.enterprisepasswordsafe.database.TamperproofEventLog;
 import com.enterprisepasswordsafe.database.User;
 
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,7 +40,7 @@ public class LogEventHasher {
     private byte[] createHash(final String value)
             throws NoSuchAlgorithmException {
         MessageDigest digester = MessageDigest.getInstance(TAMPERSTAMP_HASH_ALGORITHM);
-        digester.update(value.getBytes());
+        digester.update(value.getBytes(StandardCharsets.UTF_8));
         return digester.digest();
     }
 
