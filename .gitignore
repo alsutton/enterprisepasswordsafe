@@ -1,6 +1,6 @@
 .idea/*
 .gradle/*
-build/*
+build
 obfuscated/*
 out/*
 *.iml
