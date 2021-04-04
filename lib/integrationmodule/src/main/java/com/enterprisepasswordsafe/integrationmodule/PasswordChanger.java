@@ -14,9 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.enterprisepasswordsafe.engine.integration;
+package com.enterprisepasswordsafe.integrationmodule;
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -53,31 +52,27 @@ public interface PasswordChanger {
 	/**
 	 * Change a specific passsword.
 	 * 
-	 * @param conn The connection to the database.
 	 * @param pluginProperties The properties configured by the EPS administrator.
 	 * @param passwordProperties The properties relating to the password to change.
 	 * @param script The script to run.
 	 *
 	 */
 
-	void rollbackChange(Connection conn, Map<String, String> pluginProperties,
-						Map<String, String> passwordProperties, String script)
-	;
+	void rollbackChange(Map<String, String> pluginProperties,
+						Map<String, String> passwordProperties, String script);
 
 	/**
 	 * Rollback a password change. This is usually called if a password change 
 	 * further down the chain fails.
 	 * 
-	 * @param conn The connection to tyhe database.
 	 * @param pluginProperties The properties configured by the EPS administrator.
 	 * @param passwordProperties The properties relating to the password to change.
 	 * @param script The script originally executed.
 	 *
 	 */
 
-	void changePassword(Connection conn, Map<String, String> pluginProperties,
-						Map<String, String> passwordProperties, String script)
-	;
+	void changePassword(Map<String, String> pluginProperties,
+						Map<String, String> passwordProperties, String script);
 
 	/**
 	 * Get the List of PasswordChangerProperty's which this plugin requires.
@@ -89,17 +84,13 @@ public interface PasswordChanger {
 	
 	/**
 	 * Method executed when the integration module is installed.
-	 * 
-	 * @param conn The connection to the database.
 	 */
 
-	void install(Connection conn);
+	void install();
 	
 	/**
 	 * Method executed when the integration module is uninstalled.
-	 * 
-	 * @param conn The connection to the database.
 	 */
 
-	void uninstall(Connection conn);
+	void uninstall();
 }

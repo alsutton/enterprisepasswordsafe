@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.enterprisepasswordsafe.engine.integration;
+package com.enterprisepasswordsafe.integrationmodule;
 
 /**
  * Object holding the details of a property relevant to the password changer.
