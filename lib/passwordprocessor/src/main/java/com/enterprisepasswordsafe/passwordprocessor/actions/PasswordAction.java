@@ -14,27 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.enterprisepasswordsafe.database.actions;
+package com.enterprisepasswordsafe.passwordprocessor.actions;
 
-import com.enterprisepasswordsafe.model.persisted.HierarchyNode;
 import com.enterprisepasswordsafe.model.persisted.Password;
 
 /**
- * Interface implemented by objects wishing to perform an action on a object in the hierarchy.
- *
- * @author Al Sutton
+ * Interface implemented by objects wishing to perform an action on a password.
  */
-
-public interface NodeObjectAction {
+public interface PasswordAction {
     /**
-     * Process a particular object.
+     * Process a particular password.
      *
-     * @param theLocation The node holding the object.
-     * @param password The password to process
-     *
-     * @throws Exception
-     *             Any exception can be thrown during processing.
+     * @param password The password to process.
      */
 
-    void process(HierarchyNode theLocation, Password password) throws Exception;
+    void process(Password password);
 }

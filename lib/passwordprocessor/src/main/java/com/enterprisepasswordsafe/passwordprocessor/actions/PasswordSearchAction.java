@@ -14,53 +14,40 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.enterprisepasswordsafe.database.actions;
+package com.enterprisepasswordsafe.passwordprocessor.actions;
 
-import com.enterprisepasswordsafe.database.derived.HierarchyNodeSummary;
-import com.enterprisepasswordsafe.engine.hierarchy.Summaries;
-import com.enterprisepasswordsafe.engine.users.UserClassifier;
-import com.enterprisepasswordsafe.model.AccessControledObject;
+import com.enterprisepasswordsafe.model.DAORepository;
 import com.enterprisepasswordsafe.model.persisted.HierarchyNode;
 import com.enterprisepasswordsafe.model.persisted.Password;
 import com.enterprisepasswordsafe.model.persisted.User;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class PasswordSearchAction implements NodeObjectAction {
 
     private final List<Predicate<Password>> tests;
 
-    private final Map<String,List<Password>> results;
+    private final Map<HierarchyNode,List<Password>> results;
 
     private int resultCount;
 
     private final boolean userIsAdministrator;
 
-    private final Summaries summaries = new Summaries();
-
-    public PasswordSearchAction(final User theUser, final List<Predicate<Password>> testList)
-            throws SQLException {
+    public PasswordSearchAction(final DAORepository daoRepository,
+                                final User theUser, final List<Predicate<Password>> testList) {
         tests = testList;
         results = new HashMap<>();
         resultCount = 0;
-        userIsAdministrator = new UserClassifier().isAdministrator(theUser);
+        userIsAdministrator = daoRepository.getMembershipDAO().isAdminUser(theUser);
     }
 
     @Override
 	public final void process(final HierarchyNode node, final Password password) {
-        if (aco == null) {
-            return;
-        }
-
-        Password password = (Password) aco;
-        if (!userIsAdministrator && !password.isEnabled()) {
+        if (!userIsAdministrator && !password.getEnabled()) {
         	return;
         }
 
@@ -70,25 +57,14 @@ public class PasswordSearchAction implements NodeObjectAction {
             }
         }
 
-        String nodeId = node.getNodeId();
-        List<Password> theList = results.computeIfAbsent(nodeId, k -> new ArrayList<>());
+        List<Password> theList = results.computeIfAbsent(password.getParentNode(), k -> new ArrayList<>());
         theList.add(password);
 
         resultCount++;
     }
 
-    public final Map<HierarchyNodeSummary,List<Password>> getResults() {
-        Map<HierarchyNodeSummary,List<Password>> expandedResults = new HashMap<>();
-        for(Map.Entry<String, List<Password>> entry : results.entrySet()) {
-            try {
-                HierarchyNodeSummary summary = summaries.getSummary(entry.getKey());
-                expandedResults.put(summary, entry.getValue());
-            } catch( SQLException e ) {
-                Logger.getAnonymousLogger().log(Level.SEVERE, "Problem getting summary for "+entry.getKey(), e);
-            }
-        }
-
-        return expandedResults;
+    public final Map<HierarchyNode,List<Password>> getResults() {
+        return Map.copyOf(results);
     }
 
     public final int getResultCount() {

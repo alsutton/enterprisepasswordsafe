@@ -14,21 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.enterprisepasswordsafe.database.actions;
+package com.enterprisepasswordsafe.passwordprocessor.actions;
 
-import com.enterprisepasswordsafe.model.AccessControledObject;
 import com.enterprisepasswordsafe.model.DAORepository;
 import com.enterprisepasswordsafe.model.PasswordPermission;
 import com.enterprisepasswordsafe.model.dao.PasswordAccessControlDAO;
 import com.enterprisepasswordsafe.model.persisted.AbstractActor;
 import com.enterprisepasswordsafe.model.persisted.Group;
-import com.enterprisepasswordsafe.model.persisted.HierarchyNode;
 import com.enterprisepasswordsafe.model.persisted.Password;
 import com.enterprisepasswordsafe.model.persisted.PasswordAccessControl;
 import com.enterprisepasswordsafe.model.persisted.User;
+import com.enterprisepasswordsafe.passwordprocessor.PasswordProcessorException;
 
 import java.security.GeneralSecurityException;
-import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -37,7 +36,7 @@ import java.util.logging.Logger;
 /**
  * PasswordAction to handle changing permissions on a password.
  */
-public class ChangePermissionsAction implements NodeObjectAction {
+public class ChangePermissionsAction implements PasswordAction {
 
     private final DAORepository daoRepository;
 
@@ -62,16 +61,13 @@ public class ChangePermissionsAction implements NodeObjectAction {
      * to be matched.
      *
      * @param adminGroup The admin group to use to change the password.
-     * @param node The node at which the permissions are being set
      * @param userPermissions The user permissions to set.
      * @param groupPermissions The group permissions to set.
      */
 
-    public ChangePermissionsAction(final DAORepository daoRepository,
-                                   final Group adminGroup, final HierarchyNode node,
+    public ChangePermissionsAction(final DAORepository daoRepository, final Group adminGroup,
                                    final Map<User,PasswordPermission> userPermissions,
-                                   final Map<Group,PasswordPermission> groupPermissions)
-    		throws SQLException, GeneralSecurityException {
+                                   final Map<Group,PasswordPermission> groupPermissions) {
         this.daoRepository = daoRepository;
         this.adminGroup = adminGroup;
         this.userPermissions = Map.copyOf(userPermissions);
@@ -79,13 +75,12 @@ public class ChangePermissionsAction implements NodeObjectAction {
     }
 
     /**
-     * @see NodeObjectAction#process(HierarchyNode, AccessControledObject)
+     * @see PasswordAction#process(Password)
      */
 
     @Override
-	public final void process(final HierarchyNode node, final Password password)
-        throws GeneralSecurityException, SQLException {
-        PasswordAccessControlDAO pacDAO = daoRepository.getPasswordAccessControlDAO();;
+	public final void process(final Password password) throws PasswordProcessorException {
+        PasswordAccessControlDAO pacDAO = daoRepository.getPasswordAccessControlDAO();
         PasswordAccessControl ac = pacDAO.getDirectAccessControl(adminGroup, password);
         if(ac == null) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "No admin GAC for "+password);
@@ -93,31 +88,38 @@ public class ChangePermissionsAction implements NodeObjectAction {
         }
 
         final Set<AbstractActor> actorsWithoutPermissions =
-                Set.copyOf(password.getAccessControls().keySet());
-        userPermissions.forEach((key,value) -> {
-            actorsWithoutPermissions.remove(key);
-            setPermission(pacDAO, ac, key, password, value);
-        });
-        groupPermissions.forEach((key,value) -> {
-            actorsWithoutPermissions.remove(key);
-            setPermission(pacDAO, ac, key, password, value);
-        });
+                new HashSet<>(password.getAccessControls().keySet());
+
+        try {
+            for (Map.Entry<User, PasswordPermission> entry : userPermissions.entrySet()) {
+                actorsWithoutPermissions.remove(entry.getKey());
+                setPermission(pacDAO, ac, entry.getKey(), password, entry.getValue());
+            }
+            for (Map.Entry<Group, PasswordPermission> entry : groupPermissions.entrySet()) {
+                actorsWithoutPermissions.remove(entry.getKey());
+                setPermission(pacDAO, ac, entry.getKey(), password, entry.getValue());
+            }
+        } catch (GeneralSecurityException e) {
+            throw new PasswordProcessorException("Internal Exception", e);
+        }
 
         // Remove all the users who no longer have explicit access.
         Map<AbstractActor,PasswordAccessControl> permissionMap = password.getAccessControls();
-        actorsWithoutPermissions.forEach(actor -> permissionMap.remove(actor));
+        actorsWithoutPermissions.forEach(permissionMap::remove);
     }
 
     /**
      * Store the permission for a given actor
      *
-     * @param masterAccessControl
-     * @param actor
-     * @param password
-     * @param permission
+     * @param pacDAO the PasswordAccessControlDAO to use for operations
+     * @param masterAccessControl the access control which contains the cryptographic keys needed.
+     * @param actor the actor we're operating on.
+     * @param password the password we're operating on.
+     * @param permission the permission to set.
      */
     private void setPermission(PasswordAccessControlDAO pacDAO, PasswordAccessControl masterAccessControl,
-                               AbstractActor actor, Password password, PasswordPermission permission) {
+                               AbstractActor actor, Password password, PasswordPermission permission)
+            throws GeneralSecurityException {
         Map<AbstractActor, PasswordAccessControl> permissionMap = password.getAccessControls();
         if (permission == PasswordPermission.NONE) {
             permissionMap.remove(actor);
