@@ -1,4 +1,11 @@
 rootProject.name="enterprisepasswordsafe"
 include("app")
-include("lib:database:abstraction")
-include("lib:database:model")
+include("lib:accesscontrol")
+include("lib:authentication")
+include("lib:cryptography")
+include("lib:importexport")
+include("lib:integrationmodule")
+include("lib:logging")
+include("lib:model")
+include("lib:passwordprocessor")
+include("lib:rawapi")
