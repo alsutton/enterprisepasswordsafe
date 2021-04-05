@@ -16,15 +16,13 @@
 
 package com.enterprisepasswordsafe.database;
 
-import com.enterprisepasswordsafe.engine.utils.IDGenerator;
+import com.enterprisepasswordsafe.model.persisted.PasswordRestriction;
 
 import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PasswordRestriction
+public class PasswordRestrictionUtils
         implements Serializable {
 
     private static final String NO_LIMITS_STRING = "There are no restrictions on the contents of the password.";
@@ -39,61 +37,6 @@ public class PasswordRestriction
 
     public static final String LOGIN_PASSWORD_RESTRICTION_ID = "-1";
 
-    private String restrictionId;
-
-    private String name;
-
-    private int minNumeric;
-
-    private int minLower;
-
-    private int minUpper;
-
-    private int minSpecial;
-
-    private int minLength;
-
-    private int maxLength;
-
-    private String specialCharacters;
-
-    private int lifetime;
-
-    public PasswordRestriction(final String theName, final int theMinLower,
-                               final int theMinUpper, final int theMinNumeric, final int theMinSpecial,
-                               final int theMinLength, final int theMaxLength, final String theSpecial,
-                               final int theLifetime) {
-        restrictionId = IDGenerator.getID();
-        name = theName;
-        minLower = theMinLower;
-        minUpper = theMinUpper;
-        minNumeric = theMinNumeric;
-        minSpecial = theMinSpecial;
-        minLength = theMinLength;
-        maxLength = theMaxLength;
-        specialCharacters = theSpecial;
-        lifetime = theLifetime;
-    }
-
-    public PasswordRestriction(final ResultSet rs)
-            throws SQLException {
-        restrictionId = rs.getString(1);
-        name = rs.getString(2);
-        minNumeric = rs.getInt(3);
-        minLower = rs.getInt(4);
-        minUpper = rs.getInt(5);
-        minSpecial = rs.getInt(6);
-        minLength = rs.getInt(7);
-        specialCharacters = rs.getString(8);
-        lifetime = rs.getInt(9);
-        if (rs.wasNull()) {
-            lifetime = 0;
-        }
-        maxLength = rs.getInt(10);
-        if (rs.wasNull()) {
-            maxLength = minLength + 16;
-        }
-    }
 
     /**
      * Verify a password meets the current password policy.
@@ -102,15 +45,15 @@ public class PasswordRestriction
      * @return true if the password meets the policy, false if not.
      */
 
-    public boolean verify(final String password) {
+    public boolean verify(PasswordRestriction restriction, final String password) {
         int passwordLength = password.length();
-        if (passwordLength < minLength || passwordLength > maxLength) {
+        if (passwordLength < restriction.getMinLength() || passwordLength > restriction.getMaxLength()) {
             return false;
         }
-        return meetsCharacterBasedRequirements(password);
+        return meetsCharacterBasedRequirements(restriction, password);
     }
 
-    private boolean meetsCharacterBasedRequirements(final String password) {
+    private boolean meetsCharacterBasedRequirements(PasswordRestriction restriction, final String password) {
         int special = 0, numeric = 0, upper = 0, lower = 0;
 
         for (int i = 0; i < password.length(); i++) {
@@ -122,118 +65,28 @@ public class PasswordRestriction
             } else if (NUMERIC_PASSWORD_CHARS.indexOf(thisChar) != -1) {
                 numeric++;
             }
-            if (specialCharacters.indexOf(thisChar) != -1) {
+            if (restriction.getSpecialCharacters().indexOf(thisChar) != -1) {
                 special++;
             }
         }
 
-        return (special >= minSpecial) && (numeric >= minNumeric)
-                && (lower >= minLower) && (upper >= minUpper);
+        return (special >= restriction.getMinSpecial())
+                && (numeric >= restriction.getMinNumeric())
+                && (lower >= restriction.getMinLower())
+                && (upper >= restriction.getMinUpper());
     }
 
-    public int getMinLength() {
-        return minLength;
+    public boolean isRestrictive(PasswordRestriction restriction) {
+        return  restriction.getMinSpecial() > 0
+                || restriction.getMinNumeric() > 0
+                || restriction.getMinLower() > 0
+                || restriction.getMinUpper() > 0
+        || restriction.getMinLength() > restriction.getMinUpper() + restriction.getMinLower() +
+                                        restriction.getMinNumeric() + restriction.getMinSpecial();
     }
 
-    public int getMinLower() {
-        return minLower;
-    }
-
-    public int getMinNumeric() {
-        return minNumeric;
-    }
-
-    public int getMinSpecial() {
-        return minSpecial;
-    }
-
-    public int getMinUpper() {
-        return minUpper;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getLifetime() {
-        return lifetime;
-    }
-
-    public void setLifetime(int newLifetime) {
-        lifetime = newLifetime;
-    }
-
-    public void setId(String newId) {
-        restrictionId = newId;
-    }
-
-    public String getId() {
-        return restrictionId;
-    }
-
-    public String getSpecialCharacters() {
-        return specialCharacters;
-    }
-
-    public void setMinLength(int minLength) {
-        this.minLength = minLength;
-    }
-
-    public void setMinLower(int minLower) {
-        this.minLower = minLower;
-    }
-
-    public void setMinNumeric(int minNumeric) {
-        this.minNumeric = minNumeric;
-    }
-
-    public void setMinSpecial(int minSpecial) {
-        this.minSpecial = minSpecial;
-    }
-
-    public void setMinUpper(int minUpper) {
-        this.minUpper = minUpper;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setSpecialCharacters(String specialCharacters) {
-        this.specialCharacters = specialCharacters;
-    }
-
-    public int getMaxLength() {
-        return maxLength;
-    }
-
-    public void setMaxLength(int maxLength) {
-        this.maxLength = maxLength;
-    }
-
-    public boolean isRestrictive() {
-        return  minSpecial > 0 || minNumeric > 0 || minLower > 0 || minUpper > 0
-        || minLength > minUpper + minLower + minNumeric + minSpecial;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if(!(object instanceof PasswordRestriction)) {
-            return false;
-        }
-
-        PasswordRestriction other = (PasswordRestriction) object;
-        return other.getId().equals(getId()) && other.getName().equals(getName());
-    }
-
-    @Override
-    public int hashCode() {
-        return getId().hashCode();
-    }
-
-    @Override
-    public String toString() {
-        List<String> sections = getEnabledSettingsStrings();
+    public String toString(PasswordRestriction passwordRestriction) {
+        List<String> sections = getEnabledSettingsStrings(passwordRestriction);
         if (sections.isEmpty()) {
             return NO_LIMITS_STRING;
         }
@@ -253,20 +106,25 @@ public class PasswordRestriction
             description.append(", and");
         }
         description.append(" at most ");
-        description.append(maxLength);
+        description.append(passwordRestriction.getMaxLength());
         description.append(" characters in total");
 
         return description.toString();
     }
 
-    private List<String> getEnabledSettingsStrings() {
+    private List<String> getEnabledSettingsStrings(PasswordRestriction restriction) {
         List<String> sections = new ArrayList<>();
+        int minSpecial = restriction.getMinSpecial();
         addSectionIfNeeded(sections, minSpecial,
                 minSpecial+" non alpha-numeric "+getCharactersPhrase(minSpecial)+
-                        " from the set '" +specialCharacters+ "'");
+                        " from the set '" +restriction.getSpecialCharacters()+ "'");
+        int minNumeric = restriction.getMinNumeric();
         addSectionIfNeeded(sections, minNumeric,minNumeric + " numeric " + getCharactersPhrase(minNumeric));
+        int minLower = restriction.getMinLower();
         addSectionIfNeeded(sections, minLower, minLower+" lower case "+getCharactersPhrase(minLower));
+        int minUpper = restriction.getMinUpper();
         addSectionIfNeeded(sections, minUpper, minUpper+" upper case "+getCharactersPhrase(minUpper));
+        int minLength = restriction.getMinLength();
         addSectionIfNeeded(sections, minLength > minUpper + minLower + minNumeric + minSpecial,
                 minLength+" "+getCharactersPhrase(minLength)+" in total");
         return sections;
