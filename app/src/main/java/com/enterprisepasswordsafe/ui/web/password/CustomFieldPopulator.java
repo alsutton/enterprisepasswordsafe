@@ -1,6 +1,6 @@
 package com.enterprisepasswordsafe.ui.web.password;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLException;

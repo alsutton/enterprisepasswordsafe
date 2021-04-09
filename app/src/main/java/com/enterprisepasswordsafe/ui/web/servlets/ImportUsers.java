@@ -17,9 +17,8 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.Group;
-import com.enterprisepasswordsafe.database.GroupDAO;
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.UserDAO;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 import com.enterprisepasswordsafe.engine.users.UserImporter;
 import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
 import com.enterprisepasswordsafe.ui.web.utils.PasswordGenerator;

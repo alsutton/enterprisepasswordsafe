@@ -17,6 +17,7 @@
 package com.enterprisepasswordsafe.database;
 
 import com.enterprisepasswordsafe.engine.configuration.TestJDBCConfiguration;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;

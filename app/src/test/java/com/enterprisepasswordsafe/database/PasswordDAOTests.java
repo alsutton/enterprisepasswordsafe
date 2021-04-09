@@ -17,6 +17,8 @@
 package com.enterprisepasswordsafe.database;
 
 import com.enterprisepasswordsafe.engine.tests.utils.PasswordTestUtils;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -63,7 +65,7 @@ public class PasswordDAOTests extends EmbeddedDatabaseTestBase {
         String passwordId = PasswordTestUtils.createPassword(runId, getAdminUser());
 
         PasswordRestrictionDAO prDAO = PasswordRestrictionDAO.getInstance();
-        PasswordRestriction createdRestriction = new PasswordRestriction("pr_"+runId, 0, 0, 0, 0, 0, 0, "", 0);
+        PasswordRestrictionUtils createdRestriction = new PasswordRestrictionUtils("pr_"+runId, 0, 0, 0, 0, 0, 0, "", 0);
         prDAO.store(createdRestriction);
 
         PasswordDAO pDAO = PasswordDAO.getInstance();

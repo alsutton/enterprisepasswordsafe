@@ -21,6 +21,9 @@ import com.enterprisepasswordsafe.database.derived.HierarchyNodeChildren;
 import com.enterprisepasswordsafe.database.derived.ImmutableHierarchyNodeChildren;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -67,7 +70,7 @@ public final class Explorer extends HttpServlet {
 	    	su.setCurrentNodeId(request, node.getNodeId());
 
 	    	request.setAttribute(INCLUDE_EMPTY_ATTRIBUTE,
-              ConfigurationDAO.getValue(ConfigurationOption.HIDE_EMPTY_FOLDERS).equals(Configuration.HIDE_EMPTY_FOLDERS_OFF));
+              ConfigurationDAO.getValue(ConfigurationOptions.HIDE_EMPTY_FOLDERS).equals(Configuration.HIDE_EMPTY_FOLDERS_OFF));
 
 	        determineHierarchyEditability(request, user);
 
@@ -122,7 +125,7 @@ public final class Explorer extends HttpServlet {
         }
 
         if	( userClassifier.isSubadministrator(user) ){
-            String displayEdit = ConfigurationDAO.getValue(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
+            String displayEdit = ConfigurationDAO.getValue(ConfigurationOptions.EDIT_USER_MINIMUM_USER_LEVEL);
             if( displayEdit != null && 	displayEdit.equals("S") ) {
                 request.setAttribute("edithierarchy_allowed", "Y");
                 request.setAttribute(INCLUDE_EMPTY_ATTRIBUTE, Boolean.TRUE);

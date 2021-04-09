@@ -16,7 +16,6 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.HierarchyNodePermissionDAO;
 import com.enterprisepasswordsafe.database.UserSummaryDAO;
 import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
 import com.enterprisepasswordsafe.engine.nodes.UserNodeDefaultPermission;

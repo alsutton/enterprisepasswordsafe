@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.utils;
 
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.persisted.User;
 import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
 import com.enterprisepasswordsafe.ui.web.servlets.LoginAuthenticationServlet;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;

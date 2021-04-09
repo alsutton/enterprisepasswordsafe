@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.IPZone;
-import com.enterprisepasswordsafe.database.IPZoneDAO;
+import com.enterprisepasswordsafe.model.utils.IPZoneUtils;
+import com.enterprisepasswordsafe.model.dao.IPZoneDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -41,7 +41,7 @@ public final class EditIPZone extends HttpServlet {
             throws IOException, ServletException {
     	try {
 	        String id = request.getParameter("zoneid");
-	        IPZone thisZone = IPZoneDAO.getInstance().getById(id);
+	        IPZoneUtils thisZone = IPZoneDAO.getInstance().getById(id);
 	        if( thisZone == null ) {
 	            throw new ServletException( "The zone is not available." );
 	        }

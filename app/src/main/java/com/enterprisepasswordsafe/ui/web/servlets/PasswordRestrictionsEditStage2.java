@@ -16,8 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.PasswordRestriction;
-import com.enterprisepasswordsafe.database.PasswordRestrictionDAO;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
@@ -69,7 +68,7 @@ public final class PasswordRestrictionsEditStage2 extends HttpServlet {
     	String id = request.getParameter(ID_PARAMETER);
     	PasswordRestrictionDAO prDAO = PasswordRestrictionDAO.getInstance();
 
-    	PasswordRestriction restriction;
+    	PasswordRestrictionUtils restriction;
     	try {
     		restriction = prDAO.getById(id);
     	} catch(SQLException ex) {

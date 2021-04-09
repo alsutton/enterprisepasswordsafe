@@ -24,12 +24,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 <div class="row">
     <div class="col-md-12">
         <a href="<c:url value='/admin/PasswordRestrictions' />"><span
-                class="glyphicon glyphicon-chevron-left">&nbsp;</span> Back to restriction list</a>
+                class="glyphicon glyphicon-chevron-left">&nbsp;</span> Back to permission list</a>
     </div>
 </div>
 <div class="row">
     <div class="col-md-12">
-        <p>The restriction can not be deleted because it is in use of the following passwords.</p>
+        <p>The permission can not be deleted because it is in use of the following passwords.</p>
         <ul>
             <c:forEach var="thisPassword" items="${requestScope.block_list}">
                 <c:url var="editUrl" value="/system/ViewPassword">

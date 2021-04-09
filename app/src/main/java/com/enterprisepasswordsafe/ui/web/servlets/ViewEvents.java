@@ -16,11 +16,10 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
-import com.enterprisepasswordsafe.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.database.TamperproofEventLogDAO.EventsForDay;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO.EventsForDay;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -67,7 +66,7 @@ public final class ViewEvents extends HttpServlet {
         User remoteUser = getCurrentUserAndStoreInRequest(request);
 
         try {
-            List<EventsForDay> events = TamperproofEventLogDAO.getInstance().
+            List<EventsForDay> events = LoggingDAO.getInstance().
                     getEventsForDateRange(startDate.getTimeInMillis(), endDate.getTimeInMillis(),
                         userLimit, passwordLimit, remoteUser, false, true);
             request.setAttribute("events", events);
@@ -156,7 +155,7 @@ public final class ViewEvents extends HttpServlet {
     private void prepareExport(HttpServletRequest request)
         throws ServletException {
         try {
-            request.setAttribute("delimiter", ConfigurationDAO.getInstance().get(ConfigurationOption.REPORT_SEPARATOR));
+            request.setAttribute("delimiter", ConfigurationDAO.getInstance().get(ConfigurationOptions.REPORT_SEPARATOR));
         } catch (SQLException e) {
             throw new ServletException(e);
         }

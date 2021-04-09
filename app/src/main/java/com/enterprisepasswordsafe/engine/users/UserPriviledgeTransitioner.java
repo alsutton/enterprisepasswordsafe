@@ -1,52 +1,58 @@
 package com.enterprisepasswordsafe.engine.users;
 
-import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.logging.LogStore;
+import com.enterprisepasswordsafe.model.DAORepository;
+import com.enterprisepasswordsafe.model.LogEventClass;
+import com.enterprisepasswordsafe.model.ReservedGroups;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.MembershipDAO;
+import com.enterprisepasswordsafe.model.persisted.Group;
+import com.enterprisepasswordsafe.model.persisted.User;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
 public class UserPriviledgeTransitioner {
 
-    private final UserClassifier userClassifier = new UserClassifier();
+    private final DAORepository daoRepository;
+    private final LogStore logStore;
+
+    public UserPriviledgeTransitioner(DAORepository daoRepository, LogStore logStore) {
+        this.daoRepository = daoRepository;
+        this.logStore = logStore;
+    }
 
     public void makeAdmin(final User adminUser, final User theUser)
-            throws SQLException, IOException, GeneralSecurityException {
-        Group adminGroup = GroupDAO.getInstance().getAdminGroup(adminUser);
+            throws GeneralSecurityException {
+        Group adminGroup = daoRepository.getGroupDAO().getAdminGroup(adminUser);
         makeAdmin(adminUser, adminGroup, theUser);
     }
 
-    public void makeAdmin(final User adminUser, final Group adminGroup, final User theUser)
-            throws SQLException, IOException, GeneralSecurityException {
+    public void makeAdmin(final User adminUser, final Group adminGroup, final User user)
+            throws GeneralSecurityException {
+        MembershipDAO membershipDAO = daoRepository.getMembershipDAO();
         // Check the user is not already an admin
-        if (userClassifier.isAdministrator(theUser)) {
+        if (membershipDAO.isAdminUser(user)) {
             return;
         }
 
-        // Decrypt the user being updateds access key using the admin groups
-        // key.
-        theUser.decryptAdminAccessKey(adminGroup);
+        membershipDAO.create(user, adminGroup);
 
-        // Add the user being updated to the password admin group.
-        MembershipDAO mDAO = MembershipDAO.getInstance();
-        mDAO.create(theUser, adminGroup);
+        Group subadminGroup =
+                daoRepository
+                        .getGroupDAO()
+                        .getByIdWithKeyAvailable(ReservedGroups.SUBADMIN, adminUser);
+        membershipDAO.create(user, subadminGroup);
 
-        // Get the password admin group and assign it the admin access key.
-        Group subadminGroup = GroupDAO.getInstance().getById(Group.SUBADMIN_GROUP_ID);
-        subadminGroup.setAccessKey(adminGroup.getAccessKey());
-
-        // Add the user being updated to the password admin group.
-        mDAO.create(theUser, subadminGroup);
-
-        TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                adminUser, null, "{user:" + theUser.getId() + "} was given EPS administrator rights.",
+        logStore.log(LogEventClass.USER_MANIPULATION, adminUser, null,
+                "{user:" + user.getId() + "} was given EPS administrator rights.",
                 true);
     }
 
     public void makeSubadmin(final User adminUser, final User theUser)
-            throws SQLException, IOException, GeneralSecurityException {
-        Group adminGroup = GroupDAO.getInstance().getAdminGroup(adminUser);
+            throws GeneralSecurityException {
+        Group adminGroup = daoRepository.getGroupDAO().getAdminGroup(adminUser);
         makeSubadmin(adminUser, adminGroup, theUser);
     }
 
@@ -58,57 +64,55 @@ public class UserPriviledgeTransitioner {
      */
 
     public void makeSubadmin(final User adminUser, final Group adminGroup, final User theUser)
-            throws SQLException, IOException, GeneralSecurityException {
-        // Check the user is not already a password admin
-        if (userClassifier.isSubadministrator(theUser)) {
+            throws GeneralSecurityException {
+        MembershipDAO membershipDAO = daoRepository.getMembershipDAO();
+        if (membershipDAO.isSubadminUser(theUser) && !membershipDAO.isAdminUser(theUser)) {
             return;
         }
 
-        // Decrypt the user being updateds access key using the admin groups
-        // key.
-        theUser.decryptAdminAccessKey( adminGroup);
+        Group subadminGroup =
+                daoRepository
+                        .getGroupDAO()
+                        .getByIdWithKeyAvailable(ReservedGroups.SUBADMIN, adminUser);
+        membershipDAO.create(theUser, subadminGroup);
+        membershipDAO.delete(theUser, adminGroup);
 
-        // Get the password admin group and assign it the admin access key.
-        Group subadminGroup = GroupDAO.getInstance().getById(Group.SUBADMIN_GROUP_ID);
-        subadminGroup.setAccessKey(adminGroup.getAccessKey());
-
-        // Add the user being updated to the password admin group.
-        MembershipDAO mDAO = MembershipDAO.getInstance();
-        mDAO.create(theUser, subadminGroup);
-
-        // Ensure the user doesn't remain listed as an admin
-        mDAO.delete(theUser, adminGroup);
-
-        TamperproofEventLogDAO.getInstance().create(
-                TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                adminUser,
-                null,
-                "{user:" + theUser.getId() +
-                        "} was given password administrator rights",
-                true
-        );
+        logStore.log(LogEventClass.USER_MANIPULATION, adminUser, null,
+                "{user:" + theUser.getId() + "} was given password administrator rights",
+                true);
     }
 
     /**
-     * Change the status of the user viewing or not viewing passwords
+     * Change the status of the user viewing or not viewing passwords.
      *
-     * @param status true if the user should not be able to view passwords, false if not
-     * @param theUser The user whose status should be changed.
+     * @param adminUser the administrator performing the change.
+     * @param user The user whose status should be changed.
+     * @param canView true if the user should be able to view passwords, false if not
      */
 
-    public void setNotViewing(final User theUser, final boolean status)
-            throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-
-        MembershipDAO mDAO = MembershipDAO.getInstance();
-        if(status) {
-            if(mDAO.getMembership(theUser, Group.NON_VIEWING_GROUP_ID) == null) {
-                mDAO.create(theUser, Group.NON_VIEWING_GROUP_ID);
-            }
-        } else {
-            if(mDAO.getMembership(theUser, Group.NON_VIEWING_GROUP_ID) != null) {
-                mDAO.delete(theUser, Group.NON_VIEWING_GROUP_ID);
-            }
+    public void setViewingAbility(final User adminUser, final User user, final boolean canView)
+            throws GeneralSecurityException {
+        if(canView == user.getCanViewPasswords()) {
+            // No change so no transition needed.
+            return;
         }
+
+        if(canView) {
+            logStore.log(LogEventClass.USER_MANIPULATION, adminUser, null,
+                    "{user:" + user.getId() +
+                            "} had the ability to view passwords added by {user:" +
+                            adminUser.getId() + "}.",
+                    true);
+        } else if (user.getCanViewPasswords()) {
+            logStore.log(LogEventClass.USER_MANIPULATION, adminUser, null,
+                    "{user:" + user.getId() +
+                            "} had their ability to view passwords removed by {user:" +
+                            adminUser.getId() + "}.",
+                    true);
+        }
+
+        user.setCanViewPasswords(canView);
+        daoRepository.getUserDAO().store(user);
     }
 
     /**
@@ -120,9 +124,9 @@ public class UserPriviledgeTransitioner {
 
     public void makeNormalUser(final User adminUser, final User theUser)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-        GroupDAO gDAO = GroupDAO.getInstance();
+        GroupDAO gDAO = daoRepository.getGroupDAO();
         Group adminGroup = gDAO.getAdminGroup(adminUser);
-        Group subadminGroup = gDAO.getById(Group.SUBADMIN_GROUP_ID);
+        Group subadminGroup = gDAO.getById(ReservedGroups.SUBADMIN.getId());
         makeNormalUser( adminUser, adminGroup, subadminGroup, theUser);
     }
 
@@ -132,23 +136,23 @@ public class UserPriviledgeTransitioner {
      * @param adminUser The user making the changes
      * @param adminGroup The admin group.
      * @param subadminGroup The sub administrator group.
-     * @param theUser The user being modified
+     * @param user The user being modified
      */
 
     public void makeNormalUser(final User adminUser, final Group adminGroup,
-                               final Group subadminGroup, final User theUser)
+                               final Group subadminGroup, final User user)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
         // Check the user is not already a normal user
-        if (!userClassifier.isPriviledgedUser(theUser)) {
+        MembershipDAO membershipDAO = daoRepository.getMembershipDAO();
+        if (!membershipDAO.isPriviledgedUser(user)) {
             return;
         }
 
-        MembershipDAO mDAO = MembershipDAO.getInstance();
-        mDAO.delete(theUser, adminGroup);
-        mDAO.delete(theUser, subadminGroup);
+        membershipDAO.delete(user, adminGroup);
+        membershipDAO.delete(user, subadminGroup);
 
-        TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
-                adminUser, null, "{user:" + theUser.getId() + "} has all administration rights removed.",
+        logStore.log( LogEventClass.USER_MANIPULATION, adminUser, null,
+                "{user:" + user.getId() + "} has all administration rights removed.",
                 true);
     }
 }

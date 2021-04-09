@@ -19,45 +19,45 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 <div class="form-group">
     <label for="name">Name</label>
     <input type="text" name="name" id="name"
-           class="form-control" value="<c:out value='${requestScope.restriction.name}'/>" />
+           class="form-control" value="<c:out value='${requestScope.permission.name}'/>" />
 </div>
 <div class="form-group">
     <label for="size_min">Minimum Length</label>
     <input type="text" name="size_min" id="size_min"
-           class="form-control" value="<c:out value='${requestScope.restriction.minLength}' default='8'/>" />
+           class="form-control" value="<c:out value='${requestScope.permission.minLength}' default='8'/>" />
 </div>
 <div class="form-group">
     <label for="size_max">Maximum Length</label>
     <input type="text" name="size_max" id="size_max"
-           class="form-control" value="<c:out value='${requestScope.restriction.maxLength}' default='20'/>"/>
+           class="form-control" value="<c:out value='${requestScope.permission.maxLength}' default='20'/>"/>
 </div>
 <div class="form-group">
     <label for="upper_min">Upper case letters</label>
     <input type="text" name="upper_min" id="upper_min"
-           class="form-control" value="<c:out value='${requestScope.restriction.minUpper}' default='0'/>"/>
+           class="form-control" value="<c:out value='${requestScope.permission.minUpper}' default='0'/>"/>
 </div>
 <div class="form-group">
     <label for="lower_min">Lower case letters</label>
     <input type="text" name="lower_min" id="lower_min"
-           class="form-control" value="<c:out value='${requestScope.restriction.minLower}' default='0'/>"/>
+           class="form-control" value="<c:out value='${requestScope.permission.minLower}' default='0'/>"/>
 </div>
 <div class="form-group">
     <label for="numeric_min">Numerics</label>
     <input type="text" name="numeric_min" id="numeric_min"
-           class="form-control" value="<c:out value='${requestScope.restriction.minNumeric}' default='0'/>"/>
+           class="form-control" value="<c:out value='${requestScope.permission.minNumeric}' default='0'/>"/>
 </div>
 <div class="form-group">
     <label for="special_min">Non-alphanumeric characters</label>
     <input type="text" name="special_min" id="special_min"
-           class="form-control" value="<c:out value='${requestScope.restriction.minSpecial}' default='0'/>"/>
+           class="form-control" value="<c:out value='${requestScope.permission.minSpecial}' default='0'/>"/>
 </div>
 <div class="form-group">
     <label for="chars_special">Non-alphanumeric characters to use</label>
     <input type="text" name="chars_special" id="chars_special"
-           class="form-control" value="<c:out value='${requestScope.restriction.specialCharacters}' default='#!&.'/>"/>
+           class="form-control" value="<c:out value='${requestScope.permission.specialCharacters}' default='#!&.'/>"/>
 </div>
 <div class="form-group">
     <label for="lifetime">Default validity period<br/><i>(days, 0 means non-expiring)</i></label>
     <input type="text" name="lifetime" id="lifetime"
-           class="form-control" value="<c:out value='${requestScope.restriction.lifetime}' default='0'/>"/>
+           class="form-control" value="<c:out value='${requestScope.permission.lifetime}' default='0'/>"/>
 </div>

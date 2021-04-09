@@ -16,9 +16,12 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.passwords.PasswordImporter;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.persisted.HierarchyNode;
+import com.enterprisepasswordsafe.model.persisted.User;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 import org.apache.commons.csv.CSVRecord;

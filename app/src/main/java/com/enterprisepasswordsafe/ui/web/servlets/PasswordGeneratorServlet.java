@@ -16,8 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.PasswordRestriction;
-import com.enterprisepasswordsafe.database.PasswordRestrictionDAO;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
 import com.enterprisepasswordsafe.ui.web.utils.PasswordGenerator;
 
 import javax.servlet.ServletException;
@@ -48,7 +47,7 @@ public final class PasswordGeneratorServlet extends HttpServlet {
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
 		throws ServletException, IOException {
 
-        PasswordRestriction restriction = null;
+        PasswordRestrictionUtils restriction = null;
 
         String restrictionId = request.getParameter("rid");
         if(restrictionId != null && !restrictionId.isEmpty()) {

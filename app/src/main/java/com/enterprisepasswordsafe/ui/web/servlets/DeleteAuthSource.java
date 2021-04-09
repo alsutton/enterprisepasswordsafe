@@ -17,9 +17,9 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.AuthenticationSource;
-import com.enterprisepasswordsafe.database.AuthenticationSourceDAO;
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.model.dao.AuthenticationSourceDAO;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
@@ -46,7 +46,7 @@ public final class DeleteAuthSource extends HttpServlet {
 	        	throw new ServletException("The specified authentication source was not found.");
 	        }
 
-	        String defaultSource = ConfigurationDAO.getValue(ConfigurationOption.DEFAULT_AUTHENTICATION_SOURCE_ID);
+	        String defaultSource = ConfigurationDAO.getValue(ConfigurationOptions.DEFAULT_AUTHENTICATION_SOURCE_ID);
 	        if( defaultSource != null && defaultSource.equals(id)) {
 	        	throw new ServletException("The source can not be deleted because it is currently the default source.");
 	        }

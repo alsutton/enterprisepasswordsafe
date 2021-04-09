@@ -22,6 +22,9 @@ import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.hierarchy.NodeDeleter;
 import com.enterprisepasswordsafe.engine.nodes.HierarchyManipulator;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -49,7 +52,7 @@ public final class EditHierarchy extends HttpServlet {
 	 */
 
 	private static final AccessApprover accessApprover =
-		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
+		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOptions.EDIT_USER_MINIMUM_USER_LEVEL);
 
     /**
      * The action text for an add action.
@@ -129,10 +132,10 @@ public final class EditHierarchy extends HttpServlet {
 		    }
 
 
-		    String hideEmpty = ConfigurationDAO.getValue(ConfigurationOption.HIDE_EMPTY_FOLDERS);
+		    String hideEmpty = ConfigurationDAO.getValue(ConfigurationOptions.HIDE_EMPTY_FOLDERS);
 		    boolean includeEmpty = (hideEmpty.equals(Configuration.HIDE_EMPTY_FOLDERS_OFF));
 		    if	( userClassifier.isSubadministrator(user) ){
-		        String displayEdit = ConfigurationDAO.getValue(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
+		        String displayEdit = ConfigurationDAO.getValue(ConfigurationOptions.EDIT_USER_MINIMUM_USER_LEVEL);
 		        if( displayEdit != null && 	displayEdit.equals("S") ) {
 		        	includeEmpty = true;
 		        }

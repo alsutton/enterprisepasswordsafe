@@ -19,6 +19,7 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -50,7 +51,7 @@ public final class AlterAccess extends HttpServlet {
 	        GroupDAO gDAO = GroupDAO.getInstance();
 	        Group everyoneGroup = gDAO.getByIdDecrypted(Group.ALL_USERS_GROUP_ID, thisUser);
 	        AccessControl eGAC =
-	        	GroupAccessControlDAO.getInstance().get(thisUser, everyoneGroup, thisPassword);
+	        	GroupPasswordAccessControlDAO.getInstance().get(thisUser, everyoneGroup, thisPassword);
 	        if			( eGAC == null ) {
 	        	request.setAttribute("egac", "N");
 	        } else if	( eGAC.getReadKey() != null && eGAC.getModifyKey() == null) {
@@ -60,8 +61,8 @@ public final class AlterAccess extends HttpServlet {
 	        }
 
 	        request.setAttribute(SharedParameterNames.PASSWORD_ATTRIBUTE, thisPassword);
-	        request.setAttribute( "gac_summaries", GroupAccessControlDAO.getInstance().getSummaries(thisPassword));
-	        request.setAttribute( "uac_summaries", UserAccessControlDAO.getInstance().getSummaries(thisPassword));
+	        request.setAttribute( "gac_summaries", GroupPasswordAccessControlDAO.getInstance().getSummaries(thisPassword));
+	        request.setAttribute( "uac_summaries", UserPasswordAccessControlDAO.getInstance().getSummaries(thisPassword));
         } catch(SQLException | GeneralSecurityException e) {
         	throw new ServletException("The access information could not be obtained due to an error", e);
         }

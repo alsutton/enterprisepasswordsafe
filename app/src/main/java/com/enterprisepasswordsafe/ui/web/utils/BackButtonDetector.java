@@ -1,7 +1,7 @@
 package com.enterprisepasswordsafe.ui.web.utils;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +18,7 @@ public class BackButtonDetector {
 
     public void ensureBackIsNotUsedIfBlocked(final HttpServletRequest request)
             throws ServletException, SQLException {
-        String backAllowed = configurationDAO.getValue(ConfigurationOption.ALLOW_BACK_BUTTON_TO_ACCESS_PASSWORD);
+        String backAllowed = configurationDAO.getValue(ConfigurationOptions.ALLOW_BACK_BUTTON_TO_ACCESS_PASSWORD);
         if( backAllowed != null && backAllowed.equals("true") ) {
             return;
         }

@@ -17,6 +17,8 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -39,7 +41,7 @@ public final class UpdateGroupHierarchyPermissions extends HttpServlet {
 	 */
 
 	private static final AccessApprover accessApprover =
-		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
+		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOptions.EDIT_USER_MINIMUM_USER_LEVEL);
 
     /**
      * The extension for parameters which hold the new permission settings.

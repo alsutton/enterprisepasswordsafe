@@ -1,10 +1,12 @@
 package com.enterprisepasswordsafe.database;
 
-import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
+import com.enterprisepasswordsafe.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.logging.LogEventHasher;
 import com.enterprisepasswordsafe.engine.logging.LogEventParser;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
+import com.enterprisepasswordsafe.model.dao.AccessControlDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

@@ -17,9 +17,7 @@
 package com.enterprisepasswordsafe.ui.web.rawapi;
 
 import com.enterprisepasswordsafe.database.Group;
-import com.enterprisepasswordsafe.database.GroupDAO;
-import com.enterprisepasswordsafe.database.HierarchyNode;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
 import com.enterprisepasswordsafe.engine.passwords.PasswordImporter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;

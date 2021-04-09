@@ -1,7 +1,7 @@
 package com.enterprisepasswordsafe.engine.nodes;
 
-import com.enterprisepasswordsafe.database.HierarchyNode;
-import com.enterprisepasswordsafe.database.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.persisted.HierarchyNode;
 
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;

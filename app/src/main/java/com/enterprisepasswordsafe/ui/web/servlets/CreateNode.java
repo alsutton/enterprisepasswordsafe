@@ -17,6 +17,10 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -38,7 +42,7 @@ public final class CreateNode extends HttpServlet {
 	 */
 
 	private static final AccessApprover accessApprover =
-		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
+		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOptions.EDIT_USER_MINIMUM_USER_LEVEL);
 
     /**
      * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -57,8 +61,8 @@ public final class CreateNode extends HttpServlet {
 
 	        HierarchyNode newNode = HierarchyNodeDAO.getInstance().create(name, parentId, HierarchyNode.CONTAINER_NODE);
 	    	HierarchyNodeAccessRuleDAO.getInstance().setAccessibleByUser(newNode, user, HierarchyNodeAccessRuleDAO.ACCESIBILITY_ALLOWED	);
-	        TamperproofEventLogDAO.getInstance().create(
-	        				TamperproofEventLog.LOG_LEVEL_HIERARCHY_MANIPULATION,
+	        LoggingDAO.getInstance().create(
+	        				LogEntry.LOG_LEVEL_HIERARCHY_MANIPULATION,
 	        				user,
 	        				null,
 	        				"Added {node:" + newNode.getNodeId() +

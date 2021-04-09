@@ -16,11 +16,17 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.TamperproofEventLogDAO.EventsForDay;
+import com.enterprisepasswordsafe.model.dao.AccessRoleDAO;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO.EventsForDay;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.model.AccessRoles;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.AccessControlDAO;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -47,12 +53,12 @@ public final class ViewObjectEvents extends HttpServlet {
 	        }
 
 	        boolean allowedAccess = false;
-			if	( AccessRoleDAO.getInstance().hasRole(remoteUser.getId(), passwordLimit, AccessRole.HISTORYVIEWER_ROLE) ) {
+			if	( AccessRoleDAO.getInstance().hasRole(remoteUser.getId(), passwordLimit, AccessRoles.HISTORYVIEWER_ROLE) ) {
 				allowedAccess = Boolean.TRUE;
 			} else if	( userClassifier.isAdministrator(remoteUser) ) {
 				allowedAccess = Boolean.TRUE;
 			} else if	( userClassifier.isSubadministrator(remoteUser) ) {
-				String showSubadminHistory = ConfigurationDAO.getValue(ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS);
+				String showSubadminHistory = ConfigurationDAO.getValue(ConfigurationOptions.SUBADMINS_HAVE_HISTORY_ACCESS);
 				if( showSubadminHistory.charAt(0) == 'Y' ) {
 					allowedAccess = Boolean.TRUE;
 				}
@@ -90,7 +96,7 @@ public final class ViewObjectEvents extends HttpServlet {
 	    	request.setAttribute("object.name", thePassword.toString());
 
 
-	        List<EventsForDay> events = TamperproofEventLogDAO.getInstance().
+	        List<EventsForDay> events = LoggingDAO.getInstance().
 	        					getEventsForDateRange( startDate, endDate, null,
 	    							passwordLimit, remoteUser, true, false);
 

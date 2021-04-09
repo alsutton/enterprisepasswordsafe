@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
 import com.enterprisepasswordsafe.ui.web.password.CustomFieldPopulator;
 
 import javax.servlet.ServletException;

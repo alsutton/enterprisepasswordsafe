@@ -16,11 +16,27 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.model.dao.HistoricalPasswordDAO;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
-import com.enterprisepasswordsafe.ui.web.utils.*;
+import com.enterprisepasswordsafe.model.AccessRoles;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.AccessRoleDAO;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.dao.IntegrationModuleScriptDAO;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.persisted.HierarchyNode;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
+import com.enterprisepasswordsafe.model.persisted.Password;
+import com.enterprisepasswordsafe.model.persisted.RestrictedAccessRequest;
+import com.enterprisepasswordsafe.model.persisted.User;
+import com.enterprisepasswordsafe.ui.web.utils.BackButtonDetector;
+import com.enterprisepasswordsafe.ui.web.utils.RedirectException;
+import com.enterprisepasswordsafe.ui.web.utils.RestrictedAccessEnforcer;
+import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
+import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -123,7 +139,7 @@ public final class ViewPassword extends HttpServlet {
 
 	private void populateRequestAttributesWithData(HttpServletRequest request, User user, PasswordBase password)
 			throws SQLException {
-		String passwordTimeout = ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_ON_SCREEN_TIME);
+		String passwordTimeout = ConfigurationDAO.getValue(ConfigurationOptions.PASSWORD_ON_SCREEN_TIME);
 		int timeout = Integer.parseInt(passwordTimeout) * DateFormatter.MILLIS_IN_MINUTE;
 		passwordTimeout = Integer.toString(timeout);
 
@@ -131,7 +147,7 @@ public final class ViewPassword extends HttpServlet {
 		request.setAttribute("password", password);
 		request.setAttribute(SharedParameterNames.PASSWORD_TIMEOUT_ATTRIBUTE, passwordTimeout);
 		request.setAttribute(SCRIPTS_IN_USE, IntegrationModuleScriptDAO.getInstance().hasScripts(password));
-		request.setAttribute("password_displayType", ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_DISPLAY_TYPE));
+		request.setAttribute("password_displayType", ConfigurationDAO.getValue(ConfigurationOptions.PASSWORD_DISPLAY_TYPE));
 		request.setAttribute("display", shouldDisplay(request.getParameter("display")));
 		request.setAttribute("cfields", password.getAllCustomFields());
 		request.setAttribute("showHistoryOption", shouldShowHistory(user, password));
@@ -149,7 +165,7 @@ public final class ViewPassword extends HttpServlet {
         }
         if (logRequired) {
             String dt = request.getParameter(BaseServlet.DATE_TIME_PARAMETER);
-            TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+            LoggingDAO.getInstance().create(LogEntry.LOG_LEVEL_OBJECT_MANIPULATION,
                     user, password, constructAccessReasonLogMessage(dt, restrictedAccessRequest),
                     shouldSendEmail(user, password));
         }
@@ -224,7 +240,7 @@ public final class ViewPassword extends HttpServlet {
     private String shouldDisplay(String requestSetting)
 			throws SQLException {
 		if( requestSetting == null || requestSetting.length() == 0 ) {
-			String displayDefault = ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_DISPLAY);
+			String displayDefault = ConfigurationDAO.getValue(ConfigurationOptions.PASSWORD_DISPLAY);
 			return Boolean.toString(displayDefault.charAt(0) =='s');
 		}
 		return Boolean.FALSE.toString();
@@ -232,13 +248,13 @@ public final class ViewPassword extends HttpServlet {
 
 	private Boolean shouldShowHistory(final User thisUser, final PasswordBase thisPassword)
 			throws SQLException {
-		if	( AccessRoleDAO.getInstance().hasRole(thisUser.getId(), thisPassword.getId(), AccessRole.HISTORYVIEWER_ROLE)
+		if	( AccessRoleDAO.getInstance().hasRole(thisUser.getId(), thisPassword.getId(), AccessRoles.HISTORYVIEWER_ROLE)
         ||    userClassifier.isAdministrator(thisUser)) {
 			return Boolean.TRUE;
 		}
 
         if	( userClassifier.isSubadministrator(thisUser)) {
-            return ConfigurationDAO.getValue(ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS).charAt(0) == 'Y';
+            return ConfigurationDAO.getValue(ConfigurationOptions.SUBADMINS_HAVE_HISTORY_ACCESS).charAt(0) == 'Y';
         }
 
 		return Boolean.FALSE;

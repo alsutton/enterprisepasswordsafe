@@ -1,8 +1,7 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
-import com.enterprisepasswordsafe.database.Password;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +48,7 @@ public abstract class AbstractPasswordManipulatingServlet extends HttpServlet {
 
     boolean getHistorySetting(HttpServletRequest request)
             throws SQLException {
-        String passwordHistory = ConfigurationDAO.getInstance().get( ConfigurationOption.STORE_PASSWORD_HISTORY );
+        String passwordHistory = ConfigurationDAO.getInstance().get( ConfigurationOptions.STORE_PASSWORD_HISTORY );
         if		  ( passwordHistory.equals(Password.SYSTEM_PASSWORD_RECORD)) {
             return true;
         }

@@ -1,7 +1,7 @@
 package com.enterprisepasswordsafe.engine.users;
 
-import com.enterprisepasswordsafe.database.Decrypter;
-import com.enterprisepasswordsafe.database.Encrypter;
+import com.enterprisepasswordsafe.model.Decrypter;
+import com.enterprisepasswordsafe.model.Encrypter;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;

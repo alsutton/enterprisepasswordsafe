@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.IPZoneDAO;
+import com.enterprisepasswordsafe.model.dao.IPZoneDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

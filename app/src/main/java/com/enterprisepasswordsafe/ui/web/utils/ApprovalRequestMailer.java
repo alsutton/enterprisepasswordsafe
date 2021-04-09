@@ -17,6 +17,9 @@
 package com.enterprisepasswordsafe.ui.web.utils;
 
 import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.model.AccessRoles;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -48,7 +51,7 @@ public class ApprovalRequestMailer
 	 * The set of approvers to send the messages to
 	 */
 
-	private final Set<AccessRole.ApproverSummary> recipients;
+	private final Set<AccessRoles.ApproverSummary> recipients;
 
 	/**
 	 * The SMTP server to send the mail via.
@@ -77,12 +80,12 @@ public class ApprovalRequestMailer
 	/**
 	 * Constructors, stores the information and starts the sender.
 	 */
-	public ApprovalRequestMailer(final Set<AccessRole.ApproverSummary> approvers, final User requester,
+	public ApprovalRequestMailer(final Set<AccessRoles.ApproverSummary> approvers, final User requester,
                                  final Password password, final RestrictedAccessRequest request,
                                  final String approvalURL)
 		throws SQLException {
 
-        smtpServer = ConfigurationDAO.getValue(ConfigurationOption.SMTP_HOST);
+        smtpServer = ConfigurationDAO.getValue(ConfigurationOptions.SMTP_HOST);
 
 		sender = requester.getEmail();
 		if( sender == null ) {
@@ -119,7 +122,7 @@ public class ApprovalRequestMailer
 
 	@Override
 	public void run() {
-		for(AccessRole.ApproverSummary summary : recipients) {
+		for(AccessRoles.ApproverSummary summary : recipients) {
 			String mailAddress = summary.getEmail();
 			try {
 				sendEmail(mailAddress);

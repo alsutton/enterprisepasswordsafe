@@ -16,12 +16,12 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.HierarchyNode;
-import com.enterprisepasswordsafe.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.database.Password;
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.actions.PasswordSearchAction;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.persisted.HierarchyNode;
+import com.enterprisepasswordsafe.model.persisted.Password;
+import com.enterprisepasswordsafe.model.persisted.User;
+import com.enterprisepasswordsafe.passwordprocessor.actions.PasswordSearchAction;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
 import javax.servlet.ServletException;

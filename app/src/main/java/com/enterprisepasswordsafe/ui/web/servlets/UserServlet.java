@@ -16,12 +16,20 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
 import com.enterprisepasswordsafe.database.derived.ImmutableUserSummary;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.users.UserPriviledgeTransitioner;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
 import com.enterprisepasswordsafe.engine.utils.StringUtils;
+import com.enterprisepasswordsafe.model.dao.AuthenticationSourceDAO;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.IPZoneDAO;
+import com.enterprisepasswordsafe.model.dao.MembershipDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
+import com.enterprisepasswordsafe.model.dao.UserIPZoneRestrictionDAO;
+import com.enterprisepasswordsafe.model.persisted.AuthenticationSource;
+import com.enterprisepasswordsafe.model.persisted.User;
+import com.enterprisepasswordsafe.model.persisted.UserIPZoneRestriction;
 import com.enterprisepasswordsafe.ui.web.EPSUIException;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -248,8 +256,8 @@ public final class UserServlet extends HttpServlet {
             throw new EPSUIException("The passwords you entered were not the same.");
         }
 
-        PasswordRestriction control = PasswordRestrictionDAO.getInstance().getById(
-                PasswordRestriction.LOGIN_PASSWORD_RESTRICTION_ID);
+        PasswordRestrictionUtils control = PasswordRestrictionDAO.getInstance().getById(
+                PasswordRestrictionUtils.LOGIN_PASSWORD_RESTRICTION_ID);
         if (control != null && !control.verify(password1)) {
             throw new EPSUIException(
                     "The users password has NOT been updated because it does not meet the following requirements; "
@@ -341,7 +349,8 @@ public final class UserServlet extends HttpServlet {
         }
 
         String noView = request.getParameter("noview");
-        userPriviledgeTransitioner.setNotViewing(user, noView != null && noView.equals("Y"));
+        boolean canView = noView == null || !noView.equals("Y");
+        userPriviledgeTransitioner.setViewingAbility(remoteUser, user, canView);
     }
 
     @Override

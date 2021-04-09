@@ -16,10 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.tests.utils;
 
-import com.enterprisepasswordsafe.database.Password;
-import com.enterprisepasswordsafe.database.PasswordDAO;
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
+import com.enterprisepasswordsafe.model.persisted.Password;
+import com.enterprisepasswordsafe.model.persisted.PasswordAccessControl;
+import com.enterprisepasswordsafe.model.persisted.User;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -49,9 +49,8 @@ public final class PasswordTestUtils {
             throws GeneralSecurityException, IOException, SQLException {
         PasswordDAO pDAO = PasswordDAO.getInstance();
 
-        Password newPassword =
-                new Password("u"+runId, "p"+runId, "l"+runId, "n"+runId  );
-        UserAccessControl uac = pDAO.storeNewPassword(newPassword, adminUser);
-        return uac.getItemId();
+        Password newPassword = new Password("u"+runId, "p"+runId, "l"+runId, "n"+runId  );
+        PasswordAccessControl uac = pDAO.storeNewPassword(newPassword, adminUser);
+        return uac;
     }
 }

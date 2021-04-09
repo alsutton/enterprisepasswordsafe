@@ -17,6 +17,10 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
 import com.enterprisepasswordsafe.ui.web.utils.JSTLParameterNameSanitiser;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -40,8 +44,8 @@ public final class ConfigureEmail extends HttpServlet {
             "smtp.enabled.group_manipulation",
             "smtp.enabled.object_manipulation",
             "smtp.enabled.hierarchy_manipulation",
-            ConfigurationOption.SMTP_TO_PROPERTY.getPropertyName(),
-            ConfigurationOption.INCLUDE_USER_ON_AUDIT_EMAIL.getPropertyName() };
+            ConfigurationOptions.SMTP_TO_PROPERTY.getPropertyName(),
+            ConfigurationOptions.INCLUDE_USER_ON_AUDIT_EMAIL.getPropertyName() };
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
@@ -65,7 +69,7 @@ public final class ConfigureEmail extends HttpServlet {
 	        User thisUser = SecurityUtils.getRemoteUser(request);
 
 	        ConfigurationDAO cDAO = ConfigurationDAO.getInstance();
-	        TamperproofEventLogDAO telDAO = TamperproofEventLogDAO.getInstance();
+	        LoggingDAO telDAO = LoggingDAO.getInstance();
             for(String parameterName : PARAMETER_NAMES) {
 	            transferSettingToDatabase(request, cDAO, telDAO, thisUser, parameterName);
 	        }
@@ -93,7 +97,7 @@ public final class ConfigureEmail extends HttpServlet {
     }
 
     private void transferSettingToDatabase(final HttpServletRequest request,
-    		final ConfigurationDAO cDAO, TamperproofEventLogDAO telDAO,
+    		final ConfigurationDAO cDAO, LoggingDAO telDAO,
     		final User thisUser,  final String parameterName) throws SQLException,
             GeneralSecurityException, UnsupportedEncodingException {
         String value = request.getParameter(parameterName);
@@ -116,7 +120,7 @@ public final class ConfigureEmail extends HttpServlet {
                             + printValue
                             + '\"';
 
-            telDAO.create( TamperproofEventLog.LOG_LEVEL_CONFIGURATION, thisUser, null, message, true );
+            telDAO.create( LogEntry.LOG_LEVEL_CONFIGURATION, thisUser, null, message, true );
         }
 
         cDAO.set(parameterName, value);

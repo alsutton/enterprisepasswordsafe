@@ -16,8 +16,10 @@
 
 package com.enterprisepasswordsafe.engine.reports;
 
-import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -92,7 +94,7 @@ public class AccessReport {
 
         String passwordId = resultSet.getString(2);
 
-        AccessControl ac = GroupAccessControlDAO.getInstance().get(user, group, passwordId);
+        AccessControl ac = GroupPasswordAccessControlDAO.getInstance().get(user, group, passwordId);
         if( ac == null )
             return;
 

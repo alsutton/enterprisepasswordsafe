@@ -16,7 +16,6 @@
 
 package com.enterprisepasswordsafe.database.schema;
 
-import com.enterprisepasswordsafe.database.SchemaVersion;
 import com.enterprisepasswordsafe.database.dbpool.DatabasePoolFactory;
 import com.enterprisepasswordsafe.engine.Repositories;
 import org.junit.jupiter.api.BeforeEach;

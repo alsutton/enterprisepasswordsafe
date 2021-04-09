@@ -19,6 +19,8 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.model.dao.AccessControlDAO;
+import com.enterprisepasswordsafe.model.dao.HistoricalPasswordDAO;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 

@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.enterprisepasswordsafe.database;
+package com.enterprisepasswordsafe.engine.utils;
 
 import com.enterprisepasswordsafe.model.persisted.PasswordRestriction;
 

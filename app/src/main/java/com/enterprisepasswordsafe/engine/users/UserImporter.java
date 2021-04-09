@@ -1,9 +1,11 @@
 package com.enterprisepasswordsafe.engine.users;
 
 import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
 import com.enterprisepasswordsafe.database.derived.ImmutableUserSummary;
 import com.enterprisepasswordsafe.engine.utils.PasswordGenerator;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 import org.apache.commons.csv.CSVRecord;
 
 import javax.mail.Message;
@@ -117,7 +119,7 @@ public class UserImporter {
             return;
         }
 
-        String smtpHost = ConfigurationDAO.getValue(ConfigurationOption.SMTP_HOST);
+        String smtpHost = ConfigurationDAO.getValue(ConfigurationOptions.SMTP_HOST);
         if(smtpHost == null || smtpHost.isEmpty()) {
             return;
         }
@@ -134,7 +136,7 @@ public class UserImporter {
         props.put("mail.smtp.host", smtpHost);
         Session s = Session.getInstance(props, null);
 
-        String smtpSenderString = ConfigurationDAO.getValue(ConfigurationOption.SMTP_FROM);
+        String smtpSenderString = ConfigurationDAO.getValue(ConfigurationOptions.SMTP_FROM);
         MimeMessage mimeMessage = new MimeMessage(s);
         mimeMessage.setFrom(new InternetAddress(smtpSenderString));
         InternetAddress to = new InternetAddress(usersEmailAddress);

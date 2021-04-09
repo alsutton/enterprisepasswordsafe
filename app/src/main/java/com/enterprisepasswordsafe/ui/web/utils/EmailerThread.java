@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.utils;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
 
 import javax.mail.Message;
 import javax.mail.Session;
@@ -93,12 +93,12 @@ public class EmailerThread extends Thread {
         throws SQLException, AddressException {
     	ConfigurationDAO cDAO = ConfigurationDAO.getInstance();
 
-        final String smtpEnabledString = cDAO.get(ConfigurationOption.SMTP_ENABLED);
+        final String smtpEnabledString = cDAO.get(ConfigurationOptions.SMTP_ENABLED);
         smtpEnabled = (smtpEnabledString != null && smtpEnabledString.equals("Y"));
 
         // Check email has been enabled
-        smtpHost = ConfigurationDAO.getValue(ConfigurationOption.SMTP_HOST);
-        final String smtpSenderString = cDAO.get(ConfigurationOption.SMTP_FROM);
+        smtpHost = ConfigurationDAO.getValue(ConfigurationOptions.SMTP_HOST);
+        final String smtpSenderString = cDAO.get(ConfigurationOptions.SMTP_FROM);
         smtpSender = new InternetAddress(smtpSenderString);
 
         emailAddresses = newEmailAddresses;

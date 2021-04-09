@@ -1,6 +1,6 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.AccessRole;
+import com.enterprisepasswordsafe.model.AccessRoles;
 
 /**
  * Details of how Access Roles are presented
@@ -8,10 +8,10 @@ import com.enterprisepasswordsafe.database.AccessRole;
 
 public enum AccessRolesPresentation {
 
-    USER_HISTORY("view the password history", "ouh_", "uh_", AccessRole.HISTORYVIEWER_ROLE),
-    USER_RA_APPROVER("approved restricted access requests", "our_", "ur_", AccessRole.APPROVER_ROLE),
-    GROUP_HISTORY("view the password history", "ogh_", "gh_", AccessRole.HISTORYVIEWER_ROLE),
-    GROUP_RA_APPROVER("approved restricted access requests", "ogr_", "gr_", AccessRole.APPROVER_ROLE);
+    USER_HISTORY("view the password history", "ouh_", "uh_", AccessRoles.HISTORYVIEWER_ROLE),
+    USER_RA_APPROVER("approved restricted access requests", "our_", "ur_", AccessRoles.APPROVER_ROLE),
+    GROUP_HISTORY("view the password history", "ogh_", "gh_", AccessRoles.HISTORYVIEWER_ROLE),
+    GROUP_RA_APPROVER("approved restricted access requests", "ogr_", "gr_", AccessRoles.APPROVER_ROLE);
 
     public final String description;
     public final String uiPrefixForOld;

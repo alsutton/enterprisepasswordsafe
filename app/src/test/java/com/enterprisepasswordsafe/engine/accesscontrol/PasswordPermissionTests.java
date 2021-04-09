@@ -16,6 +16,7 @@
 
 package com.enterprisepasswordsafe.engine.accesscontrol;
 
+import com.enterprisepasswordsafe.accesscontrol.PasswordPermission;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

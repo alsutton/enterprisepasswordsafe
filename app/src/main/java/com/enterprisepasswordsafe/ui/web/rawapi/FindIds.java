@@ -16,8 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.rawapi;
 
-import com.enterprisepasswordsafe.database.PasswordDAO;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

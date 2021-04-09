@@ -1,7 +1,8 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
-import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -11,17 +12,17 @@ import java.util.Map;
 
 public class PasswordPermissionApplier {
 
-    private final GroupAccessControlDAO groupAccessControlDAO;
+    private final GroupPasswordAccessControlDAO groupAccessControlDAO;
     private final GroupDAO groupDAO;
     private final HierarchyNodePermissionDAO hierarchyNodePermissionDAO;
-    private final UserAccessControlDAO userAccessControlDAO;
+    private final UserPasswordAccessControlDAO userAccessControlDAO;
     private final UserDAO userDAO;
 
     public PasswordPermissionApplier() {
-        groupAccessControlDAO = GroupAccessControlDAO.getInstance();
+        groupAccessControlDAO = GroupPasswordAccessControlDAO.getInstance();
         groupDAO = GroupDAO.getInstance();
         hierarchyNodePermissionDAO = new HierarchyNodePermissionDAO();
-        userAccessControlDAO = UserAccessControlDAO.getInstance();
+        userAccessControlDAO = UserPasswordAccessControlDAO.getInstance();
         userDAO = UserDAO.getInstance();
     }
 

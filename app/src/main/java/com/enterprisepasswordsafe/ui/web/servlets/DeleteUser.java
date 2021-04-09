@@ -16,10 +16,9 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.UserDAO;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -60,7 +59,7 @@ public final class DeleteUser extends HttpServlet {
             } else {
                 UserDAO.getInstance().delete(theUser);
                 servletUtils.generateMessage(request, "The user " + theUser + " has been deleted");
-                TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_USER_MANIPULATION,
+                LoggingDAO.getInstance().create(LogEntry.LOG_LEVEL_USER_MANIPULATION,
                         thisUser, null, "Deleted the user {user:" + theUser.getId() + "}",
                         true);
             }

@@ -16,9 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets.exporters;
 
-import com.enterprisepasswordsafe.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
 import com.enterprisepasswordsafe.engine.reports.AccessReport;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
@@ -44,8 +43,8 @@ public final class UserAccessCSV extends BaseExporter {
 
         try {
 	        User user = SecurityUtils.getRemoteUser(request);
-	        TamperproofEventLogDAO.getInstance().create(
-					TamperproofEventLog.LOG_LEVEL_REPORTS,
+	        LoggingDAO.getInstance().create(
+					LogEntry.LOG_LEVEL_REPORTS,
 	        		user,
 	        		null,
 	                "Exported all the access rules using the CSV Report",

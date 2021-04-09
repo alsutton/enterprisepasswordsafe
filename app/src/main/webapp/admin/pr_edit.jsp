@@ -21,7 +21,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 <form action="<c:url value='/admin/PasswordRestrictionsEditStage2'/>" method="POST"
       accept-charset="UTF-8" name="editform" role="form">
     <fieldset>
-        <input type="hidden" name="id" value="${requestScope.restriction.id}"/>
+        <input type="hidden" name="id" value="${requestScope.permission.id}"/>
 
         <jsp:include page="/WEB-INF/includes/password_restriction_fields.jsp"/>
 

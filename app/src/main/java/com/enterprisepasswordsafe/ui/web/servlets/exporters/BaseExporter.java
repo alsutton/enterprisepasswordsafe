@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets.exporters;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
 import com.enterprisepasswordsafe.ui.web.servlets.PasswordSafeBaseServlet;
 
 import java.sql.SQLException;
@@ -26,6 +26,6 @@ public abstract class BaseExporter extends PasswordSafeBaseServlet {
 
 	protected String getSeparator( )
 		throws SQLException {
-		return ConfigurationDAO.getValue(ConfigurationOption.REPORT_SEPARATOR);
+		return ConfigurationDAO.getValue(ConfigurationOptions.REPORT_SEPARATOR);
 	}
 }

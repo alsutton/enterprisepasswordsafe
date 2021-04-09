@@ -16,11 +16,20 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.model.AuditingLevel;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.AccessControlDAO;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.HistoricalPasswordDAO;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
+import com.enterprisepasswordsafe.model.persisted.Password;
+import com.enterprisepasswordsafe.model.persisted.User;
 import com.enterprisepasswordsafe.ui.web.utils.EmailerThread;
 import com.enterprisepasswordsafe.ui.web.utils.RedirectException;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -82,7 +91,7 @@ public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 
     private void sendChangeNotifications(PasswordDAO pDAO, Password password)
 			throws SQLException {
-		String smtpEnabled = ConfigurationDAO.getValue(ConfigurationOption.SMTP_ENABLED);
+		String smtpEnabled = ConfigurationDAO.getValue(ConfigurationOptions.SMTP_ENABLED);
 		if (smtpEnabled != null && smtpEnabled.equals("Y")) {
 			try {
 				Set<String> emailAddresses = pDAO.getEmailsOfUsersWithAccess(password);
@@ -128,7 +137,7 @@ public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 
         pDAO.storeNewPassword(passwordContext.password, user);
         if (passwordContext.password.getAuditLevel().shouldTriggerLogging()) {
-            TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+            LoggingDAO.getInstance().create(LogEntry.LOG_LEVEL_OBJECT_MANIPULATION,
                     user, passwordContext.password, "Created the password.",
 					passwordContext.password.getAuditLevel().shouldTriggerEmail());
         }
@@ -234,7 +243,7 @@ public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 
 	private boolean isRestrictionCompliant(final String password, final String restrictionId )
 		throws SQLException {
-        PasswordRestriction control = PasswordRestrictionDAO.getInstance().getById(restrictionId);
+        PasswordRestrictionUtils control = PasswordRestrictionDAO.getInstance().getById(restrictionId);
         return control == null || control.verify(password);
 	}
 
@@ -258,7 +267,7 @@ public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 	private void setHistoryRecording(final HttpServletRequest request, final Password password )
 		throws SQLException {
         boolean newHistoryStored;
-        String passwordHistory = ConfigurationDAO.getValue( ConfigurationOption.STORE_PASSWORD_HISTORY );
+        String passwordHistory = ConfigurationDAO.getValue( ConfigurationOptions.STORE_PASSWORD_HISTORY );
         switch (passwordHistory) {
             case Password.SYSTEM_PASSWORD_RECORD:
                 newHistoryStored = true;
@@ -296,7 +305,7 @@ public final class ChangePassword extends AbstractPasswordManipulatingServlet {
         Calendar cal = Calendar.getInstance();
         cal.setTime(parsedDate);
         long date = cal.getTimeInMillis();
-        String rejectHistoricalExpiry = ConfigurationDAO.getValue(ConfigurationOption.REJECT_HISTORICAL_EXPIRY_DATES);
+        String rejectHistoricalExpiry = ConfigurationDAO.getValue(ConfigurationOptions.REJECT_HISTORICAL_EXPIRY_DATES);
         if (rejectHistoricalExpiry != null && rejectHistoricalExpiry.equals("Y") && isInPast(date)) {
             throw new ServletException( "The expiry date must be in the future.");
         }
@@ -308,7 +317,7 @@ public final class ChangePassword extends AbstractPasswordManipulatingServlet {
 
 	private void ensureExpiryIsValid(long date)
 			throws SQLException, ServletException {
-		String maxExpiryDistance = ConfigurationDAO.getValue(ConfigurationOption.MAX_FUTURE_EXPIRY_DISTANCE);
+		String maxExpiryDistance = ConfigurationDAO.getValue(ConfigurationOptions.MAX_FUTURE_EXPIRY_DISTANCE);
 		if( maxExpiryDistance.equals("0") ) {
 			return;
 		}

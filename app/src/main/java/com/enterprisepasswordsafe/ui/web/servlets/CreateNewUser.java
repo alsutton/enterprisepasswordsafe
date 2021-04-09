@@ -16,9 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.UserDAO;
-import com.enterprisepasswordsafe.database.derived.AbstractUserSummary;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 import com.enterprisepasswordsafe.database.derived.ImmutableUserSummary;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;

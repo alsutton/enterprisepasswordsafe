@@ -18,8 +18,6 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.ApproverListDAO;
 import com.enterprisepasswordsafe.database.RestrictedAccessRequest;
-import com.enterprisepasswordsafe.database.RestrictedAccessRequestDAO;
-import com.enterprisepasswordsafe.database.User;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
 import javax.servlet.ServletException;

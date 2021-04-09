@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

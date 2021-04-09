@@ -17,6 +17,8 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
 import javax.servlet.ServletException;
@@ -51,7 +53,7 @@ public final class SubmitRAVote extends HttpServlet {
 	    		throw new ServletException("You are not authorised to approve requests for that password");
 	    	}
 
-	        final String includeApprover = ConfigurationDAO.getValue(ConfigurationOption.VOTE_ON_OWN_RA_REQUESTS);
+	        final String includeApprover = ConfigurationDAO.getValue(ConfigurationOptions.VOTE_ON_OWN_RA_REQUESTS);
 	        if(includeApprover.equals("n")) {
 	        	if(raRequest.getRequesterId() == thisUser.getId()) {
 	        		throw new ServletException("You are not allowed to vote on your own requests.");

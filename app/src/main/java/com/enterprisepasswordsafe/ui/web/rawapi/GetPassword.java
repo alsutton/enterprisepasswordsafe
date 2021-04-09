@@ -16,7 +16,9 @@
 
 package com.enterprisepasswordsafe.ui.web.rawapi;
 
-import com.enterprisepasswordsafe.database.*;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,7 +38,7 @@ public final class GetPassword extends RawAPIServlet {
     		Password password = PasswordDAO.getInstance().getById(user, passwordId);
 
     		if( password.getPasswordType() != Password.TYPE_PERSONAL ) {
-	            TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+	            LoggingDAO.getInstance().create( LogEntry.LOG_LEVEL_OBJECT_MANIPULATION,
 	            			user, password, "The password was viewed by the user",
 							password.getAuditLevel().shouldTriggerEmail());
     		}

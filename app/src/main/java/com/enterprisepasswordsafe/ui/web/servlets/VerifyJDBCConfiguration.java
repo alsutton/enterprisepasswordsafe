@@ -16,8 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.UserDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.configuration.JDBCConnectionInformation;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;

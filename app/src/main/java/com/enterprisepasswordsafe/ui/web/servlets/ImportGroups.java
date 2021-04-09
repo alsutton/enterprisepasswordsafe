@@ -16,8 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.GroupDAO;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
 import org.apache.commons.csv.CSVRecord;
 
 import javax.servlet.ServletException;

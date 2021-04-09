@@ -17,9 +17,8 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.IntegrationModule;
-import com.enterprisepasswordsafe.database.IntegrationModuleConfigurationDAO;
-import com.enterprisepasswordsafe.database.IntegrationModuleDAO;
-import com.enterprisepasswordsafe.database.IntegrationModuleScript;
+import com.enterprisepasswordsafe.model.dao.IntegrationModuleConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.IntegrationModuleDAO;
 import com.enterprisepasswordsafe.engine.integration.PasswordChangerProperty;
 
 import javax.servlet.http.HttpServlet;

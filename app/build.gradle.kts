@@ -15,6 +15,12 @@ plugins {
 }
 
 repositories {
+    maven {
+        url = uri("https://maven.alsutton.com/")
+        content {
+            includeGroup("com.alsutton")
+        }
+    }
     mavenCentral()
 }
 
@@ -26,8 +32,14 @@ dependencies {
 
     compileOnly("org.immutables:value:${immutablesVersion}")
 
-    implementation(project(":lib:database:abstraction"))
-    implementation(project(":lib:database:model"))
+    implementation("com.alsutton:java-cryptography-wrapper:1.0")
+
+    implementation(project(":lib:authentication"))
+    implementation(project(":lib:cryptography"))
+    implementation(project(":lib:logging"))
+    implementation(project(":lib:model"))
+    implementation(project(":lib:passwordprocessor"))
+
     implementation("com.sun.mail:javax.mail:1.6.2")
     implementation("com.sun.mail:smtp:2.0.0")
     implementation("commons-codec:commons-codec:1.15")

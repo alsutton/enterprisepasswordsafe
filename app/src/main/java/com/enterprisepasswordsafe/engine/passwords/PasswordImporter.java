@@ -1,19 +1,18 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
 import com.enterprisepasswordsafe.database.Group;
-import com.enterprisepasswordsafe.database.GroupAccessControlDAO;
-import com.enterprisepasswordsafe.database.GroupDAO;
-import com.enterprisepasswordsafe.database.HierarchyNodePermissionDAO;
 import com.enterprisepasswordsafe.database.Membership;
-import com.enterprisepasswordsafe.database.MembershipDAO;
-import com.enterprisepasswordsafe.database.Password;
-import com.enterprisepasswordsafe.database.PasswordDAO;
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.UserAccessControlDAO;
-import com.enterprisepasswordsafe.database.UserDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.permissions.PermissionSetter;
+import com.enterprisepasswordsafe.model.AuditingLevel;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodePermissionDAO;
+import com.enterprisepasswordsafe.model.dao.MembershipDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
+import com.enterprisepasswordsafe.model.persisted.Password;
+import com.enterprisepasswordsafe.model.persisted.User;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -36,8 +35,8 @@ public class PasswordImporter {
     private final UserDAO userDAO;
     private final GroupDAO groupDAO;
     private final MembershipDAO membershipDAO;
-    private final UserAccessControlDAO userAccessControlDAO;
-    private final GroupAccessControlDAO groupAccessControlDAO;
+    private final UserPasswordAccessControlDAO userAccessControlDAO;
+    private final GroupPasswordAccessControlDAO groupAccessControlDAO;
     private final HierarchyNodePermissionDAO hierarchyNodePermissionDAO;
 
     private final User adminUser;
@@ -45,14 +44,14 @@ public class PasswordImporter {
 
     public PasswordImporter(Group adminGroup) throws GeneralSecurityException, SQLException {
         this(PasswordDAO.getInstance(), UserDAO.getInstance(), GroupDAO.getInstance(), MembershipDAO.getInstance(),
-                UserAccessControlDAO.getInstance(), GroupAccessControlDAO.getInstance(), new HierarchyNodePermissionDAO(),
+                UserPasswordAccessControlDAO.getInstance(), GroupPasswordAccessControlDAO.getInstance(), new HierarchyNodePermissionDAO(),
                 adminGroup);
     }
 
     // Visible for testing purposes
     PasswordImporter(PasswordDAO passwordDAO, UserDAO userDAO, GroupDAO groupDAO,
-                     MembershipDAO membershipDAO, UserAccessControlDAO userAccessControlDAO,
-                     GroupAccessControlDAO groupAccessControlDAO,
+                     MembershipDAO membershipDAO, UserPasswordAccessControlDAO userAccessControlDAO,
+                     GroupPasswordAccessControlDAO groupAccessControlDAO,
                      HierarchyNodePermissionDAO hierarchyNodePermissionDAO,
                      Group adminGroup) throws GeneralSecurityException, SQLException {
         this.passwordDAO = passwordDAO;

@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.IPZone;
-import com.enterprisepasswordsafe.database.IPZoneDAO;
+import com.enterprisepasswordsafe.model.utils.IPZoneUtils;
+import com.enterprisepasswordsafe.model.dao.IPZoneDAO;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
@@ -39,7 +39,7 @@ public final class DeleteIPZone extends HttpServlet {
         String id = request.getParameter("zoneid");
         try {
         	IPZoneDAO ipzDAO = IPZoneDAO.getInstance();
-	        IPZone thisZone = ipzDAO.getById(id);
+	        IPZoneUtils thisZone = ipzDAO.getById(id);
 	        if( thisZone == null ) {
 	            throw new ServletException( "The zone is not available." );
 	        }

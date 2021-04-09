@@ -16,9 +16,11 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
 
@@ -91,8 +93,8 @@ public final class Welcome extends PasswordSafeBaseServlet {
 				return;
 			}
 
-			PasswordRestriction pwRes =
-				PasswordRestrictionDAO.getInstance().getById(PasswordRestriction.LOGIN_PASSWORD_RESTRICTION_ID);
+			PasswordRestrictionUtils pwRes =
+				PasswordRestrictionDAO.getInstance().getById(PasswordRestrictionUtils.LOGIN_PASSWORD_RESTRICTION_ID);
 			if(pwRes != null ) {
 		    	if( pwRes.getLifetime() > 0 ) {
 		    		long expiryDate = DateFormatter.getDateInPast(pwRes.getLifetime());

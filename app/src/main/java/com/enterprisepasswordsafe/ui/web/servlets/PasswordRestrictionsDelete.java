@@ -16,10 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.Password;
-import com.enterprisepasswordsafe.database.PasswordDAO;
-import com.enterprisepasswordsafe.database.PasswordRestrictionDAO;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 

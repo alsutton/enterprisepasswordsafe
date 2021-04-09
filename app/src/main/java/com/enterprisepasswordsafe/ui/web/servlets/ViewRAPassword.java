@@ -17,9 +17,14 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.AccessRole.ApproverSummary;
+import com.enterprisepasswordsafe.model.AccessRoles.ApproverSummary;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.AccessControlDAO;
+import com.enterprisepasswordsafe.model.dao.AccessRoleDAO;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
 import com.enterprisepasswordsafe.ui.web.utils.ApprovalRequestMailer;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
@@ -61,7 +66,7 @@ public final class ViewRAPassword extends HttpServlet {
 	        password.decrypt(ac);
 
 	        String includeApprover =
-					ConfigurationDAO.getInstance().get(ConfigurationOption.VOTE_ON_OWN_RA_REQUESTS);
+					ConfigurationDAO.getInstance().get(ConfigurationOptions.VOTE_ON_OWN_RA_REQUESTS);
 	        String ignoreUserId = null;
 	        if(includeApprover.equals("n")) {
 		        ignoreUserId = thisUser.getId();
@@ -92,7 +97,7 @@ public final class ViewRAPassword extends HttpServlet {
 
 	private String getServerBaseURL(final HttpServletRequest request)
 		throws SQLException {
-		String baseUrl = ConfigurationDAO.getValue(ConfigurationOption.PROPERTY_SERVER_BASE_URL);
+		String baseUrl = ConfigurationDAO.getValue(ConfigurationOptions.PROPERTY_SERVER_BASE_URL);
 		if(baseUrl == null || baseUrl.isEmpty()) {
 			baseUrl = constructBaseURLFromRequest(request);
 		}

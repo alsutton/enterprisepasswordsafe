@@ -16,8 +16,9 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets.exporters;
 
-import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.actions.PasswordAction;
+import com.enterprisepasswordsafe.passwordprocessor.actions.PasswordAction;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 
 import javax.servlet.ServletException;
@@ -36,8 +37,8 @@ public final class AllPasswordsCSV extends BaseExporter {
 
         try {
 	        User user = SecurityUtils.getRemoteUser(request);
-	        TamperproofEventLogDAO.getInstance().create(
-					TamperproofEventLog.LOG_LEVEL_REPORTS,
+	        LoggingDAO.getInstance().create(
+					LogEntry.LOG_LEVEL_REPORTS,
 	        		user,
 	        		null,
 	                "Exported all the passwords using the CSV Report",

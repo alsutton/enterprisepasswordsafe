@@ -16,8 +16,6 @@
 
 package com.enterprisepasswordsafe.engine.utils;
 
-import com.enterprisepasswordsafe.database.Password;
-import com.enterprisepasswordsafe.database.PasswordBase;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 
 import java.io.IOException;

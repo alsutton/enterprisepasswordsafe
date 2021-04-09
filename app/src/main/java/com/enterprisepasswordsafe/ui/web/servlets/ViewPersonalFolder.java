@@ -16,9 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.HierarchyNode;
-import com.enterprisepasswordsafe.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 

@@ -1,8 +1,7 @@
 package com.enterprisepasswordsafe.engine.users;
 
 import com.enterprisepasswordsafe.database.Group;
-import com.enterprisepasswordsafe.database.MembershipDAO;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.MembershipDAO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

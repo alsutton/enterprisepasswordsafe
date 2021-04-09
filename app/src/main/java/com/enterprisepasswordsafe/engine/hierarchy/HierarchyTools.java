@@ -1,31 +1,36 @@
 package com.enterprisepasswordsafe.engine.hierarchy;
 
-import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.actions.NodeObjectAction;
-import com.enterprisepasswordsafe.database.derived.HierarchyNodeChildren;
-import com.enterprisepasswordsafe.database.derived.ImmutableHierarchyNodeChildren;
+import com.enterprisepasswordsafe.model.DAORepository;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.persisted.HierarchyNode;
+import com.enterprisepasswordsafe.model.persisted.Password;
+import com.enterprisepasswordsafe.model.persisted.User;
+import com.enterprisepasswordsafe.passwordprocessor.actions.NodeObjectAction;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 public class HierarchyTools {
 
-    private final HierarchyNodeDAO hierarchyNodeDAO;
+    private final DAORepository daoRepository;
 
-    public HierarchyTools() {
-        hierarchyNodeDAO = HierarchyNodeDAO.getInstance();
+    public HierarchyTools(DAORepository daoRepository) {
+        this.daoRepository = daoRepository;
     }
 
     public List<HierarchyNode> getParentage(final HierarchyNode node)
             throws SQLException {
         final List<HierarchyNode> parentage = new ArrayList<>();
-        String currentNodeId = node.getParentId();
-        while (currentNodeId != null ) {
-            HierarchyNode thisNode = hierarchyNodeDAO.getById(currentNodeId);
-            parentage.add(0, thisNode);
-            currentNodeId = thisNode.getParentId();
+        HierarchyNode currentNode = node;
+        while (currentNode != null ) {
+            parentage.add(0, currentNode);
+            currentNode = currentNode.getParent();
         }
 
         return parentage;
@@ -33,20 +38,14 @@ public class HierarchyTools {
 
     public String getParentageAsText(final HierarchyNode node)
             throws SQLException {
-        StringBuilder parentageText = new StringBuilder();
-
-        for( HierarchyNode thisNode : getParentage(node) ) {
-            parentageText.append(thisNode.getName());
-            parentageText.append(" \\ ");
-        }
-        parentageText.append(node.getName());
-
-        return parentageText.toString();
+        return daoRepository.getHierarchyNodeDAO().getPathAsString(node);
     }
 
     public HierarchyNodeChildren getChildrenValidForUser(final HierarchyNode node, final User theUser, boolean includeEmpty,
                                                          final Comparator<HierarchyNode> nodeComparator, final Comparator<Password> objectComparator)
             throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
+        HierarchyNodeDAO hierarchyNodeDAO = daoRepository.getHierarchyNodeDAO();
+
         Collection<HierarchyNode> containers =
                 hierarchyNodeDAO.getChildrenContainerNodesForUser(node, theUser, includeEmpty, nodeComparator);
         Set<Password> objects =
@@ -58,31 +57,15 @@ public class HierarchyTools {
     public void processObjectNodes(final HierarchyNode node, final User theUser,
                                    final NodeObjectAction action, final boolean recurse)
             throws Exception {
+        HierarchyNodeDAO hierarchyNodeDAO = daoRepository.getHierarchyNodeDAO();
         if(recurse) {
             for( HierarchyNode thisNode : hierarchyNodeDAO.getChildrenContainerNodesForUser(node, theUser, true, null)) {
                 processObjectNodes(thisNode, theUser, action, true);
             }
         }
 
-        for(AccessControledObject aco: hierarchyNodeDAO.getAllChildrenObjects(node, theUser, null)) {
-            action.process(node, aco);
+        for(Password password: hierarchyNodeDAO.getAllChildrenObjects(node, theUser, null)) {
+            action.process(node, password);
         }
     }
-
-    public boolean isPersonalByName(final String name) throws SQLException {
-        return isPersonalById( hierarchyNodeDAO.getByName(name).getNodeId() );
-    }
-
-    public boolean isPersonalById(final String id) throws SQLException {
-        HierarchyNode node = hierarchyNodeDAO.getById(id);
-        boolean result;
-        if( node.getParentId() != null ) {
-            result = isPersonalById(node.getParentId());
-        } else {
-            result = !node.getNodeId().equals(HierarchyNode.ROOT_NODE_ID);
-        }
-
-        return result;
-    }
-
 }

@@ -16,9 +16,15 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.dao.LocationDAO;
+import com.enterprisepasswordsafe.model.persisted.HierarchyNode;
+import com.enterprisepasswordsafe.model.persisted.User;
 import com.enterprisepasswordsafe.ui.web.password.CustomFieldPopulator;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -86,7 +92,7 @@ public final class CreatePassword extends HttpServlet {
 
 	private void addLocationsIfAllowed(HttpServletRequest request)
             throws SQLException {
-        String hideLocations = configurationDAO.get(ConfigurationOption.PASSWORD_HIDE_SYSTEM_SELECTOR);
+        String hideLocations = configurationDAO.get(ConfigurationOptions.PASSWORD_HIDE_SYSTEM_SELECTOR);
         if( hideLocations == null || hideLocations.charAt(0) == 'n') {
             request.setAttribute("locations_set", LocationDAO.getInstance().getAll());
         }
@@ -95,11 +101,11 @@ public final class CreatePassword extends HttpServlet {
 	private void setPropertiesFromSystemConfiguration(HttpServletRequest request)
             throws SQLException {
         request.setAttribute("password_history",
-                configurationDAO.get(ConfigurationOption.STORE_PASSWORD_HISTORY));
+                configurationDAO.get(ConfigurationOptions.STORE_PASSWORD_HISTORY));
         request.setAttribute("password_audit",
-                configurationDAO.get(ConfigurationOption.PASSWORD_AUDIT_LEVEL));
-        request.setAttribute(ConfigurationOption.HIDDEN_PASSWORD_ENTRY.getPropertyName(),
-                configurationDAO.get(ConfigurationOption.HIDDEN_PASSWORD_ENTRY));
+                configurationDAO.get(ConfigurationOptions.PASSWORD_AUDIT_LEVEL));
+        request.setAttribute(ConfigurationOptions.HIDDEN_PASSWORD_ENTRY.getPropertyName(),
+                configurationDAO.get(ConfigurationOptions.HIDDEN_PASSWORD_ENTRY));
     }
 
 	private void copyParametersToAttributes(HttpServletRequest request) {
@@ -120,7 +126,7 @@ public final class CreatePassword extends HttpServlet {
     private void setPasswordFieldType(HttpServletRequest request)
             throws SQLException {
         String passwordFieldType = "password";
-        String hiddenPassword = configurationDAO.get(ConfigurationOption.HIDDEN_PASSWORD_ENTRY);
+        String hiddenPassword = configurationDAO.get(ConfigurationOptions.HIDDEN_PASSWORD_ENTRY);
         if( hiddenPassword.equalsIgnoreCase("false") ) {
             passwordFieldType="text";
         }
@@ -139,7 +145,7 @@ public final class CreatePassword extends HttpServlet {
         PasswordRestrictionDAO prDAO = PasswordRestrictionDAO.getInstance();
         request.setAttribute("restriction_list", prDAO.getAll());
 
-        PasswordRestriction restriction = findRelevantRestriction(request, prDAO);
+        PasswordRestrictionUtils restriction = findRelevantRestriction(request, prDAO);
         if( restriction == null ) {
             request.setAttribute("restriction_id", "");
             return;
@@ -148,8 +154,8 @@ public final class CreatePassword extends HttpServlet {
         request.setAttribute("restriction_name", restriction.getName());
     }
 
-    private PasswordRestriction findRelevantRestriction(final HttpServletRequest request,
-                                                        final PasswordRestrictionDAO passwordRestrictionDAO)
+    private PasswordRestrictionUtils findRelevantRestriction(final HttpServletRequest request,
+                                                             final PasswordRestrictionDAO passwordRestrictionDAO)
             throws SQLException {
         String restrictionId = request.getParameter("restriction.id");
         if(restrictionId == null || restrictionId.isEmpty()) {

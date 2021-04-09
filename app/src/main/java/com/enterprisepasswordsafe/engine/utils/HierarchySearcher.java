@@ -16,11 +16,11 @@
 
 package com.enterprisepasswordsafe.engine.utils;
 
-import com.enterprisepasswordsafe.database.AccessControledObject;
-import com.enterprisepasswordsafe.database.HierarchyNode;
-import com.enterprisepasswordsafe.database.HierarchyNodeDAO;
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.actions.NodeObjectAction;
+import com.enterprisepasswordsafe.passwordprocessor.actions.NodeObjectAction;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.persisted.HierarchyNode;
+import com.enterprisepasswordsafe.model.persisted.Password;
+import com.enterprisepasswordsafe.model.persisted.User;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -68,10 +68,10 @@ public class HierarchySearcher {
     private void submitNodeChildrenToExecutor(final ExecutorService service, final HierarchyNodeDAO hnDAO,
                                               final HierarchyNode node, final User theUser, final NodeObjectAction action) {
         try {
-            for (final AccessControledObject aco : hnDAO.getAllChildrenObjects(node, theUser, null)) {
+            for (final Password password : hnDAO.getAllChildrenObjects(node, theUser, null)) {
                 Runnable nodeProcessor = () -> {
                     try {
-                        action.process(node, aco);
+                        action.process(node, password);
                     } catch (Exception ex) {
                         reportException(node, ex);
                     }
@@ -84,7 +84,7 @@ public class HierarchySearcher {
     }
 
     private void reportException(HierarchyNode node, Exception ex) {
-        Logger.getAnonymousLogger().log(Level.SEVERE, "Problem processing node "+node.getNodeId(), ex);
+        Logger.getAnonymousLogger().log(Level.SEVERE, "Problem processing node "+node.getId(), ex);
     }
 
 

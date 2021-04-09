@@ -17,9 +17,9 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.AuthenticationSource;
-import com.enterprisepasswordsafe.database.AuthenticationSourceDAO;
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.model.dao.AuthenticationSourceDAO;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
 import com.enterprisepasswordsafe.ui.web.utils.JSTLParameterNameSanitiser;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 import com.enterprisepasswordsafe.ui.web.utils.StringUtils;
@@ -34,33 +34,33 @@ import java.sql.SQLException;
 
 public final class Configure extends HttpServlet {
 
-    private static final ConfigurationOption[] OPTIONS = {
-        ConfigurationOption.SMTP_HOST,
-        ConfigurationOption.SMTP_FROM,
-        ConfigurationOption.LOGIN_ATTEMPTS,
-        ConfigurationOption.DEFAULT_LOGIN_ACCESS,
-        ConfigurationOption.SESSION_TIMEOUT,
-        ConfigurationOption.PASSWORD_ON_SCREEN_TIME,
-        ConfigurationOption.PROPERTY_SERVER_BASE_URL,
-        ConfigurationOption.REJECT_HISTORICAL_EXPIRY_DATES,
-        ConfigurationOption.DEFAULT_HIERARCHY_ACCESS_RULE,
-        ConfigurationOption.HIDE_EMPTY_FOLDERS,
-        ConfigurationOption.STORE_PASSWORD_HISTORY,
-        ConfigurationOption.PASSWORD_AUDIT_LEVEL,
-        ConfigurationOption.REPORT_SEPARATOR,
-        ConfigurationOption.HIDDEN_PASSWORD_ENTRY,
-        ConfigurationOption.ALLOW_BACK_BUTTON_TO_ACCESS_PASSWORD,
-        ConfigurationOption.PASSWORD_DISPLAY_TYPE,
-        ConfigurationOption.PASSWORD_DISPLAY,
-        ConfigurationOption.PASSWORD_REASON_FOR_VIEWING_REQUIRED,
-        ConfigurationOption.PASSWORD_HIDE_SYSTEM_SELECTOR,
-        ConfigurationOption.RAR_LIFETIME,
-        ConfigurationOption.MAX_FUTURE_EXPIRY_DISTANCE,
-        ConfigurationOption.PERMISSION_PRECEDENCE,
-        ConfigurationOption.DEFAULT_AUTHENTICATION_SOURCE_ID,
-        ConfigurationOption.SUBADMINS_HAVE_HISTORY_ACCESS,
-        ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL,
-        ConfigurationOption.VOTE_ON_OWN_RA_REQUESTS,
+    private static final ConfigurationOptions[] OPTIONS = {
+        ConfigurationOptions.SMTP_HOST,
+        ConfigurationOptions.SMTP_FROM,
+        ConfigurationOptions.LOGIN_ATTEMPTS,
+        ConfigurationOptions.DEFAULT_LOGIN_ACCESS,
+        ConfigurationOptions.SESSION_TIMEOUT,
+        ConfigurationOptions.PASSWORD_ON_SCREEN_TIME,
+        ConfigurationOptions.PROPERTY_SERVER_BASE_URL,
+        ConfigurationOptions.REJECT_HISTORICAL_EXPIRY_DATES,
+        ConfigurationOptions.DEFAULT_HIERARCHY_ACCESS_RULE,
+        ConfigurationOptions.HIDE_EMPTY_FOLDERS,
+        ConfigurationOptions.STORE_PASSWORD_HISTORY,
+        ConfigurationOptions.PASSWORD_AUDIT_LEVEL,
+        ConfigurationOptions.REPORT_SEPARATOR,
+        ConfigurationOptions.HIDDEN_PASSWORD_ENTRY,
+        ConfigurationOptions.ALLOW_BACK_BUTTON_TO_ACCESS_PASSWORD,
+        ConfigurationOptions.PASSWORD_DISPLAY_TYPE,
+        ConfigurationOptions.PASSWORD_DISPLAY,
+        ConfigurationOptions.PASSWORD_REASON_FOR_VIEWING_REQUIRED,
+        ConfigurationOptions.PASSWORD_HIDE_SYSTEM_SELECTOR,
+        ConfigurationOptions.RAR_LIFETIME,
+        ConfigurationOptions.MAX_FUTURE_EXPIRY_DISTANCE,
+        ConfigurationOptions.PERMISSION_PRECEDENCE,
+        ConfigurationOptions.DEFAULT_AUTHENTICATION_SOURCE_ID,
+        ConfigurationOptions.SUBADMINS_HAVE_HISTORY_ACCESS,
+        ConfigurationOptions.EDIT_USER_MINIMUM_USER_LEVEL,
+        ConfigurationOptions.VOTE_ON_OWN_RA_REQUESTS,
 	};
 
     @Override
@@ -69,7 +69,7 @@ public final class Configure extends HttpServlet {
         try {
             ConfigurationDAO cDAO = ConfigurationDAO.getInstance();
 
-            for(ConfigurationOption option : OPTIONS) {
+            for(ConfigurationOptions option : OPTIONS) {
                 setRequestAttributeFromConfiguration(request, cDAO, option);
             }
 
@@ -90,7 +90,7 @@ public final class Configure extends HttpServlet {
 
         try {
 	        ConfigurationDAO cDAO = ConfigurationDAO.getInstance();
-            for(ConfigurationOption option : OPTIONS) {
+            for(ConfigurationOptions option : OPTIONS) {
 	        	setConfigurationFromRequestParameter(request, cDAO, option);
 	        }
 
@@ -119,13 +119,13 @@ public final class Configure extends HttpServlet {
 
     private boolean hasValidNumericParameters(final HttpServletRequest request, final HttpServletResponse response)
         throws IOException {
-        String timeOut = request.getParameter(ConfigurationOption.SESSION_TIMEOUT.getPropertyName());
+        String timeOut = request.getParameter(ConfigurationOptions.SESSION_TIMEOUT.getPropertyName());
         if(!StringUtils.isNumber(timeOut)) {
             handleError(request, response, "The session timeout value must be an integer.");
             return false;
         }
 
-        String onScreenTime = request.getParameter(ConfigurationOption.PASSWORD_ON_SCREEN_TIME.getPropertyName());
+        String onScreenTime = request.getParameter(ConfigurationOptions.PASSWORD_ON_SCREEN_TIME.getPropertyName());
         if(!StringUtils.isNumber(onScreenTime)) {
             handleError(request, response, "The &quot;password on screen&quot; time must be an integer.");
             return false;
@@ -141,7 +141,7 @@ public final class Configure extends HttpServlet {
     }
 
     private void setRequestAttributeFromConfiguration(final HttpServletRequest request, final ConfigurationDAO cDAO,
-                                                      ConfigurationOption option)
+                                                      ConfigurationOptions option)
             throws SQLException {
         final String value = cDAO.get(option);
         final String paramName = JSTLParameterNameSanitiser.santiseName(option.getPropertyName());
@@ -150,7 +150,7 @@ public final class Configure extends HttpServlet {
 
     private void setConfigurationFromRequestParameter(final HttpServletRequest request,
                                                       final ConfigurationDAO cDAO,
-                                                      final ConfigurationOption option)
+                                                      final ConfigurationOptions option)
         throws SQLException {
         String name = option.getPropertyName();
         String value = request.getParameter(name);

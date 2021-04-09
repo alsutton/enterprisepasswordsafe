@@ -1,7 +1,6 @@
 package com.enterprisepasswordsafe.ui.web.servlets.utils;
 
-import com.enterprisepasswordsafe.database.AccessControlDAO;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.AccessControlDAO;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 
 import javax.servlet.ServletException;

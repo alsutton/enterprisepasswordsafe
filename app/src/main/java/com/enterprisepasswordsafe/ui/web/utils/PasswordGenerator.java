@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.utils;
 
-import com.enterprisepasswordsafe.database.PasswordRestriction;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Random;
@@ -100,7 +100,7 @@ public final class PasswordGenerator implements com.enterprisepasswordsafe.engin
      * @return The generated password.
      */
 
-    public String generate(PasswordRestriction restriction) {
+    public String generate(PasswordRestrictionUtils restriction) {
         return generate(restriction, false);
     }
 
@@ -113,7 +113,7 @@ public final class PasswordGenerator implements com.enterprisepasswordsafe.engin
      * @return The generated password.
      */
 
-    public String generate(PasswordRestriction restriction, final boolean startSpecial) {
+    public String generate(PasswordRestrictionUtils restriction, final boolean startSpecial) {
     	int upper = 0,
     		lower = 0,
     		numeric = 0,
@@ -198,17 +198,17 @@ public final class PasswordGenerator implements com.enterprisepasswordsafe.engin
 
         // Construct the password character set
         StringBuffer passwordCharacters = new StringBuffer(length);
-        addCharsToBuffer(passwordCharacters, upperCount, PasswordRestriction.UPPER_PASSWORD_CHARS);
-        addCharsToBuffer(passwordCharacters, lowerCount, PasswordRestriction.LOWER_PASSWORD_CHARS);
-        addCharsToBuffer(passwordCharacters, numericCount, PasswordRestriction.NUMERIC_PASSWORD_CHARS);
+        addCharsToBuffer(passwordCharacters, upperCount, PasswordRestrictionUtils.UPPER_PASSWORD_CHARS);
+        addCharsToBuffer(passwordCharacters, lowerCount, PasswordRestrictionUtils.LOWER_PASSWORD_CHARS);
+        addCharsToBuffer(passwordCharacters, numericCount, PasswordRestrictionUtils.NUMERIC_PASSWORD_CHARS);
         if(specialChars.length() > 0) {
         	addCharsToBuffer(passwordCharacters, specialCount, specialChars);
         }
         length -= (upperCount + lowerCount + numericCount + specialCount);
 
-        String allChars =   PasswordRestriction.UPPER_PASSWORD_CHARS +
-                            PasswordRestriction.LOWER_PASSWORD_CHARS +
-                            PasswordRestriction.NUMERIC_PASSWORD_CHARS +
+        String allChars =   PasswordRestrictionUtils.UPPER_PASSWORD_CHARS +
+                            PasswordRestrictionUtils.LOWER_PASSWORD_CHARS +
+                            PasswordRestrictionUtils.NUMERIC_PASSWORD_CHARS +
                             specialChars;
 
         addCharsToBuffer(passwordCharacters, length, allChars);

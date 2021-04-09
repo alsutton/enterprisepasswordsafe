@@ -20,7 +20,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 <body>
 <div class="row">
     <div class="col-md-12">
-        <a href="<c:url value='/admin/PasswordRestrictionsAddStage1'/>" name="add">Add a new restriction</a>
+        <a href="<c:url value='/admin/PasswordRestrictionsAddStage1'/>" name="add">Add a new permission</a>
     </div>
 </div>
 

@@ -16,9 +16,14 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.engine.passwords.AuditingLevel;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
+import com.enterprisepasswordsafe.model.AuditingLevel;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -103,7 +108,7 @@ public final class CreateNewPassword extends AbstractPasswordManipulatingServlet
         }
 
         String restrictionId = request.getParameter("restriction.id");
-        PasswordRestriction control = PasswordRestrictionDAO.getInstance().getById(restrictionId);
+        PasswordRestrictionUtils control = PasswordRestrictionDAO.getInstance().getById(restrictionId);
         if (control != null && !control.verify(password1)) {
             throw new ServletException(
                     "The password has NOT been created because the password does not meet the minimum requirements ("
@@ -116,7 +121,7 @@ public final class CreateNewPassword extends AbstractPasswordManipulatingServlet
 
     private AuditingLevel getAuditingLevel(HttpServletRequest request)
             throws SQLException {
-        String auditing = ConfigurationDAO.getInstance().get( ConfigurationOption.PASSWORD_AUDIT_LEVEL );
+        String auditing = ConfigurationDAO.getInstance().get( ConfigurationOptions.PASSWORD_AUDIT_LEVEL );
         AuditingLevel auditingLevel = AuditingLevel.fromRepresentation(auditing);
         if( auditing == null || auditingLevel == AuditingLevel.CREATOR_CHOOSE) {
             return getUserProvidedAuditLevel(request);
@@ -148,12 +153,12 @@ public final class CreateNewPassword extends AbstractPasswordManipulatingServlet
 
     private void ensureExpiryIsValid(long date)
             throws ServletException, SQLException {
-        String rejectHistoricalExpiry = ConfigurationDAO.getValue(ConfigurationOption.REJECT_HISTORICAL_EXPIRY_DATES);
+        String rejectHistoricalExpiry = ConfigurationDAO.getValue(ConfigurationOptions.REJECT_HISTORICAL_EXPIRY_DATES);
         if (rejectHistoricalExpiry != null && rejectHistoricalExpiry.equals("Y") && date < DateFormatter.getToday()) {
             throw new ServletException( "The expiry date must be in the future.");
         }
 
-        String maxExpiryDistance = ConfigurationDAO.getValue(ConfigurationOption.MAX_FUTURE_EXPIRY_DISTANCE);
+        String maxExpiryDistance = ConfigurationDAO.getValue(ConfigurationOptions.MAX_FUTURE_EXPIRY_DISTANCE);
         if( maxExpiryDistance.equals("0") ) {
             return;
         }

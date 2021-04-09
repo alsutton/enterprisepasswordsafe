@@ -1,18 +1,14 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
 import com.enterprisepasswordsafe.database.Group;
-import com.enterprisepasswordsafe.database.GroupAccessControlDAO;
-import com.enterprisepasswordsafe.database.GroupDAO;
-import com.enterprisepasswordsafe.database.HierarchyNodePermissionDAO;
-import com.enterprisepasswordsafe.database.MembershipDAO;
-import com.enterprisepasswordsafe.database.Password;
-import com.enterprisepasswordsafe.database.PasswordDAO;
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.UserAccessControlDAO;
-import com.enterprisepasswordsafe.database.UserDAO;
-import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
-import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
-import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.MembershipDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
+import com.enterprisepasswordsafe.accesscontrol.GroupAccessControl;
+import com.enterprisepasswordsafe.accesscontrol.PasswordPermission;
+import com.enterprisepasswordsafe.accesscontrol.UserAccessControl;
+import com.enterprisepasswordsafe.model.AuditingLevel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,9 +64,9 @@ public class PasswordImporterTests {
     @Mock
     MembershipDAO mockMembershipDAO;
     @Mock
-    UserAccessControlDAO mockUserAccessControlDAO;
+    UserPasswordAccessControlDAO mockUserAccessControlDAO;
     @Mock
-    GroupAccessControlDAO mockGroupAccessControlDAO;
+    GroupPasswordAccessControlDAO mockGroupAccessControlDAO;
     @Mock
     HierarchyNodePermissionDAO hierarchyNodePermissionDAO;
     @Mock

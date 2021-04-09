@@ -16,9 +16,16 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.database.exceptions.DatabaseUnavailableException;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
+import com.enterprisepasswordsafe.model.dao.UserIPZoneRestrictionDAO;
+import com.enterprisepasswordsafe.model.persisted.AuthenticationSource;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
+import com.enterprisepasswordsafe.model.persisted.User;
+import com.enterprisepasswordsafe.model.persisted.UserIPZoneRestriction;
 import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
 import com.enterprisepasswordsafe.ui.web.utils.ForwardException;
 import com.enterprisepasswordsafe.ui.web.utils.RedirectException;
@@ -67,7 +74,8 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
             response.sendRedirect(request.getContextPath() + e.getDestination());
         } catch (ForwardException e) {
             request.getRequestDispatcher(e.getDestination()).forward(request, response);
-		} catch (DatabaseUnavailableException e) {
+		} catch (Exception e) {
+            // Database unavailable.
 			response.sendRedirect(request.getContextPath()+"/VerifyJDBCConfiguration");
         } catch (SQLException | GeneralSecurityException e) {
         	throw new ServletException("An error occurred trying to log you in. ", e);
@@ -90,7 +98,7 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
             throws RedirectException, SQLException, UnsupportedEncodingException, GeneralSecurityException {
         User theUser = UserDAO.getInstance().getByName(username);
         if (theUser == null) {
-            TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_AUTHENTICATION,
+            LoggingDAO.getInstance().create(LogEntry.LOG_LEVEL_AUTHENTICATION,
                     null, "An attempt was made to log in as a non-existent user ("
                             + username + ") from " + request.getRemoteHost() + ". ",false);
             ServletUtils.getInstance().generateErrorMessage(request, "There was a problem authorising your details");
@@ -98,8 +106,8 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
         }
 
         if (!theUser.isEnabled()) {
-            TamperproofEventLogDAO.getInstance().create(
-                    TamperproofEventLog.LOG_LEVEL_AUTHENTICATION,
+            LoggingDAO.getInstance().create(
+                    LogEntry.LOG_LEVEL_AUTHENTICATION,
                     theUser, "An attempt was made to log in as a disabled user ("
                             + username + ") from " + request.getRemoteHost() + ". ", false);
             ServletUtils.getInstance().generateErrorMessage(request, "There was a problem authorising your details");
@@ -137,7 +145,7 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
             }
         }
 
-        TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_AUTHENTICATION,
+        LoggingDAO.getInstance().create(LogEntry.LOG_LEVEL_AUTHENTICATION,
                 user, "An attempt to log in as the user " + user.getUserName() + " from " +
                         request.getRemoteHost() + " failed (" + failureMessage + "). ", false);
         ServletUtils.getInstance().generateErrorMessage(request, "There was a problem authorising your details");
@@ -180,7 +188,7 @@ public final class VerifyLogin extends LoginAuthenticationServlet {
                 }
             }
         } else {
-            String defaultLoginAccess = ConfigurationDAO.getValue(ConfigurationOption.DEFAULT_LOGIN_ACCESS);
+            String defaultLoginAccess = ConfigurationDAO.getValue(ConfigurationOptions.DEFAULT_LOGIN_ACCESS);
             if (defaultLoginAccess.equals(UserIPZoneRestriction.DENY_STRING)) {
                 ServletUtils.getInstance().generateErrorMessage(request, "You can not log in from the system you are using.");
                 throw new RedirectException("/Login");

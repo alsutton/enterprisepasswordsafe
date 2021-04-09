@@ -16,9 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets.authorisation;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 
 import java.sql.SQLException;
@@ -28,11 +27,11 @@ import java.sql.SQLException;
  */
 public class UserLevelConditionalConfigurationAccessApprover implements AccessApprover {
 
-	private final ConfigurationOption mProperty;
+	private final ConfigurationOptions mProperty;
 
 	private final UserClassifier userClassifier = new UserClassifier();
 
-	public UserLevelConditionalConfigurationAccessApprover(final ConfigurationOption property) {
+	public UserLevelConditionalConfigurationAccessApprover(final ConfigurationOptions property) {
 		mProperty = property;
 	}
 

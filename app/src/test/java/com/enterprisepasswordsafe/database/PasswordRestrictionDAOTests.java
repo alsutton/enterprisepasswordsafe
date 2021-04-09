@@ -16,6 +16,7 @@
 
 package com.enterprisepasswordsafe.database;
 
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -27,9 +28,9 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
         String runId = Long.toString(System.currentTimeMillis());
 
         PasswordRestrictionDAO passwordRestrictionDAO = PasswordRestrictionDAO.getInstance();
-        PasswordRestriction createdRestriction =
+        PasswordRestrictionUtils createdRestriction =
                 passwordRestrictionDAO.create(runId, 0, 0, 0, 0, 0, 0, "", 0);
-        PasswordRestriction fetchedRestriction =
+        PasswordRestrictionUtils fetchedRestriction =
                 passwordRestrictionDAO.getById(createdRestriction.getId());
         Assertions.assertEquals(createdRestriction, fetchedRestriction);
         Assertions.assertEquals(0, fetchedRestriction.getLifetime());
@@ -48,9 +49,9 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
         String runId = Long.toString(System.currentTimeMillis());
 
         PasswordRestrictionDAO passwordRestrictionDAO = PasswordRestrictionDAO.getInstance();
-        PasswordRestriction createdRestriction = new PasswordRestriction(runId, 0, 0, 0, 0, 0, 0, "", 0);
+        PasswordRestrictionUtils createdRestriction = new PasswordRestrictionUtils(runId, 0, 0, 0, 0, 0, 0, "", 0);
         passwordRestrictionDAO.store(createdRestriction);
-        PasswordRestriction fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
+        PasswordRestrictionUtils fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
         Assertions.assertEquals(0, fetchedRestriction.getLifetime());
         Assertions.assertEquals(0, fetchedRestriction.getMaxLength());
         Assertions.assertEquals(0, fetchedRestriction.getMinLength());
@@ -67,9 +68,9 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
         String runId = Long.toString(System.currentTimeMillis());
 
         PasswordRestrictionDAO passwordRestrictionDAO = PasswordRestrictionDAO.getInstance();
-        PasswordRestriction createdRestriction = new PasswordRestriction(runId, 0, 0, 0, 0, 0, 0, "", 0);
+        PasswordRestrictionUtils createdRestriction = new PasswordRestrictionUtils(runId, 0, 0, 0, 0, 0, 0, "", 0);
         passwordRestrictionDAO.store(createdRestriction);
-        PasswordRestriction fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
+        PasswordRestrictionUtils fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
         fetchedRestriction.setLifetime(10);
         fetchedRestriction.setMaxLength(9);
         fetchedRestriction.setMinLength(8);
@@ -97,9 +98,9 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
         String runId = Long.toString(System.currentTimeMillis());
 
         PasswordRestrictionDAO passwordRestrictionDAO = PasswordRestrictionDAO.getInstance();
-        PasswordRestriction createdRestriction = new PasswordRestriction(runId, 0, 0, 0, 0, 0, 0, "", 0);
+        PasswordRestrictionUtils createdRestriction = new PasswordRestrictionUtils(runId, 0, 0, 0, 0, 0, 0, "", 0);
         passwordRestrictionDAO.store(createdRestriction);
-        PasswordRestriction fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
+        PasswordRestrictionUtils fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
         Assertions.assertNotNull(fetchedRestriction);
         passwordRestrictionDAO.delete(createdRestriction.getId());
         fetchedRestriction = passwordRestrictionDAO.getById(createdRestriction.getId());
@@ -111,11 +112,11 @@ public class PasswordRestrictionDAOTests extends EmbeddedDatabaseTestBase {
         String runId = Long.toString(System.currentTimeMillis());
 
         PasswordRestrictionDAO passwordRestrictionDAO = PasswordRestrictionDAO.getInstance();
-        PasswordRestriction createdRestriction = new PasswordRestriction(runId, 0, 0, 0, 0, 0, 0, "", 0);
+        PasswordRestrictionUtils createdRestriction = new PasswordRestrictionUtils(runId, 0, 0, 0, 0, 0, 0, "", 0);
         passwordRestrictionDAO.store(createdRestriction);
 
         boolean found = false;
-        for(PasswordRestriction.Summary summary : passwordRestrictionDAO.getAll()) {
+        for(PasswordRestrictionUtils.Summary summary : passwordRestrictionDAO.getAll()) {
             if(summary.id.equals(createdRestriction.getId())
             && summary.name.equals(runId)) {
                 found = true;

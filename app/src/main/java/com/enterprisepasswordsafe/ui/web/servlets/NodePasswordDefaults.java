@@ -19,6 +19,10 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
 import com.enterprisepasswordsafe.engine.hierarchy.HierarchyTools;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.HierarchyNodeDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.AccessApprover;
 import com.enterprisepasswordsafe.ui.web.servlets.authorisation.UserLevelConditionalConfigurationAccessApprover;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
@@ -38,7 +42,7 @@ import java.util.Map;
 public final class NodePasswordDefaults extends HttpServlet {
 
 	private static final AccessApprover accessApprover =
-		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOption.EDIT_USER_MINIMUM_USER_LEVEL);
+		new UserLevelConditionalConfigurationAccessApprover(ConfigurationOptions.EDIT_USER_MINIMUM_USER_LEVEL);
 
 	private final HierarchyTools hierarchyTools = new HierarchyTools();
 

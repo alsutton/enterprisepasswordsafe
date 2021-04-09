@@ -1,8 +1,8 @@
 package com.enterprisepasswordsafe.engine.passwords;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
-import com.enterprisepasswordsafe.database.Password;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.AuditingLevel;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.utils.PasswordUtils;
 
@@ -38,7 +38,7 @@ public class PasswordPropertiesSerializer {
 
     private AuditingLevel decodeLoggingLevel(Properties passwordProperties)
             throws SQLException {
-        String systemAuditState = ConfigurationDAO.getValue( ConfigurationOption.PASSWORD_AUDIT_LEVEL );
+        String systemAuditState = ConfigurationDAO.getValue( ConfigurationOptions.PASSWORD_AUDIT_LEVEL );
         AuditingLevel level = AuditingLevel.fromRepresentation(systemAuditState);
         if (level != AuditingLevel.CREATOR_CHOOSE) {
             return level;

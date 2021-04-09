@@ -16,9 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
@@ -71,7 +70,7 @@ public abstract class LoginAuthenticationServlet extends HttpServlet {
     final void storeTimeoutInformation(final HttpSession session)
             throws SQLException {
         // Set the session invalidation timeout period
-        String sessionTimeout = ConfigurationDAO.getValue(ConfigurationOption.SESSION_TIMEOUT);
+        String sessionTimeout = ConfigurationDAO.getValue(ConfigurationOptions.SESSION_TIMEOUT);
         if ("0".equals(sessionTimeout)) {
         	sessionTimeout = Integer.toString(Integer.MAX_VALUE);
         }
@@ -80,7 +79,7 @@ public abstract class LoginAuthenticationServlet extends HttpServlet {
         try {
             sessionTimeoutInt = Integer.parseInt(sessionTimeout);
         } catch (NumberFormatException ex) {
-            sessionTimeoutInt = Integer.parseInt(ConfigurationOption.SESSION_TIMEOUT.getDefaultValue());
+            sessionTimeoutInt = Integer.parseInt(ConfigurationOptions.SESSION_TIMEOUT.getDefaultValue());
         }
         session.setMaxInactiveInterval(sessionTimeoutInt * DateFormatter.SECONDS_IN_MINUTE);
     }

@@ -18,6 +18,8 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -60,7 +62,7 @@ public final class DeleteGroup extends HttpServlet {
             } else {
                 String groupName = theGroup.getGroupName();
                 gDAO.delete(theGroup);
-                TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_GROUP_MANIPULATION,
+                LoggingDAO.getInstance().create(LogEntry.LOG_LEVEL_GROUP_MANIPULATION,
                         thisUser,null, "Deleted the group {group:" + theGroup.getGroupId() + "}",
                         true);
                 ServletUtils.getInstance().generateMessage(request, "The group " + groupName + " has been deleted");

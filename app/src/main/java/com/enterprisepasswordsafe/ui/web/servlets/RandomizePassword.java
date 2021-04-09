@@ -18,17 +18,13 @@ package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.BOMFactory;
 import com.enterprisepasswordsafe.database.IntegrationModule;
-import com.enterprisepasswordsafe.database.IntegrationModuleConfigurationDAO;
-import com.enterprisepasswordsafe.database.IntegrationModuleDAO;
-import com.enterprisepasswordsafe.database.IntegrationModuleScript;
-import com.enterprisepasswordsafe.database.IntegrationModuleScriptDAO;
-import com.enterprisepasswordsafe.database.Password;
-import com.enterprisepasswordsafe.database.PasswordDAO;
-import com.enterprisepasswordsafe.database.PasswordRestriction;
-import com.enterprisepasswordsafe.database.PasswordRestrictionDAO;
-import com.enterprisepasswordsafe.database.TamperproofEventLog;
-import com.enterprisepasswordsafe.database.TamperproofEventLogDAO;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.IntegrationModuleConfigurationDAO;
+import com.enterprisepasswordsafe.model.dao.IntegrationModuleDAO;
+import com.enterprisepasswordsafe.model.dao.IntegrationModuleScriptDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordDAO;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
+import com.enterprisepasswordsafe.model.dao.LoggingDAO;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.integration.PasswordChanger;
 import com.enterprisepasswordsafe.ui.web.servlets.utils.AccessControlFetcher;
@@ -68,7 +64,7 @@ public final class RandomizePassword extends HttpServlet {
             password.setPassword(newPassword);
             pDAO.update(password, user, ac);
 
-            TamperproofEventLogDAO.getInstance().create(TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+            LoggingDAO.getInstance().create(LogEntry.LOG_LEVEL_OBJECT_MANIPULATION,
                     user, password, "Randomized the password.",
                     password.getAuditLevel().shouldTriggerEmail());
             ServletUtils.getInstance().generateMessage(request, "The password has been changed.");
@@ -81,9 +77,9 @@ public final class RandomizePassword extends HttpServlet {
 
     private String createNewPassword(Password password) throws SQLException {
         PasswordRestrictionDAO prDAO = PasswordRestrictionDAO.getInstance();
-        PasswordRestriction control = prDAO.getById(password.getRestrictionId());
+        PasswordRestrictionUtils control = prDAO.getById(password.getRestrictionId());
         if (control == null) {
-            control = prDAO.getById(PasswordRestriction.MIGRATED_RESTRICTION_ID);
+            control = prDAO.getById(PasswordRestrictionUtils.MIGRATED_RESTRICTION_ID);
         }
         return PasswordGenerator.getInstance().generate(control, true);
     }

@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.engine.jaas.*;
+import com.enterprisepasswordsafe.authentication.jaas.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

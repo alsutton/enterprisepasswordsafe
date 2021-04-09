@@ -17,8 +17,9 @@
 package com.enterprisepasswordsafe.ui.web.servlets;
 
 import com.enterprisepasswordsafe.database.*;
-import com.enterprisepasswordsafe.engine.accesscontrol.*;
 import com.enterprisepasswordsafe.engine.users.UserClassifier;
+import com.enterprisepasswordsafe.model.dao.*;
+import com.enterprisepasswordsafe.model.persisted.LogEntry;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletPaths;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -89,7 +90,7 @@ public final class UpdateAccess extends HttpServlet {
 
 	        // Verify the access control is in place
 	        Group adminGroup = GroupDAO.getInstance().getAdminGroup(currentUser);
-	        AccessControl ac = GroupAccessControlDAO.getInstance().get(adminGroup, passwordId);
+	        AccessControl ac = GroupPasswordAccessControlDAO.getInstance().get(adminGroup, passwordId);
 	        if( ac == null || ac.getReadKey() == null || ac.getModifyKey() == null ) {
 	        	servletUtils.generateErrorMessage(request, "You can not modify access to the specified password");
                 response.sendRedirect(request.getContextPath() + ERROR_PAGE);
@@ -248,7 +249,7 @@ public final class UpdateAccess extends HttpServlet {
                               final String access )
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
 		// Get the existing UAC (if it exists);
-		UserAccessControlDAO uacDAO = UserAccessControlDAO.getInstance();
+		UserPasswordAccessControlDAO uacDAO = UserPasswordAccessControlDAO.getInstance();
 		UserAccessControl currentUac = uacDAO.get(theUser, context.password);
 		if (access.equals("N")) {
 			if (currentUac != null) {
@@ -264,7 +265,7 @@ public final class UpdateAccess extends HttpServlet {
     private void changeAccess(final RoleChangeContext context, final AccessControl adminAc, final Group theGroup,
                               final String access )
     	throws SQLException, GeneralSecurityException, UnsupportedEncodingException {
-    	GroupAccessControlDAO gacDAO = GroupAccessControlDAO.getInstance();
+    	GroupPasswordAccessControlDAO gacDAO = GroupPasswordAccessControlDAO.getInstance();
     	GroupAccessControl currentGac = gacDAO.get( context.adminUser, theGroup, context.password );
 	    if (access.equals("N")) {
 	    	if( currentGac != null ) {
@@ -280,12 +281,12 @@ public final class UpdateAccess extends HttpServlet {
 
     private void logAndEmailIfNeeded(Password thePassword, User adminUser, String message)
 			throws GeneralSecurityException, UnsupportedEncodingException, SQLException {
-		TamperproofEventLogDAO.getInstance().create( TamperproofEventLog.LOG_LEVEL_OBJECT_MANIPULATION,
+		LoggingDAO.getInstance().create( LogEntry.LOG_LEVEL_OBJECT_MANIPULATION,
 				adminUser, thePassword, message, thePassword.getAuditLevel().shouldTriggerEmail());
 	}
 
     private boolean needsUpdate(AccessControl adminAc, AccessControl currentAccessControl,
-								GroupAccessControlDAO accessControlDAO,
+								GroupPasswordAccessControlDAO accessControlDAO,
 								Group entity, Password thePassword, String access,
 								AccessControlBuilder<GroupAccessControl> accessControlBuilder)
 			throws GeneralSecurityException, SQLException {
@@ -304,7 +305,7 @@ public final class UpdateAccess extends HttpServlet {
 	}
 
 	private boolean needsUpdate(AccessControl adminAc, AccessControl currentAccessControl,
-								UserAccessControlDAO accessControlDAO,
+								UserPasswordAccessControlDAO accessControlDAO,
 								User entity, Password thePassword, String access,
 								AccessControlBuilder<UserAccessControl> accessControlBuilder)
 			throws GeneralSecurityException, UnsupportedEncodingException, SQLException {

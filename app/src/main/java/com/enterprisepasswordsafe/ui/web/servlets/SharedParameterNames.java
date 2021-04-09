@@ -16,7 +16,7 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.engine.jaas.EPSJAASConfiguration;
+import com.enterprisepasswordsafe.authentication.jaas.EPSJAASConfiguration;
 
 public class SharedParameterNames {
 

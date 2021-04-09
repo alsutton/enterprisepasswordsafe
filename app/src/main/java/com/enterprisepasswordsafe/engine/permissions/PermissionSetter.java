@@ -1,76 +1,71 @@
 package com.enterprisepasswordsafe.engine.permissions;
 
-import com.enterprisepasswordsafe.database.AccessControledObject;
-import com.enterprisepasswordsafe.database.EntityWithAccessRights;
-import com.enterprisepasswordsafe.database.EntityWithAccessRightsDAO;
-import com.enterprisepasswordsafe.database.Group;
-import com.enterprisepasswordsafe.database.GroupAccessControlDAO;
-import com.enterprisepasswordsafe.database.GroupDAO;
-import com.enterprisepasswordsafe.database.Password;
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.UserAccessControlDAO;
-import com.enterprisepasswordsafe.database.UserDAO;
-import com.enterprisepasswordsafe.database.AccessControlDAOInterface;
-import com.enterprisepasswordsafe.engine.AccessControlDecryptor;
-import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
-import com.enterprisepasswordsafe.engine.accesscontrol.AccessControlBuilder;
-import com.enterprisepasswordsafe.engine.accesscontrol.GroupAccessControl;
-import com.enterprisepasswordsafe.engine.accesscontrol.PasswordPermission;
-import com.enterprisepasswordsafe.engine.accesscontrol.UserAccessControl;
+import com.enterprisepasswordsafe.model.AccessControledObject;
+import com.enterprisepasswordsafe.model.DAORepository;
+import com.enterprisepasswordsafe.model.PasswordPermission;
+import com.enterprisepasswordsafe.model.Permission;
+import com.enterprisepasswordsafe.model.dao.AccessControlDAOInterface;
+import com.enterprisepasswordsafe.model.dao.GroupDAO;
+import com.enterprisepasswordsafe.model.dao.PasswordAccessControlDAO;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
+import com.enterprisepasswordsafe.model.persisted.AbstractActor;
+import com.enterprisepasswordsafe.model.persisted.Group;
+import com.enterprisepasswordsafe.model.persisted.Password;
+import com.enterprisepasswordsafe.model.persisted.PasswordAccessControl;
+import com.enterprisepasswordsafe.model.persisted.User;
 
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class PermissionSetter {
 
     private final User adminUser;
     private final Group adminGroup;
 
-    private final UserDAO userDAO;
-    private final GroupDAO groupDAO;
+    private final DAORepository daoRepository;
 
-    private final UserAccessControlDAO userAccessControlDAO;
-    private final GroupAccessControlDAO groupAccessControlDAO;
-
-    public PermissionSetter(UserDAO userDAO, GroupDAO groupDAO, UserAccessControlDAO userAccessControlDAO,
-                     GroupAccessControlDAO groupAccessControlDAO, Group adminGroup)
-            throws GeneralSecurityException, SQLException {
-        this.userDAO = userDAO;
-        this.groupDAO = groupDAO;
-        this.userAccessControlDAO = userAccessControlDAO;
-        this.groupAccessControlDAO = groupAccessControlDAO;
-        this.adminUser = userDAO.getAdminUser(adminGroup);
+    public PermissionSetter(DAORepository daoRepository, Group adminGroup)
+            throws GeneralSecurityException {
+        this.daoRepository = daoRepository;
         this.adminGroup = adminGroup;
+        this.adminUser = daoRepository.getUserDAO().getAdminUser(adminGroup);
     }
 
-    public void storeUserPermissions(final AccessControl accessControl, final Password importedPassword,
-                                             final Map<String, PasswordPermission> userPermissions,
-                                             final boolean overwriteExistingPermissions) {
+    public void storeUserPermissions(final PasswordAccessControl accessControl,
+                                     final Password password,
+                                     final Map<? extends AbstractActor, PasswordPermission> userPermissions,
+                                     final boolean overwriteExistingPermissions) {
+        UserDAO userDAO = daoRepository.getUserDAO();
+        PasswordAccessControlDAO acDAO = daoRepository.getPasswordAccessControlDAO();
         storeDefaultPermissions(userPermissions,
-                name -> getEntity(name, userDAO, adminGroup, importedPassword),
+                name -> getEntity(name, userDAO, adminGroup, password),
                 (entity, permission) ->
                         createAccessControlIfNeeded(
-                                userAccessControlDAO,
+                                acDAO,
                                 entity,
-                                (entityUnderTest) -> hasExistingPermissions(entityUnderTest, importedPassword, userAccessControlDAO, overwriteExistingPermissions),
-                                () -> buildAccessControl(UserAccessControl.builder(), importedPassword, accessControl, permission)));
+                                (entityUnderTest) -> hasExistingPermissions(entityUnderTest, password, acDAO, overwriteExistingPermissions),
+                                () -> buildAccessControl(UserAccessControl.builder(), password, accessControl, permission)));
     }
 
-    public void storeGroupPermissions(final AccessControl accessControl, final Password importedPassword,
+    public void storeGroupPermissions(final PasswordAccessControl accessControl, final Password importedPassword,
                                               final Map<String, PasswordPermission> groupPermissions,
                                               final boolean overwriteExistingPermissions) {
+        GroupDAO groupDAO = daoRepository.getGroupDAO();
+        PasswordAccessControlDAO acDAO = daoRepository.getPasswordAccessControlDAO();
         storeDefaultPermissions(groupPermissions,
                 name ->  getEntity(name, groupDAO, adminUser, importedPassword),
                 (entity, permission) ->
                         createAccessControlIfNeeded(
-                                groupAccessControlDAO,
+                                acDAO,
                                 entity,
                                 (entityUnderTest) -> hasExistingPermissions(entityUnderTest, importedPassword, groupAccessControlDAO, overwriteExistingPermissions),
                                 () -> buildAccessControl(GroupAccessControl.builder(), importedPassword, accessControl, permission)));
@@ -144,4 +139,17 @@ public class PermissionSetter {
         }
     }
 
+    public void removePermissionsForUnknownActors(Password password,
+                                                  Map<User, Permission> userPermissions,
+                                                  Map<Group, Permission> groupPermissions) {
+        Map<AbstractActor, PasswordAccessControl> accessControls = password.getAccessControls();
+
+        Set<AbstractActor> actorsToRemove =
+                accessControls.values().parallelStream()
+                        .filter(permission -> !userPermissions.containsKey(permission.getActor()))
+                        .filter(permission -> !groupPermissions.containsKey(permission.getActor()))
+                        .flatMap(permission -> permission.getActor())
+                        .collect(Collectors.toSet());
+        actorsToRemove.stream().forEach(actor -> accessControls.remove(actor));
+    }
 }

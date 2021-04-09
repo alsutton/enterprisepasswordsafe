@@ -16,8 +16,6 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets.authorisation;
 
-import com.enterprisepasswordsafe.database.User;
-
 import java.sql.SQLException;
 
 

@@ -2,6 +2,8 @@ package com.enterprisepasswordsafe.ui.web.utils;
 
 import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -121,7 +123,7 @@ public class RestrictedAccessEnforcer {
 
     public boolean ensureReasonSuppliedIfRequired(HttpServletRequest request, PasswordBase thisPassword)
             throws SQLException, RedirectException {
-        String reasonRequired = configurationDAO.get(ConfigurationOption.PASSWORD_REASON_FOR_VIEWING_REQUIRED);
+        String reasonRequired = configurationDAO.get(ConfigurationOptions.PASSWORD_REASON_FOR_VIEWING_REQUIRED);
         if( reasonRequired.charAt(0) != 'y') {
             clearReasonSessionAttributes(request);
             request.setAttribute("reason", "");

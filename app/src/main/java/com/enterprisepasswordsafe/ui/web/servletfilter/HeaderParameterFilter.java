@@ -16,9 +16,9 @@
 
 package com.enterprisepasswordsafe.ui.web.servletfilter;
 
-import com.enterprisepasswordsafe.database.ConfigurationDAO;
-import com.enterprisepasswordsafe.database.ConfigurationListenersDAO;
-import com.enterprisepasswordsafe.database.ConfigurationOption;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
+import com.enterprisepasswordsafe.model.ConfigurationListeners;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
 import com.enterprisepasswordsafe.engine.Repositories;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
 
@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 
 
 public final class HeaderParameterFilter
-	implements Filter, ConfigurationListenersDAO.ConfigurationListener {
+	implements Filter, ConfigurationListeners.ConfigurationListener {
 
     /**
      * The timeout parameter.
@@ -66,9 +66,9 @@ public final class HeaderParameterFilter
 
     @Override
 	public void init(final FilterConfig config) {
-    	setTimeout(ConfigurationOption.SESSION_TIMEOUT.getDefaultValue());
+    	setTimeout(ConfigurationOptions.SESSION_TIMEOUT.getDefaultValue());
 
-    	ConfigurationListenersDAO.addListener(ConfigurationOption.SESSION_TIMEOUT.getPropertyName(), this);
+    	ConfigurationListeners.addListener(ConfigurationOptions.SESSION_TIMEOUT.getPropertyName(), this);
     }
 
     @Override
@@ -123,7 +123,7 @@ public final class HeaderParameterFilter
 
     public void updateTimeout()
     	throws SQLException {
-    	String sessionTimeout = ConfigurationDAO.getValue(ConfigurationOption.SESSION_TIMEOUT);
+    	String sessionTimeout = ConfigurationDAO.getValue(ConfigurationOptions.SESSION_TIMEOUT);
 	    if (sessionTimeout != null && sessionTimeout.length() > 0) {
 		    setTimeout(sessionTimeout);
 	    }
@@ -143,7 +143,7 @@ public final class HeaderParameterFilter
 
 	@Override
 	public void configurationChange(String propertyName, String propertyValue) {
-		if	( propertyName.equals(ConfigurationOption.SESSION_TIMEOUT.getPropertyName()) ) {
+		if	( propertyName.equals(ConfigurationOptions.SESSION_TIMEOUT.getPropertyName()) ) {
 			setTimeout( propertyValue );
 		}
 	}

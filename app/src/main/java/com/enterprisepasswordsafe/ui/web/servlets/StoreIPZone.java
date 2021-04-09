@@ -16,8 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.IPZone;
-import com.enterprisepasswordsafe.database.IPZoneDAO;
+import com.enterprisepasswordsafe.model.utils.IPZoneUtils;
+import com.enterprisepasswordsafe.model.dao.IPZoneDAO;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
 import javax.servlet.ServletException;
@@ -71,7 +71,7 @@ public final class StoreIPZone extends HttpServlet {
 	        IPZoneDAO ipzDAO = IPZoneDAO.getInstance();
 	        String id = request.getParameter("zoneid");
 	        if( id != null && id.length() > 0 ) {
-	        	IPZone thisZone = ipzDAO.getById(id);
+	        	IPZoneUtils thisZone = ipzDAO.getById(id);
 	            thisZone.setName(zoneName);
 	            thisZone.setIpVersion(ipVersion);
 	            thisZone.setStartIp(startIp);
@@ -110,7 +110,7 @@ public final class StoreIPZone extends HttpServlet {
         StringBuilder result = new StringBuilder(12);
         while(stringTokenizer.hasMoreTokens()) {
             int value = Integer.parseInt(stringTokenizer.nextToken());
-            IPZone.addToBuffer(result, value);
+            IPZoneUtils.addToBuffer(result, value);
         }
     	return result.toString();
     }
@@ -191,8 +191,8 @@ public final class StoreIPZone extends HttpServlet {
 
     private void addExpandedIPv6Value(final StringBuilder builder, final String value) {
         int section = Integer.parseInt(value, 16);
-        IPZone.addToBuffer(builder, (section&0xff00)>>8);
-        IPZone.addToBuffer(builder, (section&0x00ff)   );
+        IPZoneUtils.addToBuffer(builder, (section&0xff00)>>8);
+        IPZoneUtils.addToBuffer(builder, (section&0x00ff)   );
     }
 
     /**

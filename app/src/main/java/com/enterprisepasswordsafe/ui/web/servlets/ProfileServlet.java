@@ -16,10 +16,8 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.PasswordRestriction;
-import com.enterprisepasswordsafe.database.PasswordRestrictionDAO;
-import com.enterprisepasswordsafe.database.User;
-import com.enterprisepasswordsafe.database.UserDAO;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
+import com.enterprisepasswordsafe.model.dao.UserDAO;
 import com.enterprisepasswordsafe.ui.web.servletfilter.AuthenticationFilter;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
@@ -77,8 +75,8 @@ public final class ProfileServlet extends HttpServlet {
         }
 
         try {
-            PasswordRestriction control =
-                    PasswordRestrictionDAO.getInstance().getById(PasswordRestriction.LOGIN_PASSWORD_RESTRICTION_ID);
+            PasswordRestrictionUtils control =
+                    PasswordRestrictionDAO.getInstance().getById(PasswordRestrictionUtils.LOGIN_PASSWORD_RESTRICTION_ID);
 
             String controlString = "";
             if(control != null) {
@@ -121,8 +119,8 @@ public final class ProfileServlet extends HttpServlet {
 	        	throw new ServletException("Your new password must not be the same as your old one.");
 	        }
 
-	    	PasswordRestriction control =
-	    		PasswordRestrictionDAO.getInstance().getById(PasswordRestriction.LOGIN_PASSWORD_RESTRICTION_ID);
+	    	PasswordRestrictionUtils control =
+	    		PasswordRestrictionDAO.getInstance().getById(PasswordRestrictionUtils.LOGIN_PASSWORD_RESTRICTION_ID);
 	        if (control != null && !control.verify(password1)) {
 	            throw new ServletException(
 	                    "Your password has NOT been updated because the new password does not meet the minimum requirements ("

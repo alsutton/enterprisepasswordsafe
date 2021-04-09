@@ -1,8 +1,7 @@
 package com.enterprisepasswordsafe.engine.users;
 
 import com.enterprisepasswordsafe.database.Group;
-import com.enterprisepasswordsafe.database.MembershipDAO;
-import com.enterprisepasswordsafe.database.User;
+import com.enterprisepasswordsafe.model.dao.MembershipDAO;
 
 import java.sql.SQLException;
 import java.util.Map;

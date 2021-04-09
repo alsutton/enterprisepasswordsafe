@@ -16,9 +16,12 @@
 
 package com.enterprisepasswordsafe.ui.web.servlets;
 
-import com.enterprisepasswordsafe.database.*;
 import com.enterprisepasswordsafe.engine.accesscontrol.AccessControl;
 import com.enterprisepasswordsafe.engine.utils.DateFormatter;
+import com.enterprisepasswordsafe.engine.utils.PasswordRestrictionUtils;
+import com.enterprisepasswordsafe.model.ConfigurationOptions;
+import com.enterprisepasswordsafe.model.dao.AccessControlDAO;
+import com.enterprisepasswordsafe.model.dao.ConfigurationDAO;
 import com.enterprisepasswordsafe.ui.web.utils.SecurityUtils;
 import com.enterprisepasswordsafe.ui.web.utils.ServletUtils;
 
@@ -60,7 +63,7 @@ public final class EditPassword extends HttpServlet {
             addExpiryDetails(request, servletUtils, password);
 	    	addRestrictedAccessRequestDetails(request, servletUtils, password);
 	        addAuditingState(request, servletUtils, password);
-	    	request.setAttribute("password_history", ConfigurationDAO.getValue(ConfigurationOption.STORE_PASSWORD_HISTORY));
+	    	request.setAttribute("password_history", ConfigurationDAO.getValue(ConfigurationOptions.STORE_PASSWORD_HISTORY));
 	    	servletUtils.setAttributeAllowingOverride( request, "history", Boolean.toString(password.isHistoryStored()));
             addCustomFields(request, password);
 	    	servletUtils.setAttributeAllowingOverride( request, "notes", password.getNotes() );
@@ -101,7 +104,7 @@ public final class EditPassword extends HttpServlet {
     private void addEntryFieldType(HttpServletRequest request)
             throws SQLException {
         String passwordFieldType = "password";
-        String hiddenPassword = ConfigurationDAO.getValue(ConfigurationOption.HIDDEN_PASSWORD_ENTRY);
+        String hiddenPassword = ConfigurationDAO.getValue(ConfigurationOptions.HIDDEN_PASSWORD_ENTRY);
         if( hiddenPassword.equalsIgnoreCase("false") ) {
             passwordFieldType="text";
         }
@@ -111,7 +114,7 @@ public final class EditPassword extends HttpServlet {
     private void addLocationOptions(HttpServletRequest request, ServletUtils servletUtils, Password password)
             throws SQLException {
         servletUtils.setAttributeAllowingOverride(request, "location_text", password.getLocation());
-        String hideLocations = ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_HIDE_SYSTEM_SELECTOR);
+        String hideLocations = ConfigurationDAO.getValue(ConfigurationOptions.PASSWORD_HIDE_SYSTEM_SELECTOR);
         if( hideLocations.charAt(0) == 'n') {
             request.setAttribute( "locations_set", LocationDAO.getInstance().getAll() );
         }
@@ -123,10 +126,10 @@ public final class EditPassword extends HttpServlet {
         request.setAttribute( "restriction_list", prDAO.getAll() );
         String restrictionId = password.getRestrictionId();
         if( restrictionId == null ) {
-            restrictionId = PasswordRestriction.MIGRATED_RESTRICTION_ID;
+            restrictionId = PasswordRestrictionUtils.MIGRATED_RESTRICTION_ID;
         }
 
-        PasswordRestriction currentRestriction = prDAO.getById(restrictionId);
+        PasswordRestrictionUtils currentRestriction = prDAO.getById(restrictionId);
         if( currentRestriction != null && currentRestriction.isRestrictive() ) {
             request.setAttribute("currentRestrictionId", restrictionId);
             request.setAttribute("currentRestrictionName", currentRestriction.getName());
@@ -140,7 +143,7 @@ public final class EditPassword extends HttpServlet {
     private void addExpiryDetails(HttpServletRequest request, ServletUtils servletUtils, Password password)
             throws SQLException {
         long expiryDate;
-        PasswordRestriction restriction = PasswordRestrictionDAO.getInstance().getById(password.getRestrictionId());
+        PasswordRestrictionUtils restriction = PasswordRestrictionDAO.getInstance().getById(password.getRestrictionId());
         long expiry = password.getExpiry();
         if( restriction != null && restriction.getLifetime() > 0 ) {
             expiryDate = DateFormatter.getDateInFuture(restriction.getLifetime());
@@ -170,7 +173,7 @@ public final class EditPassword extends HttpServlet {
 
 	private void addAuditingState(HttpServletRequest request, ServletUtils servletUtils, Password password)
             throws SQLException {
-        request.setAttribute("password_audit", ConfigurationDAO.getValue(ConfigurationOption.PASSWORD_AUDIT_LEVEL));
+        request.setAttribute("password_audit", ConfigurationDAO.getValue(ConfigurationOptions.PASSWORD_AUDIT_LEVEL));
         servletUtils.setAttributeAllowingOverride( request, "audit", password.getAuditLevel().toString() );
     }
 
