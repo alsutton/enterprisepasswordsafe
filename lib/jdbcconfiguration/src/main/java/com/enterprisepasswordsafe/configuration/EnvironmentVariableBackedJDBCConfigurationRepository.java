@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.enterprisepasswordsafe.engine.configuration;
+package com.enterprisepasswordsafe.configuration;
 
 import java.util.function.Supplier;
 

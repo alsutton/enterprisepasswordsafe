@@ -1,4 +1,4 @@
-package com.enterprisepasswordsafe.engine.configuration;
+package com.enterprisepasswordsafe.configuration;
 
 public class GenericJDBCConnectionInformation
         implements JDBCConnectionInformation {
